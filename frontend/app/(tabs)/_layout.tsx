@@ -25,6 +25,8 @@ export default function TabLayout() {
           },
           default: {},
         }),
+        tabBarLabelStyle: { fontFamily: 'Ubuntu_500Medium' },
+        headerTitleStyle: { fontFamily: 'Ubuntu_700Bold' }, 
       }}
     >
       <Tabs.Screen
