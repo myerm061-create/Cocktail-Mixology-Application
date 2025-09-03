@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
+import AuthInput from "@/components/ui/AuthInput";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -24,21 +25,18 @@ export default function LoginScreen() {
       <Text style={styles.title}>Welcome Back!</Text>
       <Text style={styles.subtitle}>Please enter your account here</Text>
 
-      <TextInput
-        style={styles.input}
+      <AuthInput
         placeholder="Email"
-        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
+        type="email"
       />
-      <TextInput
-        style={styles.input}
+
+      <AuthInput
         placeholder="Password"
-        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        type="password"
       />
 
       <View style={styles.forgotContainer}>
@@ -81,18 +79,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#B8B8B8",
     textAlign: "center",
-  },
-  input: {
-    width: "100%",
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    fontFamily: "Ubuntu_400Regular",
-    backgroundColor: "#fff",
-    color: "#121212",
   },
   forgotContainer: {
     width: "100%",
