@@ -1,28 +1,36 @@
 import React, { useState } from "react";
+import { router, Link } from "expo-router";
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import { Link } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleCreate = () => {
     // Check for empty fields
-    if (!email.trim() || !password.trim()) {
-      alert("Please enter both email and password.");
+    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
+      alert("Missing info. Please fill in all fields.");
       return;
     }
-    // Login logic here
-    console.log("Logging in with:", email, password);
-    // TODO: integrate backend login account
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      alert("Passwords don't match. Please confirm your password.");
+      return;
+    }
+    // Create account logic here
+    console.log("Creating account with:", email, password);
+    // TODO: integrate backend create account
 
+    // Direct to login page after successful account creation for now
+    router.replace("/login");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back!</Text>
-      <Text style={styles.subtitle}>Please enter your account here</Text>
+      <Text style={styles.title}>Create Account</Text>
+      <Text style={styles.subtitle}>Please enter your details</Text>
 
       <TextInput
         style={styles.input}
@@ -31,7 +39,11 @@ export default function LoginScreen() {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        returnKeyType="next"
       />
+
       <TextInput
         style={styles.input}
         placeholder="Password"
@@ -39,23 +51,30 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        autoCapitalize="none"
+        autoComplete="password-new"
+        returnKeyType="next"
       />
 
-      <View style={styles.forgotContainer}>
-        <Link href="/forgot-password" asChild>
-          <Text style={styles.forgotLink}>Forgot password?</Text>
-        </Link>
-      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Confirm Password"
+        placeholderTextColor="#888"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+        autoCapitalize="none"
+        autoComplete="password"
+        returnKeyType="go"
+      />
 
-      <FormButton title="Login" onPress={handleLogin} />
-
+      <FormButton title="Create" onPress={handleCreate} />
       <Text style={styles.newUserText}>
-        New user?{" "}
-        <Link href="/signup" asChild>
-          <Text style={styles.link}>Sign up here</Text>
+        Already have an account?{" "}
+        <Link href="/login" asChild>
+          <Text style={styles.link}>Sign in here</Text>
         </Link>
       </Text>
-
     </View>
   );
 }
@@ -93,17 +112,6 @@ const styles = StyleSheet.create({
     fontFamily: "Ubuntu_400Regular",
     backgroundColor: "#fff",
     color: "#121212",
-  },
-  forgotContainer: {
-    width: "100%",
-    alignItems: "flex-end",
-    marginBottom: 10
-    ,
-  },
-  forgotLink: {
-    color: "#8A5CF6",
-    fontFamily: "Ubuntu_500Medium",
-    fontSize: 14,
   },
   link: {
     color: "#8A5CF6",
