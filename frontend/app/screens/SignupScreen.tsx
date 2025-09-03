@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { router, Link } from "expo-router";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import FormButton from "@/components/ui/FormButton";
+import AuthInput from "@/components/ui/AuthInput";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -32,39 +33,27 @@ export default function LoginScreen() {
       <Text style={styles.title}>Create Account</Text>
       <Text style={styles.subtitle}>Please enter your details</Text>
 
-      <TextInput
-        style={styles.input}
+      <AuthInput
         placeholder="Email"
-        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
+        type="email"
         returnKeyType="next"
       />
 
-      <TextInput
-        style={styles.input}
+      <AuthInput
         placeholder="Password"
-        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
-        autoCapitalize="none"
-        autoComplete="password-new"
+        type="password"
         returnKeyType="next"
       />
 
-      <TextInput
-        style={styles.input}
+      <AuthInput
         placeholder="Confirm Password"
-        placeholderTextColor="#888"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        secureTextEntry
-        autoCapitalize="none"
-        autoComplete="password"
+        type="password"
         returnKeyType="go"
       />
 
@@ -100,18 +89,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: "#B8B8B8",
     textAlign: "center",
-  },
-  input: {
-    width: "100%",
-    height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    fontFamily: "Ubuntu_400Regular",
-    backgroundColor: "#fff",
-    color: "#121212",
   },
   link: {
     color: "#8A5CF6",
