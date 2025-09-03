@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { TextInputProps } from "react-native";
 
 type FormInputProps = {
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
   type?: "text" | "email" | "password";
-};
+} & Pick<TextInputProps, "returnKeyType">;;
 
 export default function FormInput({ placeholder, value, onChangeText, type = "text" }: FormInputProps) {
     const [secure, setSecure] = useState(type === "password");
