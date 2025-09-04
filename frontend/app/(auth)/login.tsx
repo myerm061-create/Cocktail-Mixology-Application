@@ -43,7 +43,7 @@ export default function LoginScreen() {
       />
 
       <View style={styles.forgotContainer}>
-        <Link href="/forgot-password" asChild>
+        <Link href="/reset-password" asChild>
           <Text style={styles.forgotLink}>Forgot password?</Text>
         </Link>
       </View>
