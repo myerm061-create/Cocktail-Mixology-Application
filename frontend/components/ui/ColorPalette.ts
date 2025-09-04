@@ -1,6 +1,8 @@
 export type Palette = {
-  background: string; surface: string;
-  textPrimary: string; textSecondary: string;
+  background: string;
+  surface: string;
+  textPrimary: string;
+  textSecondary: string;
   link: string;
 };
 
