@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
+
+// Import custom components
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
+import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -64,20 +67,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#101010",
+    backgroundColor: Colors.background,
   },
   title: {
     fontFamily: "Ubuntu_700Bold",
     fontWeight: "900",
     fontSize: 28,
     marginBottom: 10,
-    color: "#F5F0E1",
+    color: Colors.textPrimary,
   },
   subtitle: {
     fontFamily: "Ubuntu_400Regular",
     fontSize: 16,
     marginBottom: 20,
-    color: "#B8B8B8",
+    color: Colors.textSecondary,
     textAlign: "center",
   },
   forgotContainer: {
@@ -87,17 +90,17 @@ const styles = StyleSheet.create({
     ,
   },
   forgotLink: {
-    color: "#8A5CF6",
+    color: Colors.link,
     fontFamily: "Ubuntu_500Medium",
     fontSize: 14,
   },
   link: {
-    color: "#8A5CF6",
+    color: Colors.link,
     fontFamily: "Ubuntu_500Medium",
   },
   newUserText: {
     marginTop: 15,
-    color: "#B8B8B8",
+    color: Colors.textSecondary,
     fontFamily: "Ubuntu_400Regular",
     fontSize: 14,
   },
