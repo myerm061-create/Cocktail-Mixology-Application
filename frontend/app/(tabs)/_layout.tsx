@@ -19,18 +19,15 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
+          ios: { position: 'absolute' }, // transparent bg to show blur on iOS
           default: {},
         }),
         tabBarLabelStyle: { fontFamily: 'Ubuntu_500Medium' },
-        headerTitleStyle: { fontFamily: 'Ubuntu_700Bold' }, 
+        headerTitleStyle: { fontFamily: 'Ubuntu_700Bold' },
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (
@@ -38,12 +35,43 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
-        name="explore"
+        name="screens/ingredient-scanner"
         options={{
-          title: 'Explore',
+          title: 'Scan',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={28} name="camera.viewfinder" color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="screens/my-ingredients"
+        options={{
+          title: 'Cabinet',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="list.bullet" color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="screens/recommendations"
+        options={{
+          title: 'Rec',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="sparkles" color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="screens/user-profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="person.crop.circle" color={color} />
           ),
         }}
       />
