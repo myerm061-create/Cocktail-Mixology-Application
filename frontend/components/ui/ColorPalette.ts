@@ -4,16 +4,21 @@ export type Palette = {
   textPrimary: string;
   textSecondary: string;
   link: string;
+  accentPrimary: string;
+  buttonBackground: string;
+  // Add more colors as needed
 };
 
 // Dark theme colors
-// Add more colors as needed
 export const DarkTheme: Palette = {
   background: "#101010",
   surface: "#1C1B22",
   textPrimary: "#F5F0E1",
   textSecondary: "#B8B8B8",
-  link: "#D4A94A",
+  link: "#9B7FFF",
+  accentPrimary: "#6E5AE6",
+  buttonBackground: "#201E27",
+  // Add more colors as needed
 };
 
 // placeholder for later use
