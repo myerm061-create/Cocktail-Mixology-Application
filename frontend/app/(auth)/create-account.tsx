@@ -8,28 +8,30 @@ import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import PasswordRules from "@/components/ui/PasswordRules";
 
-
-
 export default function CreateAccountScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Validation checks: Add more rules as needed
+  // Check for at least 6 characters and at least one number
   const passwordValid = useMemo(
     () => password.length >= 6 && /\d/.test(password),
     [password]
   );
+  // Check if passwords match and not empty
   const passwordsMatch = useMemo(
     () => confirmPassword.length > 0 && password === confirmPassword,
     [password, confirmPassword]
   );
-
+  // Check overall validity
   const allValid = useMemo(
     () => !!email.trim() && passwordValid && passwordsMatch,
     [email, passwordValid, passwordsMatch]
   );
-
+  
   const handleCreate = () => {
+    // Additional client-side validation
     if (!allValid) {
       alert("Please fix the highlighted issues before creating your account.");
       return;
@@ -68,7 +70,6 @@ export default function CreateAccountScreen() {
         returnKeyType="go"
       />
 
-      {/* Always visible rules, now also checks match */}
       <PasswordRules password={password} confirmPassword={confirmPassword} />
 
       <FormButton title="Create" onPress={handleCreate} disabled={!allValid} />
