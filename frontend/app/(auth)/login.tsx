@@ -59,14 +59,13 @@ export default function LoginScreen() {
 
       <Text style={styles.newUserText}>
         New user?{" "}
-        <Link href="/signup" asChild>
+        <Link href="/create-account" asChild>
           <Text style={styles.link}>Sign up here</Text>
         </Link>
       </Text>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

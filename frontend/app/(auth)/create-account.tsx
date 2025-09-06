@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { router, Link } from "expo-router";
 import { View, Text, StyleSheet } from "react-native";
 
@@ -6,29 +6,36 @@ import { View, Text, StyleSheet } from "react-native";
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import PasswordRules from "@/components/ui/PasswordRules";
 
 
-export default function LoginScreen() {
+
+export default function CreateAccountScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleCreate = () => {
-    // Check for empty fields
-    if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      alert("Missing info. Please fill in all fields.");
-      return;
-    }
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      alert("Passwords don't match. Please confirm your password.");
-      return;
-    }
-    // Create account logic here
-    console.log("Creating account with:", email, password);
-    // TODO: integrate backend create account
+  const passwordValid = useMemo(
+    () => password.length >= 6 && /\d/.test(password),
+    [password]
+  );
+  const passwordsMatch = useMemo(
+    () => confirmPassword.length > 0 && password === confirmPassword,
+    [password, confirmPassword]
+  );
 
-    // Direct to login page after successful account creation for now
+  const allValid = useMemo(
+    () => !!email.trim() && passwordValid && passwordsMatch,
+    [email, passwordValid, passwordsMatch]
+  );
+
+  const handleCreate = () => {
+    if (!allValid) {
+      alert("Please fix the highlighted issues before creating your account.");
+      return;
+    }
+    console.log("Creating account with:", email, password);
+    // TODO: integrate backend
     router.replace("/login");
   };
 
@@ -61,7 +68,11 @@ export default function LoginScreen() {
         returnKeyType="go"
       />
 
-      <FormButton title="Create" onPress={handleCreate} />
+      {/* Always visible rules, now also checks match */}
+      <PasswordRules password={password} confirmPassword={confirmPassword} />
+
+      <FormButton title="Create" onPress={handleCreate} disabled={!allValid} />
+
       <Text style={styles.newUserText}>
         Already have an account?{" "}
         <Link href="/login" asChild>
