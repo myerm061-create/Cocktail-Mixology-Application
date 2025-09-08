@@ -8,6 +8,8 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
+import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+
 
 type Props = {
   title: string;
@@ -49,7 +51,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#201E27",
+    backgroundColor: Colors.buttonBackground,
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10,
@@ -58,7 +60,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   text: {
-    color: "#F5F0E1",
+    color: Colors.textPrimary,
     fontSize: 16,
     fontFamily: "Ubuntu_700Bold",
     fontWeight: "700",

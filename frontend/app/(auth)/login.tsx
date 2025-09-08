@@ -5,22 +5,31 @@ import { Link } from "expo-router";
 // Import custom components
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
+import CheckBox from "@/components/ui/CheckBox";
+import GoogleAuthButton from "@/components/ui/GoogleAuthButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [gLoading, setGLoading] = useState(false);
 
   const handleLogin = () => {
-    // Check for empty fields
     if (!email.trim() || !password.trim()) {
       alert("Please enter both email and password.");
       return;
     }
-    // Login logic here
-    console.log("Logging in with:", email, password);
-    // TODO: integrate backend login account
+    // TODO: login -> if rememberMe true
+  };
 
+  const handleGoogle = async () => {
+    try {
+      setGLoading(true);
+      // TODO: start Google flow here
+    } finally {
+      setGLoading(false);
+    }
   };
 
   return (
@@ -28,21 +37,11 @@ export default function LoginScreen() {
       <Text style={styles.title}>Welcome Back!</Text>
       <Text style={styles.subtitle}>Please enter your account here</Text>
 
-      <AuthInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        type="email"
-      />
+      <AuthInput placeholder="Email" value={email} onChangeText={setEmail} type="email" />
+      <AuthInput placeholder="Password" value={password} onChangeText={setPassword} type="password" />
 
-      <AuthInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        type="password"
-      />
-
-      <View style={styles.forgotContainer}>
+      <View style={styles.row}>
+        <CheckBox checked={rememberMe} onChange={setRememberMe} label="Keep me signed in" />
         <Link href="/reset-password" asChild>
           <Text style={styles.forgotLink}>Forgot password?</Text>
         </Link>
@@ -50,13 +49,20 @@ export default function LoginScreen() {
 
       <FormButton title="Login" onPress={handleLogin} />
 
+      <View style={styles.dividerRow}>
+        <View style={styles.divider} />
+        <Text style={styles.dividerText}>or</Text>
+        <View style={styles.divider} />
+      </View>
+
+      <GoogleAuthButton onPress={handleGoogle} loading={gLoading} />
+
       <Text style={styles.newUserText}>
         New user?{" "}
-        <Link href="/signup" asChild>
+        <Link href="/create-account" asChild>
           <Text style={styles.link}>Sign up here</Text>
         </Link>
       </Text>
-
     </View>
   );
 }
@@ -103,5 +109,28 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontFamily: "Ubuntu_400Regular",
     fontSize: 14,
+  },
+  row: { 
+    width: "100%", 
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "space-between", 
+    marginBottom: 12 
+  },
+  dividerRow: { 
+    width: "100%", 
+    flexDirection: "row", 
+    alignItems: "center", 
+    gap: 8, 
+    marginVertical: 12
+  },
+  divider: { 
+    flex: 1, 
+    height: 1, 
+    backgroundColor: "#2C2A35" 
+  },
+  dividerText: { 
+    color: Colors.textSecondary, 
+    fontSize: 12 
   },
 });
