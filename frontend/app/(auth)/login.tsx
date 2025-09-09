@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 // Import custom components
 import FormButton from "@/components/ui/FormButton";
@@ -20,7 +20,14 @@ export default function LoginScreen() {
       alert("Please enter both email and password.");
       return;
     }
-    // TODO: login -> if rememberMe true
+    if (email === "test@test.com" && password === "test") {
+      alert("Login successful (Test account)");
+      router.push("/home");
+      return;
+    }
+
+    // TODO: login logic -> if rememberMe true
+    alert("Invalid credentials.");
   };
 
   const handleGoogle = async () => {
