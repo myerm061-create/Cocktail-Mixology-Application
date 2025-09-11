@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
+import FormButton from "@/components/ui/FormButton";
+
 
 export default function HomeScreen() {
   return (
@@ -7,25 +9,40 @@ export default function HomeScreen() {
       <Text style={styles.title}>Cocktail Mixology</Text>
       <Text style={styles.subtitle}>Welcome! Choose a section:</Text>
 
-      <Pressable style={styles.btn} onPress={() => router.push("/screens/ingredient-scanner")}>
-        <Text style={styles.btnText}>Scan Ingredients</Text>
-      </Pressable>
+      <FormButton
+        title="Scan Ingredients"
+        onPress={() => router.push("/screens/ingredient-scanner")}
+      />
 
-      <Pressable style={styles.btn} onPress={() => router.push("/screens/my-ingredients")}>
-        <Text style={styles.btnText}>My Cabinet</Text>
-      </Pressable>
+      <FormButton
+        title="My Cabinet"
+        onPress={() => router.push("/screens/my-ingredients")}
+      />
 
-      <Pressable style={styles.btn} onPress={() => router.push("/screens/recommendations")}>
-        <Text style={styles.btnText}>Recommendations</Text>
-      </Pressable>
+      <FormButton
+        title="Recommendations"
+        onPress={() => router.push("/screens/recommendations")}
+      />
 
-      <Pressable style={styles.btn} onPress={() => router.push("/screens/profile/user")}>
-        <Text style={styles.btnText}>Profile</Text>
-      </Pressable>
+      <FormButton
+        title="Profile"
+        onPress={() => router.push("/screens/profile/user")}
+      />
 
-      <Pressable style={styles.btn} onPress={() => router.push("/screens/settings")}>
-        <Text style={styles.btnText}>Settings</Text>
-      </Pressable>
+      <FormButton
+        title="Settings"
+        onPress={() => router.push("/screens/settings")}
+      />
+
+      {/* Example: placeholder sign-out */}
+      <FormButton
+        title="Sign Out"
+        variant="dangerLogo"
+        onPress={() => {
+          console.log("Sign out pressed");
+          router.replace("/login");
+        }}
+      />
     </View>
   );
 }

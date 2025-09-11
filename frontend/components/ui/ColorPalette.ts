@@ -7,6 +7,7 @@ export type Palette = {
   textPrimary: string;
   textSecondary: string;
   link: string;
+  textRed: string;
   accentPrimary: string;
   buttonBackground: string;
   // Add more colors as needed
@@ -22,6 +23,7 @@ export const DarkTheme: Palette = {
   textPrimary: "#F5F0E1",
   textSecondary: "#B8B8B8",
   link: "#9B7FFF",
+  textRed: "#DD5E5E",
   accentPrimary: "#6E5AE6",
   buttonBackground: "#2A2A2A",
   // Add more colors as needed
