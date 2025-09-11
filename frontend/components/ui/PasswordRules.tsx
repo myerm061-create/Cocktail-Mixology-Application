@@ -46,7 +46,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary, 
     fontSize: 16, 
     marginBottom: 10,
-    fontFamily: "Ubuntu_400Regular"  
  },
   ruleRow: { 
     flexDirection: "row", 
@@ -73,10 +72,8 @@ const styles = StyleSheet.create({
 },
   textOk: { 
     color: Colors.link, 
-    fontFamily: "Ubuntu_400Regular"  
   },
   textNot: { 
     color: "#C5C5C5", 
-    fontFamily: "Ubuntu_400Regular" 
   },
 });

@@ -60,7 +60,6 @@ const styles = StyleSheet.create({
   text: {
     color: "#FFFFFF",
     fontSize: 15,
-    fontFamily: "Ubuntu_700Bold",
-    fontWeight: "600",
+    fontWeight: "bold",
   },
 });

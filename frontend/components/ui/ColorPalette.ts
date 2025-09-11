@@ -17,7 +17,7 @@ export const DarkTheme: Palette = {
   textSecondary: "#B8B8B8",
   link: "#9B7FFF",
   accentPrimary: "#6E5AE6",
-  buttonBackground: "#201E27",
+  buttonBackground: "#2A2A2A",
   // Add more colors as needed
 };
 

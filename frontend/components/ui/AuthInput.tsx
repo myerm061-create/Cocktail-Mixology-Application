@@ -57,7 +57,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 50,
-    fontFamily: "Ubuntu_400Regular",
     color: "#121212",
   },
   icon: {

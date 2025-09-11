@@ -83,14 +83,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   title: {
-    fontFamily: "Ubuntu_700Bold",
-    fontWeight: "900",
+    fontWeight: "bold",
     fontSize: 28,
     marginBottom: 10,
     color: Colors.textPrimary,
   },
   subtitle: {
-    fontFamily: "Ubuntu_400Regular",
     fontSize: 16,
     marginBottom: 20,
     color: Colors.textSecondary,
@@ -104,17 +102,14 @@ const styles = StyleSheet.create({
   },
   forgotLink: {
     color: Colors.link,
-    fontFamily: "Ubuntu_500Medium",
     fontSize: 14,
   },
   link: {
     color: Colors.link,
-    fontFamily: "Ubuntu_500Medium",
   },
   newUserText: {
     marginTop: 15,
     color: Colors.textSecondary,
-    fontFamily: "Ubuntu_400Regular",
     fontSize: 14,
   },
   row: { 
