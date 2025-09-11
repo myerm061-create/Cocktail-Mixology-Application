@@ -1,5 +1,8 @@
 export type Palette = {
   background: string;
+  nightBlack: string;
+  deepAsh: string;
+  richCharcoal: string;
   surface: string;
   textPrimary: string;
   textSecondary: string;
@@ -12,6 +15,9 @@ export type Palette = {
 // Dark theme colors
 export const DarkTheme: Palette = {
   background: "#101010",
+  nightBlack: "#0D0D0D",
+  deepAsh: "#2D2D2D",
+  richCharcoal: "#1A1A1A",
   surface: "#1C1B22",
   textPrimary: "#F5F0E1",
   textSecondary: "#B8B8B8",
