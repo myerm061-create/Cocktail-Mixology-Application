@@ -19,8 +19,12 @@ export default function HomeScreen() {
         <Text style={styles.btnText}>Recommendations</Text>
       </Pressable>
 
-      <Pressable style={styles.btn} onPress={() => router.push("/screens/user-profile")}>
-        <Text style={styles.btnText}>Profile & Settings</Text>
+      <Pressable style={styles.btn} onPress={() => router.push("/screens/profile/user")}>
+        <Text style={styles.btnText}>Profile</Text>
+      </Pressable>
+
+      <Pressable style={styles.btn} onPress={() => router.push("/screens/settings")}>
+        <Text style={styles.btnText}>Settings</Text>
       </Pressable>
     </View>
   );
