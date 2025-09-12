@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 // Import custom components
 import FormButton from "@/components/ui/FormButton";
@@ -20,7 +20,14 @@ export default function LoginScreen() {
       alert("Please enter both email and password.");
       return;
     }
-    // TODO: login -> if rememberMe true
+    if (email === "test@test.com" && password === "test") {
+      alert("Login successful (Test account)");
+      router.push("/home");
+      return;
+    }
+
+    // TODO: login logic -> if rememberMe true
+    alert("Invalid credentials.");
   };
 
   const handleGoogle = async () => {
@@ -76,14 +83,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   title: {
-    fontFamily: "Ubuntu_700Bold",
-    fontWeight: "900",
+    fontWeight: "bold",
     fontSize: 28,
     marginBottom: 10,
     color: Colors.textPrimary,
   },
   subtitle: {
-    fontFamily: "Ubuntu_400Regular",
     fontSize: 16,
     marginBottom: 20,
     color: Colors.textSecondary,
@@ -97,17 +102,14 @@ const styles = StyleSheet.create({
   },
   forgotLink: {
     color: Colors.link,
-    fontFamily: "Ubuntu_500Medium",
     fontSize: 14,
   },
   link: {
     color: Colors.link,
-    fontFamily: "Ubuntu_500Medium",
   },
   newUserText: {
     marginTop: 15,
     color: Colors.textSecondary,
-    fontFamily: "Ubuntu_400Regular",
     fontSize: 14,
   },
   row: { 

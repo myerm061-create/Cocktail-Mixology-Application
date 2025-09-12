@@ -27,20 +27,20 @@ const styles = StyleSheet.create({
     height: 20, 
     borderRadius: 5,
     borderWidth: 1, 
-    borderColor: Colors.accentPrimary,
+    borderColor: Colors.textSecondary,
     alignItems: "center", justifyContent: "center",
     backgroundColor: "transparent"
   },
   boxChecked: { 
-    backgroundColor: Colors.accentPrimary,
+    backgroundColor: Colors.textPrimary,
   },
   check: { 
-    color: "white", 
+    color: Colors.background, 
     fontSize: 14,
     lineHeight: 14  
  },
   label: {
-     color: "#C2C8D0", 
+     color: Colors.textSecondary, 
      fontSize: 13
   },
 });
