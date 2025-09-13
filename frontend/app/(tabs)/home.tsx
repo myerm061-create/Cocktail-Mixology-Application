@@ -31,7 +31,7 @@ export default function HomeScreen() {
 
       <FormButton
         title="Settings"
-        onPress={() => router.push("/screens/settings")}
+        onPress={() => router.push("/(settings)/settings")}
       />
 
       {/*placeholder sign-out */}
