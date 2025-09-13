@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { router, Link } from "expo-router";
 import { View, Text, StyleSheet } from "react-native";
-
-// Import custom components
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";

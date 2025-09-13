@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Link } from "expo-router";
-
-// Import custom components
+import { Link, router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -22,14 +20,25 @@ export default function ResetPasswordScreen() {
     }
     try {
       setSubmitting(true);
+
+      // TEMP: demo redirect — if test@test.com, go to confirmation screen
+      if (trimmed.toLowerCase() === "test@test.com") {
+        router.push("/(auth)/reset-password-sent");
+        return;
+      }
+
       // TODO: call backend API to send reset email
-        console.log("Sending password reset link to:", trimmed);
+      console.log("Sending password reset link to:", trimmed);
+
+      // Later: after real API success
+      // router.push("/(auth)/reset-password-sent");
+
     } finally {
       setSubmitting(false);
+    }
   };
-    };
 
-return (
+  return (
     <View style={styles.container}>
       <Text style={styles.title}>Reset your password</Text>
       <Text style={styles.subtitle}>
@@ -61,30 +70,30 @@ return (
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1, 
-    justifyContent: "center", 
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    padding: 20, 
+    padding: 20,
     backgroundColor: Colors.background,
   },
   title: {
     fontWeight: "bold",
-    fontSize: 24, 
-    marginBottom: 8, 
+    fontSize: 24,
+    marginBottom: 8,
     color: Colors.textPrimary,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.textSecondary, 
+    color: Colors.textSecondary,
     textAlign: "center",
     marginBottom: 20,
   },
   backText: {
-    marginTop: 14, 
+    marginTop: 14,
     color: Colors.textSecondary,
     fontSize: 14,
   },
-  link: { 
-    color: Colors.link, 
-},
+  link: {
+    color: Colors.link,
+  },
 });
