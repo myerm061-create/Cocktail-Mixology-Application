@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -34,6 +35,11 @@ export default function SettingsScreen() {
 
   // units
   const [useMetric, setUseMetric] = useState(false); // false = oz, true = ml
+
+  // confirmations
+  const [confirmClearCache, setConfirmClearCache] = useState(false);
+  const [confirmDeleteAcct, setConfirmDeleteAcct] = useState(false);
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
 
   const toggle = (fn: (v: boolean) => void) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -85,7 +91,7 @@ export default function SettingsScreen() {
         <View style={styles.reveal}>
           <FormButton
             title="Clear Local Cache"
-            onPress={() => console.log("clear local data")}
+            onPress={() => setConfirmClearCache(true)}
             variant="default"
           />
         </View>
@@ -100,7 +106,7 @@ export default function SettingsScreen() {
         <View style={styles.reveal}>
           <FormButton
             title="Delete Account (Permanent)"
-            onPress={() => console.log("delete account")}
+            onPress={() => setConfirmDeleteAcct(true)}
             variant="danger"
           />
         </View>
@@ -148,10 +154,48 @@ export default function SettingsScreen() {
       <View style={styles.footer}>
         <FormButton
           title="Sign Out"
-          onPress={() => console.log("sign out")}
+          onPress={() => setConfirmSignOut(true)}
           variant="dangerLogo"
         />
       </View>
+
+      {/* Confirm dialogs */}
+      <ConfirmDialog
+        visible={confirmClearCache}
+        title="Clear Local Cache"
+        message="This will remove locally stored data on this device."
+        confirmText="Clear Cache"
+        onCancel={() => setConfirmClearCache(false)}
+        onConfirm={() => {
+          setConfirmClearCache(false);
+          console.log("clear local data");
+        }}
+      />
+
+      <ConfirmDialog
+        visible={confirmDeleteAcct}
+        title="Delete Account"
+        message="This permanently deletes your account and data."
+        confirmText="Delete Account"
+        onCancel={() => setConfirmDeleteAcct(false)}
+        onConfirm={() => {
+          setConfirmDeleteAcct(false);
+          console.log("delete account");
+        }}
+      />
+
+      <ConfirmDialog
+        visible={confirmSignOut}
+        title="Sign Out"
+        message="Do you want to log out?"
+        confirmText="Log Out"
+        onCancel={() => setConfirmSignOut(false)}
+        onConfirm={() => {
+          setConfirmSignOut(false);
+          console.log("sign out");
+        }}
+      />
+
     </View>
   );
 }
