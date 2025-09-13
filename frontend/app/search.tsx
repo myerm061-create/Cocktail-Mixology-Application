@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, TextInput, View, Pressable } from "react-native";
 
-// Temporary test data
+// Mock data 
 type UICocktail = {
   id: string;
   name: string;
@@ -10,22 +10,22 @@ type UICocktail = {
   glass?: string | null;
   alcoholic?: string | null;
 };
-// temporary access to the database untill backend programmed
+//   Temporary until API set up
 const MOCK: UICocktail[] = [
   { id: "11007", name: "Margarita", thumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg", glass: "Cocktail glass", alcoholic: "Alcoholic" },
   { id: "11000", name: "Mojito",    thumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg", glass: "Highball glass", alcoholic: "Alcoholic" },
   { id: "17222", name: "Aviation",  thumb: "https://www.thecocktaildb.com/images/media/drink/trbplb1606855233.jpg", glass: "Cocktail glass", alcoholic: "Alcoholic" },
-  { id: "178366", name: "Non-Alcoholic Mojito", thumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg", glass: "Highball glass", alcoholic: "Non alcoholic" },
+  { id: "178366", name: "Virgin Mojito", thumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg", glass: "Highball glass", alcoholic: "Non alcoholic" },
 ];
 
-// ssetup of search states
+//  Component 
 export default function SearchScreen() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<UICocktail[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  // simple "debounce" helper so we don't search on every keystroke
+  // simple debounce so we don’t search on every keystroke
   const debounce = useMemo(() => {
     let t: ReturnType<typeof setTimeout> | undefined;
     return (fn: () => void, ms = 350) => {
@@ -35,7 +35,6 @@ export default function SearchScreen() {
   }, []);
 
   useEffect(() => {
-    // reset on empty
     if (!q.trim()) {
       setResults([]);
       setError(null);
@@ -46,7 +45,6 @@ export default function SearchScreen() {
     setLoading(true);
     setError(null);
 
-    // simulate network latency + filtering MOCK data
     debounce(() => {
       try {
         const term = q.trim().toLowerCase();
@@ -64,10 +62,10 @@ export default function SearchScreen() {
       }
     }, 500);
   }, [q, debounce]);
-//will need to update all style choices
+
   return (
     <View style={{ flex: 1, padding: 16, gap: 12 }}>
-      <Text style={{ fontSize: 28, fontWeight: "700" }}>Search Cocktails</Text>
+      <Text style={{ fontSize: 28, fontWeight: "700", marginBottom: 8 }}>Search Cocktails</Text>
 
       <TextInput
         placeholder="Try: margarita, mojito…"
@@ -100,7 +98,6 @@ export default function SearchScreen() {
             style={{
               flexDirection: "row", alignItems: "center", gap: 12,
               backgroundColor: "white", padding: 12, borderRadius: 16,
-              // light shadow/elevation
               shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
               elevation: 1
             }}
@@ -127,7 +124,6 @@ export default function SearchScreen() {
         }
       />
 
-      {/* Tiny helper text so reviewers know it’s still mock data */}
       <Text style={{ color: "#888", fontSize: 12, textAlign: "center", marginTop: 8 }}>
         Mock data only. API wiring comes next.
       </Text>

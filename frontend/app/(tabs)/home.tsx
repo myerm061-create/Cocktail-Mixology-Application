@@ -25,6 +25,11 @@ export default function HomeScreen() {
       />
 
       <FormButton
+        title="Search"
+        onPress={() => router.push("/search")}
+      />
+
+      <FormButton
         title="Profile"
         onPress={() => router.push("/screens/profile/user")}
       />
