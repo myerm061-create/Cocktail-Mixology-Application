@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Link, router } from "expo-router";
-
-// Import custom components
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import CheckBox from "@/components/ui/CheckBox";
