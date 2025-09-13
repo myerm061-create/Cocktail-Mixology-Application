@@ -3,83 +3,83 @@ import { View, StyleSheet, Pressable, Animated, Platform, SafeAreaView } from "r
 import { Ionicons } from "@expo/vector-icons";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-type Item = { icon: keyof typeof Ionicons.glyphMap; onPress?: () => void };
-type Props = { items: Item[]; activeIndex?: number; safeArea?: boolean; height?: number };
+type Item = { icon: keyof typeof Ionicons.glyphMap };
+
+type Props = {
+  items: Item[];
+  initialIndex?: number;
+  height?: number;
+  safeArea?: boolean;
+  onTabChange?: (index: number) => void; 
+};
 
 const DOT = 6;
 
 export default function BottomNav({
   items,
-  activeIndex = 0,
-  safeArea = true,
+  initialIndex = 0,
   height = 64,
+  safeArea = true,
+  onTabChange,
 }: Props) {
-  const animIndex = useRef(new Animated.Value(activeIndex)).current;
   const [barW, setBarW] = useState(0);
+  const [index, setIndex] = useState(Math.min(Math.max(initialIndex, 0), Math.max(items.length - 1, 0)));
+  const animIndex = useRef(new Animated.Value(index)).current;
 
   useEffect(() => {
     Animated.spring(animIndex, {
-      toValue: activeIndex,
+      toValue: index,
       useNativeDriver: false,
       bounciness: 10,
       speed: 14,
     }).start();
-  }, [activeIndex]);
+  }, [index]);
 
-  // % width for each tab
+  // layout math
   const tabWidthPct = useMemo(() => 100 / Math.max(items.length, 1), [items.length]);
-
-  // Pixel math for the dot
   const tabW = useMemo(() => (barW && items.length ? barW / items.length : 0), [barW, items.length]);
-  const centers = useMemo(
-    () => (tabW ? items.map((_, i) => i * tabW + tabW / 2) : []),
-    [tabW, items.length]
-  );
-
+  const centers = useMemo(() => (tabW ? items.map((_, i) => i * tabW + tabW / 2) : []), [tabW, items.length]);
   const canAnimate = centers.length >= 2;
-  const clampedIndex = Math.min(Math.max(activeIndex, 0), Math.max(items.length - 1, 0));
 
   const leftValue = canAnimate
     ? animIndex.interpolate({
         inputRange: centers.map((_, i) => i),
         outputRange: centers.map((c) => c - DOT / 2),
       })
-    :
-      (centers[clampedIndex] ?? 0) - DOT / 2;
+    : (centers[index] ?? 0) - DOT / 2;
+
+  const handlePress = (i: number) => {
+    setIndex(i);
+    onTabChange?.(i);
+  };
 
   const Bar = (
     <View
       onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
-      style={[styles.bar, { height, backgroundColor: Colors.buttonBackground ?? "#1A1A1A" }]}
+      style={[styles.bar, { height, backgroundColor: Colors.buttonBackground }]}
     >
       {/* red dot */}
       {barW > 0 && (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.dot,
-            {
-              left: leftValue,
-              backgroundColor: Colors.textRed ?? "#FF6B6B",
-            },
-          ]}
-        />
+        <Animated.View style={[styles.dot, { left: leftValue, backgroundColor: Colors.textRed }]} />
       )}
 
-      {items.map((it, i) => (
-        <Pressable
-          key={`${it.icon}-${i}`}
-          style={[styles.tab, { width: `${tabWidthPct}%`, height }]}
-          android_ripple={{ color: (Colors.textPrimary ?? "#6366F1") + "22", borderless: true }}
-          onPress={it.onPress}
-        >
-          <Ionicons
-            name={it.icon}
-            size={22}
-            color={i === activeIndex ? Colors.textPrimary ?? "#fff" : Colors.textSecondary ?? "#BDBDBD"}
-          />
-        </Pressable>
-      ))}
+      {items.map((it, i) => {
+        const active = i === index;
+        const iconName = active && String(it.icon).endsWith("-outline")
+          ? (String(it.icon).replace("-outline", "") as any)
+          : it.icon;
+
+        return (
+          <Pressable
+            key={`${it.icon}-${i}`}
+            style={[styles.tab, { width: `${tabWidthPct}%`, height }]}
+            android_ripple={{ color: `${Colors.accentPrimary}33`, borderless: true }}
+            onPress={() => handlePress(i)}
+          >
+            <Ionicons name={iconName} size={22} color={active ? Colors.textPrimary : Colors.textSecondary} />
+          </Pressable>
+        );
+      })}
     </View>
   );
 
@@ -89,7 +89,7 @@ export default function BottomNav({
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
     paddingBottom: Platform.OS === "android" ? 10 : 0,
   },
   bar: {
@@ -97,22 +97,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 22,
     overflow: "hidden",
-    marginHorizontal: 8,
+    marginHorizontal: 0,
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
-  tab: {
+  tab: { 
     alignItems: "center",
-    justifyContent: "center",
-  },
-  dot: {
-    position: "absolute",
-    bottom: 6,
-    width: DOT,
-    height: DOT,
-    borderRadius: DOT / 2,
-  },
+    justifyContent: "center"
+},
+  dot: { 
+    position: "absolute", 
+    bottom: 6, width: DOT, 
+    height: DOT, 
+    borderRadius: DOT / 2
+ },
 });
