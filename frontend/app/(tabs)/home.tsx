@@ -40,6 +40,7 @@ export default function HomeScreen() {
       <View style={styles.dock}>
         <BottomNav
           activeIndex={0}
+          safeArea={false}
           items={[
             { icon: "home-outline" }, // home: 0
             { icon: "heart-outline" }, //   favorites: 1
@@ -63,9 +64,9 @@ const styles = StyleSheet.create({
   },
   dock: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
+    left: 12,
+    right: 12,
+    bottom: 18,
   },
   title: { color: "#F5F0E1", fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 },
   subtitle: { color: "#D9D4C5", fontSize: 16, textAlign: "center", marginBottom: 16 },

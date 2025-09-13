@@ -1,136 +1,83 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Pressable,
-  Animated,
-  Platform,
-  SafeAreaView,
-  LayoutChangeEvent,
-  Text,
-} from "react-native";
+import React, { useMemo, useRef, useEffect, useState } from "react";
+import { View, StyleSheet, Pressable, Animated, Platform, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-type NavItem = {
-  icon: keyof typeof Ionicons.glyphMap;
-  label?: string;
-  href?: string;           // optional if you later want router.navigate
-  onPress?: () => void;    // or custom handler
-  badgeCount?: number;
-};
-
-type Props = {
-  items: NavItem[];
-  activeIndex?: number;    // controlled index (visual only is fine)
-  height?: number;         // bar height
-  safeArea?: boolean;
-  showLabels?: boolean;    // default false for icons-only
-  indicator?: "dot" | "pill"; // choose your style
-};
+type Item = { icon: keyof typeof Ionicons.glyphMap; onPress?: () => void };
+type Props = { items: Item[]; activeIndex?: number; safeArea?: boolean; height?: number };
 
 const DOT = 6;
 
 export default function BottomNav({
   items,
   activeIndex = 0,
-  height = 64,
   safeArea = true,
-  showLabels = false,
-  indicator = "dot",
+  height = 64,
 }: Props) {
-  const idx = Math.min(Math.max(activeIndex, 0), items.length - 1);
-  const anim = useRef(new Animated.Value(idx)).current;
+  const animIndex = useRef(new Animated.Value(activeIndex)).current;
   const [barW, setBarW] = useState(0);
 
   useEffect(() => {
-    Animated.spring(anim, {
-      toValue: idx,
+    Animated.spring(animIndex, {
+      toValue: activeIndex,
       useNativeDriver: false,
       bounciness: 10,
       speed: 14,
     }).start();
-  }, [idx]);
+  }, [activeIndex]);
 
+  // % width for each tab
+  const tabWidthPct = useMemo(() => 100 / Math.max(items.length, 1), [items.length]);
+
+  // Pixel math for the dot
   const tabW = useMemo(() => (barW && items.length ? barW / items.length : 0), [barW, items.length]);
+  const centers = useMemo(
+    () => (tabW ? items.map((_, i) => i * tabW + tabW / 2) : []),
+    [tabW, items.length]
+  );
 
-  const centers = useMemo(() => {
-    if (!tabW) return [0];
-    return items.map((_, i) => i * tabW + tabW / 2);
-  }, [tabW, items.length]);
+  const canAnimate = centers.length >= 2;
+  const clampedIndex = Math.min(Math.max(activeIndex, 0), Math.max(items.length - 1, 0));
 
-  const onLayoutBar = (e: LayoutChangeEvent) => setBarW(e.nativeEvent.layout.width);
+  const leftValue = canAnimate
+    ? animIndex.interpolate({
+        inputRange: centers.map((_, i) => i),
+        outputRange: centers.map((c) => c - DOT / 2),
+      })
+    :
+      (centers[clampedIndex] ?? 0) - DOT / 2;
 
   const Bar = (
-    <View onLayout={onLayoutBar} style={[styles.bar, { height, backgroundColor: Colors.buttonBackground ?? "#1A1A1A" }]}>
-      {/* indicator */}
-      {barW > 0 && indicator === "dot" && (
+    <View
+      onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
+      style={[styles.bar, { height, backgroundColor: Colors.buttonBackground ?? "#1A1A1A" }]}
+    >
+      {/* red dot */}
+      {barW > 0 && (
         <Animated.View
           pointerEvents="none"
           style={[
             styles.dot,
             {
-              width: DOT,
-              height: DOT,
-              left: anim.interpolate({
-                inputRange: centers.map((_, i) => i),
-                outputRange: centers.map((c) => c - DOT / 2),
-              }),
+              left: leftValue,
               backgroundColor: Colors.textRed ?? "#FF6B6B",
             },
           ]}
         />
       )}
 
-      {barW > 0 && indicator === "pill" && (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.pill,
-            {
-              width: tabW - 12,           // inset a bit for a nicer pill
-              left: anim.interpolate({
-                inputRange: centers.map((_, i) => i),
-                outputRange: centers.map((c) => c - (tabW - 12) / 2),
-              }),
-              backgroundColor: (Colors.primary ?? "#4F46E5") + "20",
-              borderColor: Colors.primary ?? "#4F46E5",
-            },
-          ]}
-        />
-      )}
-
-      {/* tabs */}
       {items.map((it, i) => (
         <Pressable
           key={`${it.icon}-${i}`}
-          style={[styles.tab, { width: tabW || `${100 / Math.max(items.length, 1)}%`, height }]}
-          android_ripple={{ color: (Colors.primary ?? "#6366F1") + "22", borderless: true }}
+          style={[styles.tab, { width: `${tabWidthPct}%`, height }]}
+          android_ripple={{ color: (Colors.textPrimary ?? "#6366F1") + "22", borderless: true }}
           onPress={it.onPress}
         >
           <Ionicons
             name={it.icon}
             size={22}
-            color={i === idx ? Colors.textPrimary ?? "#fff" : Colors.textSecondary ?? "#BDBDBD"}
+            color={i === activeIndex ? Colors.textPrimary ?? "#fff" : Colors.textSecondary ?? "#BDBDBD"}
           />
-
-          {showLabels && !!it.label && (
-            <Text
-              numberOfLines={1}
-              style={[
-                styles.label,
-                { color: i === idx ? Colors.text ?? "#fff" : Colors.textSecondary ?? "#BDBDBD" },
-              ]}
-            >
-              {it.label}
-            </Text>
-          )}
-
-          {!!it.badgeCount && it.badgeCount > 0 && (
-            <View style={[styles.badge, { backgroundColor: Colors.primary ?? "#4F46E5" }]}>
-              <Text style={styles.badgeText}>{it.badgeCount > 99 ? "99+" : it.badgeCount}</Text>
-            </View>
-          )}
         </Pressable>
       ))}
     </View>
@@ -150,10 +97,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 22,
     overflow: "hidden",
-    // no outline:
-    borderWidth: 0,
-
-    // floating look:
     marginHorizontal: 8,
     shadowColor: "#000",
     shadowOpacity: 0.25,
@@ -164,35 +107,12 @@ const styles = StyleSheet.create({
   tab: {
     alignItems: "center",
     justifyContent: "center",
-    gap: 2,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 2,
   },
   dot: {
     position: "absolute",
     bottom: 6,
+    width: DOT,
+    height: DOT,
     borderRadius: DOT / 2,
   },
-  pill: {
-    position: "absolute",
-    top: 8,
-    bottom: 8,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  badge: {
-    position: "absolute",
-    top: 6,
-    right: "18%",
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
 });
