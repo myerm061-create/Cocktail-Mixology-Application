@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 
-
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
@@ -34,15 +33,6 @@ export default function HomeScreen() {
         onPress={() => router.push("/(settings)/settings")}
       />
 
-      {/*placeholder sign-out */}
-      <FormButton
-        title="Sign Out"
-        variant="dangerLogo"
-        onPress={() => {
-          console.log("Sign out pressed");
-          router.replace("/login");
-        }}
-      />
     </View>
   );
 }

@@ -9,6 +9,7 @@ import {
   Platform,
   UIManager,
 } from "react-native";
+import { router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -181,6 +182,8 @@ export default function SettingsScreen() {
         onConfirm={() => {
           setConfirmDeleteAcct(false);
           console.log("delete account");
+          // TODO: call API to delete account + clear local auth
+          router.replace("/(auth)/login");
         }}
       />
 
@@ -193,6 +196,8 @@ export default function SettingsScreen() {
         onConfirm={() => {
           setConfirmSignOut(false);
           console.log("sign out");
+          // TODO: revoke session locally
+          router.replace("/(auth)/login");        
         }}
       />
 
