@@ -42,10 +42,11 @@ export default function HomeScreen() {
           activeIndex={0}
           safeArea={false}
           items={[
-            { icon: "home-outline" }, // home: 0
-            { icon: "heart-outline" }, //   favorites: 1
-            { icon: "search-outline" }, //  search/browse: 2
-            { icon: "person-outline" }, // profile: 3
+            { icon: "home-outline" }, // home
+            { icon: "heart-outline" }, //   favorites
+            { icon: "search-outline" }, //  search/browse
+            { icon: "cube-outline", route: "/screens/my-ingredients" }, // Cabinet
+            { icon: "person-outline", route: "/screens/user-profile" },  // Profile
           ]}
         />
       </View>

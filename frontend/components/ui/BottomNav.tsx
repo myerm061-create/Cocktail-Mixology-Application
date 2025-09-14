@@ -1,30 +1,42 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import { View, StyleSheet, Pressable, Animated, Platform, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { usePathname, router } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-type Item = { icon: keyof typeof Ionicons.glyphMap };
+type Item = {
+  icon: keyof typeof Ionicons.glyphMap;
+  route: string;
+};
 
 type Props = {
   items: Item[];
-  initialIndex?: number;
   height?: number;
   safeArea?: boolean;
-  onTabChange?: (index: number) => void; 
 };
 
 const DOT = 6;
 
 export default function BottomNav({
   items,
-  initialIndex = 0,
   height = 64,
   safeArea = true,
-  onTabChange,
 }: Props) {
+  const pathname = usePathname();
+
+  const matchedIndex = Math.max(
+    0,
+    items.findIndex((it) => pathname?.startsWith(it.route))
+  );
+
   const [barW, setBarW] = useState(0);
-  const [index, setIndex] = useState(Math.min(Math.max(initialIndex, 0), Math.max(items.length - 1, 0)));
+  const [index, setIndex] = useState(matchedIndex);
   const animIndex = useRef(new Animated.Value(index)).current;
+
+  useEffect(() => {
+    if (matchedIndex !== index) setIndex(matchedIndex);
+    
+  }, [matchedIndex, pathname]);
 
   useEffect(() => {
     Animated.spring(animIndex, {
@@ -49,8 +61,10 @@ export default function BottomNav({
     : (centers[index] ?? 0) - DOT / 2;
 
   const handlePress = (i: number) => {
+    const next = items[i];
+    if (!next) return;
     setIndex(i);
-    onTabChange?.(i);
+    router.replace(next.route);
   };
 
   const Bar = (
@@ -71,7 +85,7 @@ export default function BottomNav({
 
         return (
           <Pressable
-            key={`${it.icon}-${i}`}
+            key={`${it.route}-${i}`}
             style={[styles.tab, { width: `${tabWidthPct}%`, height }]}
             android_ripple={{ color: `${Colors.accentPrimary}33`, borderless: true }}
             onPress={() => handlePress(i)}
@@ -104,14 +118,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
-  tab: { 
+  tab: {
     alignItems: "center",
-    justifyContent: "center"
-},
-  dot: { 
-    position: "absolute", 
-    bottom: 6, width: DOT, 
-    height: DOT, 
-    borderRadius: DOT / 2
- },
+    justifyContent: "center",
+  },
+  dot: {
+    position: "absolute",
+    bottom: 6,
+    width: DOT,
+    height: DOT,
+    borderRadius: DOT / 2,
+  },
 });
