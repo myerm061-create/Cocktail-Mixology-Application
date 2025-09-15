@@ -1,80 +1,34 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { Slot, usePathname } from "expo-router";
+import BottomNav from "@/components/ui/BottomNav";
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+const TABS = [
+  { icon: "home-outline",  route: "/home" },
+  { icon: "cube-outline",  route: "/my-ingredients" },
+  { icon: "person-outline",route: "/user-profile" },
+];
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  const path = usePathname();
+  const onATab = TABS.some(t => path.startsWith(t.route));
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: { position: 'absolute' }, // transparent bg to show blur on iOS
-          default: {},
-        }),
-        tabBarLabelStyle: { fontFamily: 'Ubuntu_500Medium' },
-        headerTitleStyle: { fontFamily: 'Ubuntu_700Bold' },
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="screens/ingredient-scanner"
-        options={{
-          title: 'Scan',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="camera.viewfinder" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="screens/my-ingredients"
-        options={{
-          title: 'Cabinet',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="list.bullet" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="screens/recommendations"
-        options={{
-          title: 'Rec',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="sparkles" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="screens/user-profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.crop.circle" color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <View style={styles.wrap}>
+      <View style={styles.content}>
+        <Slot />
+      </View>
+      {onATab && (
+        <View style={styles.dock}>
+          <BottomNav safeArea items={TABS} />
+        </View>
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  wrap: { flex: 1 },
+  content: { flex: 1, paddingBottom: 90 },
+  dock: { position: "absolute", left: 12, right: 12, bottom: 18 },
+});
