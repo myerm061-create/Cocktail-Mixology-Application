@@ -15,7 +15,44 @@ export default function HomeScreen() {
         <FormButton title="Profile" onPress={() => router.push("/user-profile")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
 
+<<<<<<< HEAD
       </View>
+=======
+      <FormButton
+        title="My Cabinet"
+        onPress={() => router.push("/screens/my-ingredients")}
+      />
+
+      <FormButton
+        title="Recommendations"
+        onPress={() => router.push("/screens/recommendations")}
+      />
+
+      <FormButton
+        title="Search"
+        onPress={() => router.push("/search")}
+      />
+
+      <FormButton
+        title="Profile"
+        onPress={() => router.push("/screens/profile/user")}
+      />
+
+      <FormButton
+        title="Settings"
+        onPress={() => router.push("/screens/settings")}
+      />
+
+      {/* Example: placeholder sign-out */}
+      <FormButton
+        title="Sign Out"
+        variant="dangerLogo"
+        onPress={() => {
+          console.log("Sign out pressed");
+          router.replace("/login");
+        }}
+      />
+>>>>>>> d504896 (feat(search): add mock results list with loading and empty states)
     </View>
   );
 }
