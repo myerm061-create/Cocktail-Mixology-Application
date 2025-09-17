@@ -12,9 +12,9 @@ export default function HomeScreen() {
         <FormButton title="Scan Ingredients" onPress={() => router.push("/screens/ingredient-scanner")} />
         <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
         <FormButton title="Recommendations" onPress={() => router.push("/screens/recommendations")} />
-        <FormButton title="Search" onPress={() => router.push("/search")} />
         <FormButton title="Profile" onPress={() => router.push("/user-profile")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
+
       </View>
     </View>
   );
@@ -22,8 +22,19 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#101010" },
-  content: { flex: 1, padding: 20, gap: 12, justifyContent: "center", paddingBottom: 120 },
-  dock: { position: "absolute", left: 12, right: 12, bottom: 18 },
+  content: {
+    flex: 1,
+    padding: 20,
+    gap: 12,
+    justifyContent: "center",
+    paddingBottom: 120,
+  },
+  dock: {
+    position: "absolute",
+    left: 12,
+    right: 12,
+    bottom: 18,
+  },
   title: { color: "#F5F0E1", fontSize: 28, fontWeight: "bold", textAlign: "center", marginBottom: 8 },
   subtitle: { color: "#D9D4C5", fontSize: 16, textAlign: "center", marginBottom: 16 },
 });
