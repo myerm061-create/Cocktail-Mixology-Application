@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Switch } f
 import { useLocalSearchParams, router } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
+import BackButton from "@/components/ui/BackButton";
 import { getProfile, profiles, ME_ID, type Profile } from "@/scripts/data/mockProfiles";
 
 // User profile screen, shows info for userId in params or self if none
@@ -25,116 +26,130 @@ export default function ProfileScreen() {
   const [viewAsPublic, setViewAsPublic] = useState(false);
   const showEditForSelf = viewingSelf && !viewAsPublic;
   const showAddFriend = !viewingSelf;
-  
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Image source={{ uri: profile.avatarUrl || "https://i.pravatar.cc/150" }} style={styles.avatar} />
-        <Text style={styles.name}>{profile.name}</Text>
-        {!!profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
-
-        {showEditForSelf && (
-          <FormButton
-            title="Edit Profile"
-            onPress={() => router.push("../user-profile/edit")}
-            style={{ marginTop: 10, width: 160 }}
-            textStyle={{ fontSize: 14 }}
-          />
-        )}
-        {viewingSelf && (
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>View as public</Text>
-            <Switch
-              value={viewAsPublic}
-              onValueChange={setViewAsPublic}
-              trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
-              thumbColor={Colors.textPrimary}
-              ios_backgroundColor={Colors.textSecondary}
-            />
-          </View>
-        )}
-
-        {showAddFriend && (
-          <FormButton
-            title={isFriend ? "Friends ✓" : "Add Friend"}
-            onPress={() => setIsFriend(true)}
-            style={{ marginTop: 10, width: 160 }}
-            textStyle={{ fontSize: 14 }}
-          />
-        )}
+    <View style={styles.screen}>
+      {/* Top-left back button overlay */}
+      <View style={styles.backWrap}>
+        <BackButton />
       </View>
 
-      {/* Friends */}
-      <View style={styles.card}>
-        <View style={styles.rowSpace}>
-          <Text style={styles.sectionTitle}>Friends</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Text style={styles.link}>See all</Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Image source={{ uri: profile.avatarUrl || "https://i.pravatar.cc/150" }} style={styles.avatar} />
+          <Text style={styles.name}>{profile.name}</Text>
+          {!!profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 
-        <View style={{ marginTop: 10 }}>
-          {profile.friends.length === 0 ? (
-            <Text style={{ color: Colors.textSecondary }}>No friends yet.</Text>
-          ) : (
-            profile.friends.map((f) => (
-              <TouchableOpacity
-                key={f.id}
-                style={styles.friendRow}
-                onPress={() => router.push(`../user-profile/${f.id}`)} 
-              >
-                <Image source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }} style={styles.friendAvatar} />
-                <Text style={styles.friendName}>{f.name}</Text>
-              </TouchableOpacity>
-            ))
+          {showEditForSelf && (
+            <FormButton
+              title="Edit Profile"
+              onPress={() => router.push("../user-profile/edit")}
+              style={{ marginTop: 10, width: 160 }}
+              textStyle={{ fontSize: 14 }}
+            />
+          )}
+          {viewingSelf && (
+            <View style={styles.toggleRow}>
+              <Text style={styles.toggleLabel}>View as public</Text>
+              <Switch
+                value={viewAsPublic}
+                onValueChange={setViewAsPublic}
+                trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
+                thumbColor={Colors.textPrimary}
+                ios_backgroundColor={Colors.textSecondary}
+              />
+            </View>
+          )}
+
+          {showAddFriend && (
+            <FormButton
+              title={isFriend ? "Friends ✓" : "Add Friend"}
+              onPress={() => setIsFriend(true)}
+              style={{ marginTop: 10, width: 160 }}
+              textStyle={{ fontSize: 14 }}
+            />
           )}
         </View>
-      </View>
 
-      {/* Favorites */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Favorite Drinks</Text>
-        <View style={styles.chipsWrap}>
-          {profile.favorites.map((d) => (
-            <View key={d} style={styles.chip}>
-              <Text style={styles.chipText}>{d}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+        {/* Friends */}
+        <View style={styles.card}>
+          <View style={styles.rowSpace}>
+            <Text style={styles.sectionTitle}>Friends</Text>
+            <TouchableOpacity onPress={() => {}}>
+              <Text style={styles.link}>See all</Text>
+            </TouchableOpacity>
+          </View>
 
-      {/* Shared recipes */}
-      <View style={styles.card}>
-        <View style={styles.rowSpace}>
-          <Text style={styles.sectionTitle}>Shared Recipes</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Text style={styles.link}>See all</Text>
-          </TouchableOpacity>
+          <View style={{ marginTop: 10 }}>
+            {profile.friends.length === 0 ? (
+              <Text style={{ color: Colors.textSecondary }}>No friends yet.</Text>
+            ) : (
+              profile.friends.map((f) => (
+                <TouchableOpacity
+                  key={f.id}
+                  style={styles.friendRow}
+                  onPress={() => router.push(`../user-profile/${f.id}`)}
+                >
+                  <Image source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }} style={styles.friendAvatar} />
+                  <Text style={styles.friendName}>{f.name}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
         </View>
-        <View style={{ marginTop: 10 }}>
-          {profile.sharedRecipes.map((r) => (
-            <View key={r.id} style={styles.recipeRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.recipeName}>{r.name}</Text>
-                <Text style={styles.recipeMeta}>♥ {r.likes}</Text>
+
+        {/* Favorites */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Favorite Drinks</Text>
+          <View style={styles.chipsWrap}>
+            {profile.favorites.map((d) => (
+              <View key={d} style={styles.chip}>
+                <Text style={styles.chipText}>{d}</Text>
               </View>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.link}>Open</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={{ height: 32 }} />
-    </ScrollView>
+        {/* Shared recipes */}
+        <View style={styles.card}>
+          <View style={styles.rowSpace}>
+            <Text style={styles.sectionTitle}>Shared Recipes</Text>
+            <TouchableOpacity onPress={() => {}}>
+              <Text style={styles.link}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginTop: 10 }}>
+            {profile.sharedRecipes.map((r) => (
+              <View key={r.id} style={styles.recipeRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.recipeName}>{r.name}</Text>
+                  <Text style={styles.recipeMeta}>♥ {r.likes}</Text>
+                </View>
+                <TouchableOpacity onPress={() => {}}>
+                  <Text style={styles.link}>Open</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16 },
+  screen: { flex: 1, backgroundColor: Colors.background },
+  backWrap: {
+    position: "absolute",
+    top: 14, 
+    left: 14,
+    zIndex: 10,
+  },
+  container: { flex: 1 },
+  content: { padding: 16, paddingTop: 44 }, 
   header: { alignItems: "center", marginBottom: 8 },
   avatar: { width: 88, height: 88, borderRadius: 44, backgroundColor: Colors.surface },
   name: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700", marginTop: 10 },
