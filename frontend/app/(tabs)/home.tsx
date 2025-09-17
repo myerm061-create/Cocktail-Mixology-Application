@@ -13,6 +13,7 @@ export default function HomeScreen() {
         <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
         <FormButton title="Recommendations" onPress={() => router.push("/screens/recommendations")} />
         <FormButton title="Profile" onPress={() => router.push("/user-profile")} />
+        <FormButton title="Search" onPress={() => router.push("/screens/search")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
 
       </View>
