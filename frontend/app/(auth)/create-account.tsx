@@ -6,6 +6,7 @@ import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import PasswordRules from "@/components/ui/PasswordRules";
 
+// Screen for creating a new account
 export default function CreateAccountScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

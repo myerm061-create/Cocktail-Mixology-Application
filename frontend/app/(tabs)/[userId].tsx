@@ -5,6 +5,7 @@ import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
 import { getProfile, profiles, ME_ID, type Profile } from "@/scripts/data/mockProfiles";
 
+// User profile screen, shows info for userId in params or self if none
 export default function ProfileScreen() {
   let { userId } = useLocalSearchParams<{ userId: string }>();
   if (!userId) userId = ME_ID;

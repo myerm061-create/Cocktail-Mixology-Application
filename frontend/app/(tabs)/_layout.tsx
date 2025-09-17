@@ -3,12 +3,15 @@ import { View, StyleSheet } from "react-native";
 import { Slot, usePathname } from "expo-router";
 import BottomNav from "@/components/ui/BottomNav";
 
+// Define the tabs for bottom navigation 
 const TABS = [
   { icon: "home-outline",  route: "/home" },
   { icon: "cube-outline",  route: "/my-ingredients" },
+  { icon: "search-outline",route: "/search" },
   { icon: "person-outline",route: "/user-profile" },
 ];
 
+// Layout component that includes bottom navigation on tab screens
 export default function TabsLayout() {
   const path = usePathname();
   const onATab = TABS.some(t => path.startsWith(t.route));

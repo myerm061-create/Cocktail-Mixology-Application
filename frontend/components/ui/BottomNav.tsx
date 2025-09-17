@@ -15,8 +15,10 @@ type Props = {
   safeArea?: boolean;
 };
 
+// size of the red dot indicator
 const DOT = 6;
 
+// Bottom navigation bar with animated indicator
 export default function BottomNav({
   items,
   height = 64,
@@ -24,6 +26,7 @@ export default function BottomNav({
 }: Props) {
   const pathname = usePathname();
 
+  // find the first matching tab index, default to 0
   const matchedIndex = Math.max(
     0,
     items.findIndex((it) => pathname?.startsWith(it.route))
@@ -38,6 +41,7 @@ export default function BottomNav({
     
   }, [matchedIndex, pathname]);
 
+  // animate the red dot to the new index
   useEffect(() => {
     Animated.spring(animIndex, {
       toValue: index,
@@ -47,7 +51,7 @@ export default function BottomNav({
     }).start();
   }, [index]);
 
-  // layout math
+  // layout math for tabs
   const tabWidthPct = useMemo(() => 100 / Math.max(items.length, 1), [items.length]);
   const tabW = useMemo(() => (barW && items.length ? barW / items.length : 0), [barW, items.length]);
   const centers = useMemo(() => (tabW ? items.map((_, i) => i * tabW + tabW / 2) : []), [tabW, items.length]);
@@ -60,6 +64,7 @@ export default function BottomNav({
       })
     : (centers[index] ?? 0) - DOT / 2;
 
+  // handle tab press
   const handlePress = (i: number) => {
     const next = items[i];
     if (!next) return;
@@ -67,6 +72,7 @@ export default function BottomNav({
     router.replace(next.route);
   };
 
+  // the navigation bar
   const Bar = (
     <View
       onLayout={(e) => setBarW(e.nativeEvent.layout.width)}

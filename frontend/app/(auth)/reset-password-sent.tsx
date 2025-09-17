@@ -3,6 +3,7 @@ import { Link, router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
+// Screen shown after requesting password reset
 export default function ResetRequestSentScreen() {
   return (
     <View style={styles.container}>

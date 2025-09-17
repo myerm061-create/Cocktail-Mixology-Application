@@ -6,6 +6,7 @@ import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import PasswordRules from "@/components/ui/PasswordRules";
 
+// Screen for setting a new password after reset
 export default function NewPasswordScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

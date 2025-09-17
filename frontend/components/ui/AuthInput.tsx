@@ -10,10 +10,12 @@ type FormInputProps = {
   type?: "text" | "email" | "password";
 } & Pick<TextInputProps, "returnKeyType">;;
 
+// Input component for authentication forms
 export default function FormInput({ placeholder, value, onChangeText, type = "text" }: FormInputProps) {
     const [secure, setSecure] = useState(type === "password");
     const renderIcon = () => {
         switch (type) {
+            // icons for different input types
             case "email":
                 return <Ionicons name="mail-outline" size={20} color="#888" />;
             case "password":

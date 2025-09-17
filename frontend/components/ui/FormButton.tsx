@@ -22,6 +22,7 @@ type Props = {
   logoSource?: any; // optional custom logo, falls back to signout.png
 };
 
+// A customizable button component for forms and actions
 export default function FormButton({
   title,
   onPress,

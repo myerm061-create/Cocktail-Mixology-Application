@@ -2,7 +2,7 @@ import React from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-
+// Checkbox component with label
 export default function CheckBox({
   checked, onChange, label,
 }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
