@@ -14,6 +14,7 @@ export default function HomeScreen() {
         <FormButton title="Recommendations" onPress={() => router.push("/screens/recommendations")} />
         <FormButton title="Search" onPress={() => router.push("/screens/search")} />
         <FormButton title="Profile" onPress={() => router.push("/user-profile")} />
+        <FormButton title="Search" onPress={() => router.push("/screens/search")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
 
       </View>
