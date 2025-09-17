@@ -12,7 +12,7 @@ export default function Tab({ label, active, onPress }:{
 }
 
 const s = StyleSheet.create({
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 999, borderWidth: 1, alignItems: "center" },
+  tab: { flex: 1, paddingVertical: 12, paddingHorizontal: 8, borderRadius: 999, borderWidth: 1, alignItems: "center" },
   idle: { backgroundColor: "#121216", borderColor: "#22222A" },
   active: { backgroundColor: "#1C1C22", borderColor: "#3A3A42" },
   text: { color: "#CFCFCF", fontWeight: "600", fontSize: 14 },
