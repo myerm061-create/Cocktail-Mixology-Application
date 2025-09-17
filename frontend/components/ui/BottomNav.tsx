@@ -68,8 +68,12 @@ export default function BottomNav({
   const handlePress = (i: number) => {
     const next = items[i];
     if (!next) return;
+    if (pathname?.startsWith(next.route)) {
+          setIndex(i);
+          return;
+        }
     setIndex(i);
-    router.replace(next.route);
+    router.push(next.route);
   };
 
   // the navigation bar
