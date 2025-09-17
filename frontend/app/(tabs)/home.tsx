@@ -9,11 +9,12 @@ export default function HomeScreen() {
         <Text style={styles.title}>Cocktail Mixology</Text>
         <Text style={styles.subtitle}>Welcome! Choose a section:</Text>
 
+        {/* navigation buttons */}
         <FormButton title="Scan Ingredients" onPress={() => router.push("/screens/ingredient-scanner")} />
         <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
         <FormButton title="Recommendations" onPress={() => router.push("/screens/recommendations")} />
         <FormButton title="Profile" onPress={() => router.push("/user-profile")} />
-        <FormButton title="Search" onPress={() => router.push("/screens/search")} />
+        <FormButton title="Search" onPress={() => router.push("/search")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
 
       </View>
