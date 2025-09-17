@@ -7,6 +7,7 @@ import CheckBox from "@/components/ui/CheckBox";
 import GoogleAuthButton from "@/components/ui/GoogleAuthButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
+// A login screen with email/password and Google auth options
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

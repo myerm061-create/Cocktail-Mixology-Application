@@ -5,6 +5,7 @@ import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
+// Screen for resetting password via email
 export default function ResetPasswordScreen() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);

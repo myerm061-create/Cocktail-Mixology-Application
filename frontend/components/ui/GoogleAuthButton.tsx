@@ -9,6 +9,7 @@ type Props = {
   disabled?: boolean;
 };
 
+// A button component for Google authentication
 export default function GoogleAuthButton({
   title = "Continue with Google",
   onPress,
