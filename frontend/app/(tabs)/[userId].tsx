@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Switch } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -8,22 +8,33 @@ import { getProfile, profiles, ME_ID, type Profile } from "@/scripts/data/mockPr
 
 // User profile screen, shows info for userId in params or self if none
 export default function ProfileScreen() {
-  let { userId } = useLocalSearchParams<{ userId: string }>();
-  if (!userId) userId = ME_ID;
+  // Normalize param to a single string
+  const params = useLocalSearchParams<{ userId?: string | string[] }>();
+  const rawParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
 
-  const me = ME_ID;
+  // Normalize both sides to string to avoid "1" !== 1
+  const me = String(ME_ID);
+  const userId = rawParam ? String(rawParam) : me;
+
   const viewingSelf = userId === me;
 
   const profile: Profile = useMemo(() => getProfile(userId), [userId]);
 
   // local demo state
-  const initiallyFriends = useMemo(
-    () => profiles[me].friends.some((f) => f.id === userId),
-    [me, userId]
-  );
+  const initiallyFriends = useMemo(() => {
+    const myFriends = profiles[me]?.friends ?? [];
+    return myFriends.some((f) => String(f.id) === userId);
+  }, [me, userId]);
 
   const [isFriend, setIsFriend] = useState(initiallyFriends);
   const [viewAsPublic, setViewAsPublic] = useState(false);
+
+  // Reset toggles when switching profiles
+  useEffect(() => {
+    setViewAsPublic(false);
+    setIsFriend(initiallyFriends);
+  }, [userId, initiallyFriends]);
+
   const showEditForSelf = viewingSelf && !viewAsPublic;
   const showAddFriend = !viewingSelf;
 
@@ -44,11 +55,12 @@ export default function ProfileScreen() {
           {showEditForSelf && (
             <FormButton
               title="Edit Profile"
-              onPress={() => router.push("../user-profile/edit")}
+              onPress={() => router.push("/user-profile/edit")}
               style={{ marginTop: 10, width: 160 }}
               textStyle={{ fontSize: 14 }}
             />
           )}
+
           {viewingSelf && (
             <View style={styles.toggleRow}>
               <Text style={styles.toggleLabel}>View as public</Text>
@@ -89,9 +101,12 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   key={f.id}
                   style={styles.friendRow}
-                  onPress={() => router.push(`../user-profile/${f.id}`)}
+                  onPress={() => router.push(`/user-profile/${String(f.id)}`)}
                 >
-                  <Image source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }} style={styles.friendAvatar} />
+                  <Image
+                    source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }}
+                    style={styles.friendAvatar}
+                  />
                   <Text style={styles.friendName}>{f.name}</Text>
                 </TouchableOpacity>
               ))
@@ -144,12 +159,12 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   backWrap: {
     position: "absolute",
-    top: 14, 
+    top: 14,
     left: 14,
     zIndex: 10,
   },
   container: { flex: 1 },
-  content: { padding: 16, paddingTop: 44 }, 
+  content: { padding: 16, paddingTop: 44 },
   header: { alignItems: "center", marginBottom: 8 },
   avatar: { width: 88, height: 88, borderRadius: 44, backgroundColor: Colors.surface },
   name: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700", marginTop: 10 },

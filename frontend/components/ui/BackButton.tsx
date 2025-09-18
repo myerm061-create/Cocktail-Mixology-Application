@@ -18,7 +18,7 @@ export default function BackButton() {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 50,   // adjust based on status bar
+    top: 50,
     left: 20,
     zIndex: 10,
     padding: 8,
