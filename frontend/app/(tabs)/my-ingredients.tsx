@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Pressable, Modal } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 
 // Components
@@ -269,7 +270,7 @@ export default function MyIngredientsScreen() {
         ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.tabsRow}>
         <Tab label={`Cabinet (${ownedCount})`}  active={activeTab === "cabinet"}  onPress={() => setActiveTab("cabinet")} />
         <Tab label={`Shopping (${wantedCount})`} active={activeTab === "shopping"} onPress={() => setActiveTab("shopping")} />
@@ -315,14 +316,14 @@ export default function MyIngredientsScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 /** ---------- Styles ---------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark.background, overflow: "visible" },
-  tabsRow: { flexDirection: "row", paddingHorizontal: 12, paddingTop: 8, paddingBottom: 4, gap: 8 },
+  tabsRow: { flexDirection: "row", paddingHorizontal: 12, paddingTop: 16, paddingBottom: 8, gap: 8 },
 
   header: { paddingTop: 16, paddingHorizontal: 20, paddingBottom: 6 },
   title: { fontSize: 24, fontWeight: "700", color: "#F5F0E1" },
