@@ -4,11 +4,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { usePathname, router } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
+// Define the type for each navigation item
 type Item = {
   icon: keyof typeof Ionicons.glyphMap;
-  route: string;
+  route: string;                         
+  href?: string;                          
+  match?: (path: string) => boolean;      
 };
 
+// Define the props for the BottomNav component
 type Props = {
   items: Item[];
   height?: number;
@@ -29,7 +33,9 @@ export default function BottomNav({
   // find the first matching tab index, default to 0
   const matchedIndex = Math.max(
     0,
-    items.findIndex((it) => pathname?.startsWith(it.route))
+    items.findIndex((it) =>
+      it.match ? it.match(pathname ?? "") : (pathname ?? "").startsWith(it.route)
+    )
   );
 
   const [barW, setBarW] = useState(0);
@@ -68,8 +74,18 @@ export default function BottomNav({
   const handlePress = (i: number) => {
     const next = items[i];
     if (!next) return;
+
+    const alreadyHere = next.match
+      ? next.match(pathname ?? "")
+      : (pathname ?? "").startsWith(next.route);
+
+    if (alreadyHere) {
+      setIndex(i);
+      return;
+    }
+
     setIndex(i);
-    router.replace(next.route);
+    router.push(next.href ?? next.route);
   };
 
   // the navigation bar

@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
+import { ME_ID } from "@/scripts/data/mockProfiles";
 
 export default function HomeScreen() {
   return (
@@ -13,8 +14,7 @@ export default function HomeScreen() {
         <FormButton title="Scan Ingredients" onPress={() => router.push("/screens/ingredient-scanner")} />
         <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
         <FormButton title="Recommendations" onPress={() => router.push("/screens/recommendations")} />
-        <FormButton title="Search" onPress={() => router.push("/screens/search")} />
-        <FormButton title="Profile" onPress={() => router.push("/user-profile")} />
+        <FormButton title="Profile" onPress={() => router.push(`/${String(ME_ID)}`)} />
         <FormButton title="Search" onPress={() => router.push("/search")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
 
