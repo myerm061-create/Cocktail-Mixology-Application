@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Switch } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { View, Text, StyleSheet, Image, TouchableOpacity, Switch } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";import { useLocalSearchParams, router } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
 import BackButton from "@/components/ui/BackButton";
@@ -8,6 +9,7 @@ import { getProfile, profiles, ME_ID, type Profile } from "@/scripts/data/mockPr
 
 // User profile screen, shows info for userId in params or self if none
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   // Normalize param to a single string
   const params = useLocalSearchParams<{ userId?: string | string[] }>();
   const rawParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
@@ -45,8 +47,14 @@ export default function ProfileScreen() {
         <BackButton />
       </View>
 
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        {/* Header */}
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 56, flexGrow: 1 }, // match Settings
+        ]}
+        showsVerticalScrollIndicator={false}
+      >        {/* Header */}
         <View style={styles.header}>
           <Image source={{ uri: profile.avatarUrl || "https://i.pravatar.cc/150" }} style={styles.avatar} />
           <Text style={styles.name}>{profile.name}</Text>
@@ -55,7 +63,7 @@ export default function ProfileScreen() {
           {showEditForSelf && (
             <FormButton
               title="Edit Profile"
-              onPress={() => router.push("/user-profile/edit")}
+              onPress={() => router.push("../edit")}
               style={{ marginTop: 10, width: 160 }}
               textStyle={{ fontSize: 14 }}
             />
@@ -101,7 +109,7 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   key={f.id}
                   style={styles.friendRow}
-                  onPress={() => router.push(`/user-profile/${String(f.id)}`)}
+                  onPress={() => router.push("../" + String(f.id))}
                 >
                   <Image
                     source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }}
