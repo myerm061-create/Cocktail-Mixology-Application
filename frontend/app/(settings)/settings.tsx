@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Switch,
-  Pressable,
-  LayoutAnimation,
-  Platform,
-  UIManager,
+  View, Text, StyleSheet, Switch, Pressable,
+  LayoutAnimation, Platform, UIManager,
 } from "react-native";
-import { router } from "expo-router";
+import { router, Stack } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
@@ -19,25 +13,17 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 function Chevron({ open }: { open: boolean }) {
-  // simple text chevron to avoid extra deps
   return <Text style={styles.chevron}>{open ? "˅" : "›"}</Text>;
 }
 
 export default function SettingsScreen() {
-  // switches (use your convention)
   const [push, setPush] = useState(false);
   const [publicProfile, setPublicProfile] = useState(false);
-
-  // expandable rows
   const [showDeleteLocal, setShowDeleteLocal] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [showUnits, setShowUnits] = useState(false);
   const [showChangePw, setShowChangePw] = useState(false);
-
-  // units
-  const [useMetric, setUseMetric] = useState(false); // false = oz, true = ml
-
-  // confirmations
+  const [useMetric, setUseMetric] = useState(false);
   const [confirmClearCache, setConfirmClearCache] = useState(false);
   const [confirmDeleteAcct, setConfirmDeleteAcct] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
@@ -48,116 +34,113 @@ export default function SettingsScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Settings</Text>
+    <>
+      {/* Hide default header/back button */}
+      <Stack.Screen options={{ headerShown: false }} />
 
-      {/* Notifications */}
-      <Text style={styles.section}>Notifications</Text>
-      <Row
-        label="Push Notification"
-        right={
-          <Switch
-            value={push}
-            onValueChange={setPush}
-            trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
-            thumbColor={Colors.textPrimary}
-            ios_backgroundColor={Colors.textSecondary}
-          />
-        }
-      />
+      <View style={styles.container}>
+        <Text style={styles.title}>Settings</Text>
 
-      {/* Profile */}
-      <Text style={styles.section}>Profile</Text>
-      <Row
-        label="Public Profile"
-        right={
-          <Switch
-            value={publicProfile}
-            onValueChange={setPublicProfile}
-            trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
-            thumbColor={Colors.textPrimary}
-            ios_backgroundColor={Colors.textSecondary}
-          />
-        }
-      />
-
-      {/* Account */}
-      <Text style={styles.section}>Account</Text>
-      <Row
-        label="Delete My Local Data"
-        right={<Chevron open={showDeleteLocal} />}
-        onPress={() => toggle(setShowDeleteLocal)}
-      />
-      {showDeleteLocal && (
-        <View style={styles.reveal}>
-          <FormButton
-            title="Clear Local Cache"
-            onPress={() => setConfirmClearCache(true)}
-            variant="default"
-          />
-        </View>
-      )}
-
-      <Row
-        label="Delete My Account"
-        right={<Chevron open={showDeleteAccount} />}
-        onPress={() => toggle(setShowDeleteAccount)}
-      />
-      {showDeleteAccount && (
-        <View style={styles.reveal}>
-          <FormButton
-            title="Delete Account (Permanent)"
-            onPress={() => setConfirmDeleteAcct(true)}
-            variant="danger"
-          />
-        </View>
-      )}
-
-      {/* General */}
-      <Text style={styles.section}>General</Text>
-      <Row
-        label="Alcohol Calculator Units"
-        right={<Chevron open={showUnits} />}
-        onPress={() => toggle(setShowUnits)}
-      />
-      {showUnits && (
-        <View style={[styles.reveal, { flexDirection: "row", gap: 10 }]}>
-          <Pressable
-            style={[styles.chip, !useMetric && styles.chipActive]}
-            onPress={() => setUseMetric(false)}
-          >
-            <Text style={[styles.chipText, !useMetric && styles.chipTextActive]}>oz (Imperial)</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.chip, useMetric && styles.chipActive]}
-            onPress={() => setUseMetric(true)}
-          >
-            <Text style={[styles.chipText, useMetric && styles.chipTextActive]}>ml (Metric)</Text>
-          </Pressable>
-        </View>
-      )}
-
-      <Row
-        label="Change Password"
-        right={<Chevron open={showChangePw} />}
-        onPress={() => toggle(setShowChangePw)}
-      />
-      {showChangePw && (
-        <View style={styles.reveal}>
-          <FormButton
-            title="Go to Change Password"
-            onPress={() => console.log("navigate to change-password")}
-          />
-        </View>
-      )}
-
-      {/* Bottom Sign Out */}
-      <View style={styles.footer}>
-        <FormButton
-          title="Sign Out"
-          onPress={() => setConfirmSignOut(true)}
-          variant="dangerLogo"
+        {/* Notifications */}
+        <Text style={styles.section}>Notifications</Text>
+        <Row
+          label="Push Notification"
+          right={
+            <Switch
+              value={push}
+              onValueChange={setPush}
+              trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
+              thumbColor={Colors.textPrimary}
+              ios_backgroundColor={Colors.textSecondary}
+            />
+          }
         />
+
+        {/* Profile */}
+        <Text style={styles.section}>Profile</Text>
+        <Row
+          label="Public Profile"
+          right={
+            <Switch
+              value={publicProfile}
+              onValueChange={setPublicProfile}
+              trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
+              thumbColor={Colors.textPrimary}
+              ios_backgroundColor={Colors.textSecondary}
+            />
+          }
+        />
+
+        {/* Account */}
+        <Text style={styles.section}>Account</Text>
+        <Row
+          label="Delete My Local Data"
+          right={<Chevron open={showDeleteLocal} />}
+          onPress={() => toggle(setShowDeleteLocal)}
+        />
+        {showDeleteLocal && (
+          <View style={styles.reveal}>
+            <FormButton title="Clear Local Cache" onPress={() => setConfirmClearCache(true)} />
+          </View>
+        )}
+
+        <Row
+          label="Delete My Account"
+          right={<Chevron open={showDeleteAccount} />}
+          onPress={() => toggle(setShowDeleteAccount)}
+        />
+        {showDeleteAccount && (
+          <View style={styles.reveal}>
+            <FormButton
+              title="Delete Account (Permanent)"
+              onPress={() => setConfirmDeleteAcct(true)}
+              variant="danger"
+            />
+          </View>
+        )}
+
+        {/* General */}
+        <Text style={styles.section}>General</Text>
+        <Row
+          label="Alcohol Calculator Units"
+          right={<Chevron open={showUnits} />}
+          onPress={() => toggle(setShowUnits)}
+        />
+        {showUnits && (
+          <View style={[styles.reveal, { flexDirection: "row", gap: 10 }]}>
+            <Pressable
+              style={[styles.chip, !useMetric && styles.chipActive]}
+              onPress={() => setUseMetric(false)}
+            >
+              <Text style={[styles.chipText, !useMetric && styles.chipTextActive]}>oz (Imperial)</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.chip, useMetric && styles.chipActive]}
+              onPress={() => setUseMetric(true)}
+            >
+              <Text style={[styles.chipText, useMetric && styles.chipTextActive]}>ml (Metric)</Text>
+            </Pressable>
+          </View>
+        )}
+
+        <Row
+          label="Change Password"
+          right={<Chevron open={showChangePw} />}
+          onPress={() => toggle(setShowChangePw)}
+        />
+        {showChangePw && (
+          <View style={styles.reveal}>
+            <FormButton
+              title="Go to Change Password"
+              onPress={() => console.log("navigate to change-password")}
+            />
+          </View>
+        )}
+
+        {/* Bottom Sign Out */}
+        <View style={styles.footer}>
+          <FormButton title="Sign Out" onPress={() => setConfirmSignOut(true)} variant="dangerLogo" />
+        </View>
       </View>
 
       {/* Confirm dialogs */}
@@ -182,7 +165,6 @@ export default function SettingsScreen() {
         onConfirm={() => {
           setConfirmDeleteAcct(false);
           console.log("delete account");
-          // TODO: call API to delete account + clear local auth
           router.replace("/(auth)/login");
         }}
       />
@@ -196,12 +178,10 @@ export default function SettingsScreen() {
         onConfirm={() => {
           setConfirmSignOut(false);
           console.log("sign out");
-          // TODO: revoke session locally
-          router.replace("/(auth)/login");        
+          router.replace("/(auth)/login");
         }}
       />
-
-    </View>
+    </>
   );
 }
 
@@ -214,7 +194,7 @@ function Row({
   right?: React.ReactNode;
   onPress?: () => void;
 }) {
-  const Wrapper = onPress ? Pressable : View;
+  const Wrapper: any = onPress ? Pressable : View;
   return (
     <Wrapper onPress={onPress} style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
@@ -224,60 +204,16 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: Colors.textPrimary,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  section: {
-    marginTop: 18,
-    marginBottom: 6,
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.textPrimary,
-  },
-  row: {
-    height: 48,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  rowLabel: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-  },
-  chevron: {
-    fontSize: 22,
-    color: Colors.textSecondary,
-    includeFontPadding: false,
-  },
-  reveal: {
-    paddingVertical: 8,
-  },
-  chip: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: Colors.buttonBackground,
-  },
-  chipActive: {
-    backgroundColor: "#2a2a2a",
-  },
-  chipText: {
-    color: Colors.textSecondary,
-    fontWeight: "600",
-  },
-  chipTextActive: {
-    color: Colors.textPrimary,
-  },
-  footer: {
-    marginTop: "auto",
-  },
+  container: { flex: 1, backgroundColor: Colors.background, padding: 20 },
+  title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 12 },
+  section: { marginTop: 18, marginBottom: 6, fontSize: 18, fontWeight: "700", color: Colors.textPrimary },
+  row: { height: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  rowLabel: { fontSize: 16, color: Colors.textSecondary },
+  chevron: { fontSize: 22, color: Colors.textSecondary, includeFontPadding: false },
+  reveal: { paddingVertical: 8 },
+  chip: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 20, backgroundColor: Colors.buttonBackground },
+  chipActive: { backgroundColor: "#2a2a2a" },
+  chipText: { color: Colors.textSecondary, fontWeight: "600" },
+  chipTextActive: { color: Colors.textPrimary },
+  footer: { marginTop: "auto" },
 });
