@@ -7,6 +7,9 @@ import { router, Stack } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import BackButton from "@/components/ui/BackButton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ScrollView } from "react-native-gesture-handler";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -27,6 +30,7 @@ export default function SettingsScreen() {
   const [confirmClearCache, setConfirmClearCache] = useState(false);
   const [confirmDeleteAcct, setConfirmDeleteAcct] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const toggle = (fn: (v: boolean) => void) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -38,7 +42,18 @@ export default function SettingsScreen() {
       {/* Hide default header/back button */}
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.container}>
+      <View style={styles.backWrap}>
+        <BackButton />
+      </View>
+
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 56, flexGrow: 1 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.title}>Settings</Text>
 
         {/* Notifications */}
@@ -141,7 +156,7 @@ export default function SettingsScreen() {
         <View style={styles.footer}>
           <FormButton title="Sign Out" onPress={() => setConfirmSignOut(true)} variant="dangerLogo" />
         </View>
-      </View>
+      </ScrollView>
 
       {/* Confirm dialogs */}
       <ConfirmDialog
@@ -204,7 +219,9 @@ function Row({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, padding: 20 },
+  container: { flex: 1, backgroundColor: Colors.background },
+  content: { paddingHorizontal: 20, paddingBottom: 32 },
+  backWrap: { position: "absolute", top: 14, left: 14, zIndex: 10 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 12 },
   section: { marginTop: 18, marginBottom: 6, fontSize: 18, fontWeight: "700", color: Colors.textPrimary },
   row: { height: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -215,5 +232,5 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: "#2a2a2a" },
   chipText: { color: Colors.textSecondary, fontWeight: "600" },
   chipTextActive: { color: Colors.textPrimary },
-  footer: { marginTop: "auto" },
+  footer: { marginTop: "auto" }, 
 });
