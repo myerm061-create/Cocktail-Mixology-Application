@@ -50,7 +50,7 @@ export default function SettingsScreen() {
         style={styles.container}
         contentContainerStyle={[
           styles.content,
-          { paddingTop: insets.top + 56, flexGrow: 1 },
+          { paddingTop: insets.top + 56 },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -232,5 +232,5 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: "#2a2a2a" },
   chipText: { color: Colors.textSecondary, fontWeight: "600" },
   chipTextActive: { color: Colors.textPrimary },
-  footer: { marginTop: "auto" }, 
+  footer: { marginTop: 16 }, 
 });
