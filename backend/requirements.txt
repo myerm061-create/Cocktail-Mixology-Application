@@ -5,3 +5,4 @@ uvicorn[standard]
 # psycopg[binary]
 # alembic
 # python-dotenv
+bcrypt
