@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
+// A back button component to navigate to the previous screen
 export default function BackButton() {
   const router = useRouter();
   const segments = useSegments();
