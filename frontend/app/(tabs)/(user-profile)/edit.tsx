@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TextInput, Image, TouchableOpacity, Alert } from "react-native";
-import { router } from "expo-router";
+import { View, Text, StyleSheet, TextInput, Image, TouchableOpacity, Alert } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BackButton from "@/components/ui/BackButton";import { router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import { profiles, ME_ID, type Profile } from "@/scripts/data/mockProfiles";
@@ -8,6 +10,8 @@ import { profiles, ME_ID, type Profile } from "@/scripts/data/mockProfiles";
 const USERNAME_RE = /^(?!_)([a-z0-9_]{3,20})(?<!_)$/; // 3–20, lowercase, numbers, _, no leading/trailing _
 
 export default function ProfileEditScreen() {
+  const insets = useSafeAreaInsets();
+
   // load current user from mock store
   const me = ME_ID;
   const meProfile: Profile = useMemo(() => profiles[me], [me]);
@@ -46,7 +50,16 @@ export default function ProfileEditScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <>
+      {/* floating back, same as Settings/Profile */}
+      <View style={styles.backWrap}>
+        <BackButton />
+      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + 56, flexGrow: 1 }]}
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.header}>
         <View>
           <Image source={{ uri: meProfile.avatarUrl || "https://i.pravatar.cc/150?img=12" }} style={styles.avatar} />
@@ -128,6 +141,7 @@ export default function ProfileEditScreen() {
 
       <View style={{ height: 32 }} />
     </ScrollView>
+    </>
   );
 }
 
@@ -158,16 +172,19 @@ function Chip({ text, onRemove }: { text: string; onRemove?: () => void }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16, paddingBottom: 24 },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  headerTextWrap: { marginLeft: 12, flex: 1 },
-  title: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700" },
-  subtitle: { color: Colors.textSecondary, marginTop: 4 },
+  content: { paddingHorizontal: 16, paddingBottom: 24 },
+  backWrap: { position: "absolute", top: 14, left: 14, zIndex: 10 },
+  header: { alignItems: "center", marginBottom: 16 },
+  headerTextWrap: { marginTop: 10, alignItems: "center" },
+  title: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700", textAlign: "center" },
+  subtitle: { color: Colors.textSecondary, marginTop: 4, textAlign: "center" },
   avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.surface },
   cameraBadge: {
     position: "absolute",
-    right: -2, bottom: -2, backgroundColor: Colors.deepAsh,
-    width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center",
+    right: -4, bottom: -4,
+    backgroundColor: Colors.deepAsh,
+    width: 24, height: 24, borderRadius: 12,
+    alignItems: "center", justifyContent: "center",
   },
   cameraBadgeText: { color: "#fff", fontSize: 13 },
 

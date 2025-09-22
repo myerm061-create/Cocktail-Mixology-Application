@@ -1,140 +1,178 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Switch } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import React, { useEffect, useMemo, useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, Switch } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";import { useLocalSearchParams, router } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
+import BackButton from "@/components/ui/BackButton";
 import { getProfile, profiles, ME_ID, type Profile } from "@/scripts/data/mockProfiles";
 
 // User profile screen, shows info for userId in params or self if none
 export default function ProfileScreen() {
-  let { userId } = useLocalSearchParams<{ userId: string }>();
-  if (!userId) userId = ME_ID;
+  const insets = useSafeAreaInsets();
+  // Normalize param to a single string
+  const params = useLocalSearchParams<{ userId?: string | string[] }>();
+  const rawParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
 
-  const me = ME_ID;
+  // Normalize both sides to string to avoid "1" !== 1
+  const me = String(ME_ID);
+  const userId = rawParam ? String(rawParam) : me;
+
   const viewingSelf = userId === me;
 
   const profile: Profile = useMemo(() => getProfile(userId), [userId]);
 
   // local demo state
-  const initiallyFriends = useMemo(
-    () => profiles[me].friends.some((f) => f.id === userId),
-    [me, userId]
-  );
+  const initiallyFriends = useMemo(() => {
+    const myFriends = profiles[me]?.friends ?? [];
+    return myFriends.some((f) => String(f.id) === userId);
+  }, [me, userId]);
 
   const [isFriend, setIsFriend] = useState(initiallyFriends);
   const [viewAsPublic, setViewAsPublic] = useState(false);
+
+  // Reset toggles when switching profiles
+  useEffect(() => {
+    setViewAsPublic(false);
+    setIsFriend(initiallyFriends);
+  }, [userId, initiallyFriends]);
+
   const showEditForSelf = viewingSelf && !viewAsPublic;
   const showAddFriend = !viewingSelf;
-  
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Image source={{ uri: profile.avatarUrl || "https://i.pravatar.cc/150" }} style={styles.avatar} />
-        <Text style={styles.name}>{profile.name}</Text>
-        {!!profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
-
-        {showEditForSelf && (
-          <FormButton
-            title="Edit Profile"
-            onPress={() => router.push("../user-profile/edit")}
-            style={{ marginTop: 10, width: 160 }}
-            textStyle={{ fontSize: 14 }}
-          />
-        )}
-        {viewingSelf && (
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>View as public</Text>
-            <Switch
-              value={viewAsPublic}
-              onValueChange={setViewAsPublic}
-              trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
-              thumbColor={Colors.textPrimary}
-              ios_backgroundColor={Colors.textSecondary}
-            />
-          </View>
-        )}
-
-        {showAddFriend && (
-          <FormButton
-            title={isFriend ? "Friends ✓" : "Add Friend"}
-            onPress={() => setIsFriend(true)}
-            style={{ marginTop: 10, width: 160 }}
-            textStyle={{ fontSize: 14 }}
-          />
-        )}
+    <View style={styles.screen}>
+      {/* Top-left back button overlay */}
+      <View style={styles.backWrap}>
+        <BackButton />
       </View>
 
-      {/* Friends */}
-      <View style={styles.card}>
-        <View style={styles.rowSpace}>
-          <Text style={styles.sectionTitle}>Friends</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Text style={styles.link}>See all</Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 56, flexGrow: 1 }, // match Settings
+        ]}
+        showsVerticalScrollIndicator={false}
+      >        {/* Header */}
+        <View style={styles.header}>
+          <Image source={{ uri: profile.avatarUrl || "https://i.pravatar.cc/150" }} style={styles.avatar} />
+          <Text style={styles.name}>{profile.name}</Text>
+          {!!profile.bio && <Text style={styles.bio}>{profile.bio}</Text>}
 
-        <View style={{ marginTop: 10 }}>
-          {profile.friends.length === 0 ? (
-            <Text style={{ color: Colors.textSecondary }}>No friends yet.</Text>
-          ) : (
-            profile.friends.map((f) => (
-              <TouchableOpacity
-                key={f.id}
-                style={styles.friendRow}
-                onPress={() => router.push(`../user-profile/${f.id}`)} 
-              >
-                <Image source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }} style={styles.friendAvatar} />
-                <Text style={styles.friendName}>{f.name}</Text>
-              </TouchableOpacity>
-            ))
+          {showEditForSelf && (
+            <FormButton
+              title="Edit Profile"
+              onPress={() => router.push("../edit")}
+              style={{ marginTop: 10, width: 160 }}
+              textStyle={{ fontSize: 14 }}
+            />
+          )}
+
+          {viewingSelf && (
+            <View style={styles.toggleRow}>
+              <Text style={styles.toggleLabel}>View as public</Text>
+              <Switch
+                value={viewAsPublic}
+                onValueChange={setViewAsPublic}
+                trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
+                thumbColor={Colors.textPrimary}
+                ios_backgroundColor={Colors.textSecondary}
+              />
+            </View>
+          )}
+
+          {showAddFriend && (
+            <FormButton
+              title={isFriend ? "Friends ✓" : "Add Friend"}
+              onPress={() => setIsFriend(true)}
+              style={{ marginTop: 10, width: 160 }}
+              textStyle={{ fontSize: 14 }}
+            />
           )}
         </View>
-      </View>
 
-      {/* Favorites */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Favorite Drinks</Text>
-        <View style={styles.chipsWrap}>
-          {profile.favorites.map((d) => (
-            <View key={d} style={styles.chip}>
-              <Text style={styles.chipText}>{d}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+        {/* Friends */}
+        <View style={styles.card}>
+          <View style={styles.rowSpace}>
+            <Text style={styles.sectionTitle}>Friends</Text>
+            <TouchableOpacity onPress={() => {}}>
+              <Text style={styles.link}>See all</Text>
+            </TouchableOpacity>
+          </View>
 
-      {/* Shared recipes */}
-      <View style={styles.card}>
-        <View style={styles.rowSpace}>
-          <Text style={styles.sectionTitle}>Shared Recipes</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Text style={styles.link}>See all</Text>
-          </TouchableOpacity>
+          <View style={{ marginTop: 10 }}>
+            {profile.friends.length === 0 ? (
+              <Text style={{ color: Colors.textSecondary }}>No friends yet.</Text>
+            ) : (
+              profile.friends.map((f) => (
+                <TouchableOpacity
+                  key={f.id}
+                  style={styles.friendRow}
+                  onPress={() => router.push("../" + String(f.id))}
+                >
+                  <Image
+                    source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }}
+                    style={styles.friendAvatar}
+                  />
+                  <Text style={styles.friendName}>{f.name}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
         </View>
-        <View style={{ marginTop: 10 }}>
-          {profile.sharedRecipes.map((r) => (
-            <View key={r.id} style={styles.recipeRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.recipeName}>{r.name}</Text>
-                <Text style={styles.recipeMeta}>♥ {r.likes}</Text>
+
+        {/* Favorites */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Favorite Drinks</Text>
+          <View style={styles.chipsWrap}>
+            {profile.favorites.map((d) => (
+              <View key={d} style={styles.chip}>
+                <Text style={styles.chipText}>{d}</Text>
               </View>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.link}>Open</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={{ height: 32 }} />
-    </ScrollView>
+        {/* Shared recipes */}
+        <View style={styles.card}>
+          <View style={styles.rowSpace}>
+            <Text style={styles.sectionTitle}>Shared Recipes</Text>
+            <TouchableOpacity onPress={() => {}}>
+              <Text style={styles.link}>See all</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ marginTop: 10 }}>
+            {profile.sharedRecipes.map((r) => (
+              <View key={r.id} style={styles.recipeRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.recipeName}>{r.name}</Text>
+                  <Text style={styles.recipeMeta}>♥ {r.likes}</Text>
+                </View>
+                <TouchableOpacity onPress={() => {}}>
+                  <Text style={styles.link}>Open</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  content: { padding: 16 },
+  screen: { flex: 1, backgroundColor: Colors.background },
+  backWrap: {
+    position: "absolute",
+    top: 14,
+    left: 14,
+    zIndex: 10,
+  },
+  container: { flex: 1 },
+  content: { padding: 16, paddingTop: 44 },
   header: { alignItems: "center", marginBottom: 8 },
   avatar: { width: 88, height: 88, borderRadius: 44, backgroundColor: Colors.surface },
   name: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700", marginTop: 10 },
