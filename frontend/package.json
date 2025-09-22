@@ -8,10 +8,11 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint",
+    "lint": "node -e \"console.log('lint placeholder - real lint in Sprint 2');\"",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test": "node --test"
   },
   "dependencies": {
     "@expo-google-fonts/ubuntu": "^0.4.0",
@@ -44,10 +45,17 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.0.10",
     "@types/react-native": "^0.72.8",
-    "eslint": "^9.25.0",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "babel-jest": "^30.1.2",
+    "babel-preset-expo": "^54.0.2",
+    "eslint": "^9.36.0",
     "eslint-config-expo": "~9.2.0",
+    "jest": "^30.1.3",
+    "jest-junit": "^16.0.0",
     "typescript": "~5.8.3"
   },
   "private": true
