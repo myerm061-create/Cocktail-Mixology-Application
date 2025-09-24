@@ -21,8 +21,9 @@ const isProfilePath = (p: string) => {
 const TABS = [
   { icon: "home-outline",   route: "/home" },
   { icon: "cube-outline",   route: "/my-ingredients" },
+  { icon: "heart-outline",   route: "/favorites" },
   { icon: "search-outline", route: "/search" },
-  { icon: "person-outline", route: "/", href: SELF_PROFILE, match: isProfilePath },
+  { icon: "person-outline", route: "/profile", match: isProfilePath },
 ];
 
 // Layout component that includes bottom navigation on tab screens
@@ -36,11 +37,11 @@ export default function TabsLayout() {
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.content}>
+      <View style={styles.content} pointerEvents="box-none">
         <Slot />
       </View>
       {onATab && (
-        <View style={styles.dock}>
+        <View style={styles.dock} pointerEvents="auto">
           <BottomNav safeArea items={TABS as any} />
         </View>
       )}
@@ -51,5 +52,5 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   wrap: { flex: 1 },
   content: { flex: 1, paddingBottom: 90 },
-  dock: { position: "absolute", left: 12, right: 12, bottom: 18 },
+  dock: { position: "absolute", left: 12, right: 12, bottom: 18, zIndex: 1000, elevation: 1000 },
 });
