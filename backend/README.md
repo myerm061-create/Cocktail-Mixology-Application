@@ -2,14 +2,29 @@
 
 ## Quick Start (Dev)
 
-1) Install deps
-   pip install -r requirements.txt
+**Environment Variables**
+- Copy `.env.example` → `.env`
+- Fill in `DATABASE_URL` with the team’s shared Postgres connection string
+- The actual connection string will be shared privately (not in GitHub)
 
-2) Run the server (hot reload)
-   uvicorn app.main:app --reload --port 8000
+1) **Set up a virtual environment** (recommended)
+   ```bash
+   # Windows PowerShell
+   cd backend
+   python -m venv venv
+   .\venv\Scripts\activate
 
-3) Health check
-   GET http://127.0.0.1:8000/api/v1/health  ->  { "status": "ok" }
+   # Mac/Linux
+   cd backend
+   python3 -m venv venv
+   source venv/bin/activate
 
-## Environment
-Copy `.env.example` to `.env` and fill in values when we add the DB.
+2) Install dependencies
+pip install -r requirements.txt
+
+3) Run the server
+uvicorn app.main:app --reload --port 8000
+
+4) Test health check
+Open http://127.0.0.1:8000/api/v1/health
+return: status : ok

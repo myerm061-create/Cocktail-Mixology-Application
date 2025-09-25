@@ -1,8 +1,7 @@
 fastapi
 uvicorn[standard]
-# We’ll add these when we hook up Postgres:
-# SQLAlchemy>=2.0
-# psycopg[binary]
-# alembic
-# python-dotenv
+SQLAlchemy>=2.0
+psycopg[binary]
+alembic
+python-dotenv
 bcrypt
