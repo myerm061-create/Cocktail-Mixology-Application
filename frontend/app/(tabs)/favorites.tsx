@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Platform, UIManager } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -26,6 +26,8 @@ export default function FavoritesScreen() {
   const handleOpen = (id: string | number) => {
     // TODO: navigate to drink details screen here
     console.log("open drink", id);
+    router.push(`/drink/${encodeURIComponent(String(id))}`);
+
   };
 
   const handleToggleFavorite = (id: string | number, next: boolean) => {

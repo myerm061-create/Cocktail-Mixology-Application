@@ -10,6 +10,9 @@ export type Palette = {
   textRed: string;
   accentPrimary: string;
   buttonBackground: string;
+  cardBackground: string;
+  cardBorder: string;
+  accentHeart: string;
   // Add more colors as needed
 };
 
@@ -26,6 +29,9 @@ export const DarkTheme: Palette = {
   textRed: "#DD5E5E",
   accentPrimary: "#6E5AE6",
   buttonBackground: "#2A2A2A",
+  cardBackground: "#1A1921",
+  cardBorder: "#2C2A35",
+  accentHeart: "#FF6B6B"
   // Add more colors as needed
 };
 
