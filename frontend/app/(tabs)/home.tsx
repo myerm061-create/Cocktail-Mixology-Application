@@ -15,11 +15,11 @@ export default function HomeScreen() {
         <Text style={styles.subtitle}>Welcome! Choose a section:</Text>
 
         {/* navigation buttons */}
-        <FormButton title="Scan Ingredients" onPress={() => router.push("/screens/ingredient-scanner")} />
+        <FormButton title="Scan Ingredients" onPress={() => router.push("/(stack)/ingredient-scanner")} />
         <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
-        <FormButton title="Recommendations" onPress={() => router.push("/screens/recommendations")} />
+        <FormButton title="Recommendations" onPress={() => router.push("/(stack)/recommendations")} />
         <FormButton title="Favorites" onPress={() => router.push("/favorites")} />
-        <FormButton title="Profile" onPress={() => router.push(`/${String(ME_ID)}`)} />
+        <FormButton title="Profile" onPress={() => router.push(`/user-profile/${String(ME_ID)}`)} />
         <FormButton title="Search" onPress={() => router.push("/search")} />
         <FormButton title="Settings" onPress={() => router.push("/settings")} />
       </ScrollView>
