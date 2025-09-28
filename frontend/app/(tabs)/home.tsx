@@ -19,9 +19,9 @@ export default function HomeScreen() {
         <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
         <FormButton title="Recommendations" onPress={() => router.push("/(stack)/recommendations")} />
         <FormButton title="Favorites" onPress={() => router.push("/favorites")} />
-        <FormButton title="Profile" onPress={() => router.push(`/user-profile/${String(ME_ID)}`)} />
+        <FormButton title="Profile" onPress={() => router.push(`/profile`)} />
         <FormButton title="Search" onPress={() => router.push("/search")} />
-        <FormButton title="Settings" onPress={() => router.push("/settings")} />
+        <FormButton title="Settings" onPress={() => router.push("/(stack)/settings")} />
       </ScrollView>
     </SafeAreaView>
   );
