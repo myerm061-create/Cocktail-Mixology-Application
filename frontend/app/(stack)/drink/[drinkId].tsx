@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
-    backgroundColor: Colors.cardBackground,
+    backgroundColor: Colors.buttonBackground,
     padding: 20,
     alignItems: "center",
     justifyContent: "center",

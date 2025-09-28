@@ -63,7 +63,7 @@ export default function ProfileScreen() {
           {showEditForSelf && (
             <FormButton
               title="Edit Profile"
-              onPress={() => router.push("../edit")}
+              onPress={() => router.push("/user-profile/edit")}
               style={{ marginTop: 10, width: 160 }}
               textStyle={{ fontSize: 14 }}
             />
