@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, TextInput, FlatList, Pressable, StyleSheet, Image, ActivityIndicator } from "react-native";
-import { searchByName, filterByIngredient, hydrateThumbs, Cocktail } from "../lib/cocktails";
+import type { Cocktail } from "../lib/cocktails";
+import { searchByName, filterByIngredient, hydrateThumbs } from "../lib/cocktails";
 
 const MOCK: Cocktail[] = [
   { idDrink: "m1", strDrink: "Margarita", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
@@ -19,7 +20,7 @@ export default function SearchScreen() {
   const trimmed = useMemo(() => query.trim(), [query]);
 
   useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
+    if (timer.current) {clearTimeout(timer.current);}
     if (trimmed.length < 2) {
       setResults([]);
       setError(null);
@@ -36,7 +37,7 @@ export default function SearchScreen() {
 
         if (words.length === 1) {
           drinks = await filterByIngredient(trimmed);
-          if (!drinks.length) drinks = await searchByName(trimmed);
+          if (!drinks.length) {drinks = await searchByName(trimmed);}
         } else {
           drinks = await searchByName(trimmed);
         }
@@ -56,7 +57,7 @@ export default function SearchScreen() {
       }
     }, debounceMs);
 
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    return () => { if (timer.current) {clearTimeout(timer.current);} };
   }, [trimmed]);
 
   return (

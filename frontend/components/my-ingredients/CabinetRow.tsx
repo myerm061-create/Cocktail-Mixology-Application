@@ -42,8 +42,8 @@ export default function CabinetRow({
   };
 
   const handleOpen = (direction: "left" | "right") => {
-    if (direction === "left") onAddToShopping(item.id);
-    else if (direction === "right") onRemoveFromCabinet(item.id);
+    if (direction === "left") {onAddToShopping(item.id);}
+    else if (direction === "right") {onRemoveFromCabinet(item.id);}
     requestAnimationFrame(() => swipeRef.current?.close());
   };
 

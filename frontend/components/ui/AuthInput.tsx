@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import type { TextInputProps } from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity  } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { TextInputProps } from "react-native";
+
 
 type FormInputProps = {
   placeholder: string;

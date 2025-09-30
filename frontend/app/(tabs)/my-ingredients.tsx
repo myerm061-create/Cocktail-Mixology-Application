@@ -66,7 +66,7 @@ export default function MyIngredientsScreen() {
       const q = query.trim().toLowerCase();
       out = out.filter(i => i.name.toLowerCase().includes(q));
     }
-    if (categoryFilter !== "All") out = out.filter(i => i.category === categoryFilter);
+    if (categoryFilter !== "All") {out = out.filter(i => i.category === categoryFilter);}
     return out;
   };
 
@@ -97,7 +97,7 @@ export default function MyIngredientsScreen() {
     setIngredients(prev => prev.map(i => (i.id === id ? { ...i, wanted: true } : i)));
 
   const removeFromCabinet = (id: string) => {
-    const removed = ingredients.find(i => i.id === id); if (!removed) return;
+    const removed = ingredients.find(i => i.id === id); if (!removed) {return;}
     setIngredients(prev => prev.map(i => (i.id === id ? { ...i, owned: false } : i)));
     setToast({
       text: `Removed “${removed.name}” from Cabinet`,
@@ -109,7 +109,7 @@ export default function MyIngredientsScreen() {
   };
 
   const removeFromShopping = (id: string) => {
-    const removed = ingredients.find(i => i.id === id); if (!removed) return;
+    const removed = ingredients.find(i => i.id === id); if (!removed) {return;}
     setIngredients(prev => prev.map(i => (i.id === id ? { ...i, wanted: false } : i)));
     setToast({
       text: `Removed “${removed.name}” from Shopping`,
@@ -121,7 +121,7 @@ export default function MyIngredientsScreen() {
   };
 
   const markPurchasedSingle = (id: string) => {
-    const it = ingredients.find(i => i.id === id); if (!it) return;
+    const it = ingredients.find(i => i.id === id); if (!it) {return;}
     setIngredients(prev => prev.map(i => (i.id === id ? { ...i, wanted: false, owned: true } : i)));
     setToast({
       text: `Marked “${it.name}” as purchased`,
@@ -133,17 +133,17 @@ export default function MyIngredientsScreen() {
   };
 
   const markPurchased = () => {
-    if (shoppingItems.length === 0) return;
+    if (shoppingItems.length === 0) {return;}
     setIngredients(prev => prev.map(i => (i.wanted ? { ...i, wanted: false, owned: true } : i)));
   };
 
   const handleRename = (id: string) => {
-    const it = ingredients.find(i => i.id === id); if (!it) return;
+    const it = ingredients.find(i => i.id === id); if (!it) {return;}
     setRenamingItem(it); setNewName(it.name); setRenameModalVisible(true); setIsSheetOpen(false); setOpenMenuForId(null);
   };
 
   const confirmRename = () => {
-    if (!renamingItem || !newName.trim()) return;
+    if (!renamingItem || !newName.trim()) {return;}
     const trimmed = newName.trim(); if (trimmed === renamingItem.name) { setRenameModalVisible(false); setRenamingItem(null); setNewName(""); return; }
     setIngredients(prev => prev.map(i => (i.id === renamingItem.id ? { ...i, name: trimmed } : i)));
     setToast({
@@ -165,7 +165,7 @@ export default function MyIngredientsScreen() {
       // @ts-ignore numeric timeout in RN
       toastTimerRef.current = setTimeout(() => setToast(null), 5000) as unknown as number;
     }
-    return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current as unknown as number); };
+    return () => { if (toastTimerRef.current) {clearTimeout(toastTimerRef.current as unknown as number);} };
   }, [toast]);
 
   /** ----- Renderers ----- */

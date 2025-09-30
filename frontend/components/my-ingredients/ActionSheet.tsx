@@ -12,7 +12,7 @@ export default function ActionSheet({
   onClose: () => void;
   actions: Action[];
 }) {
-  if (!visible) return null;
+  if (!visible) {return null;}
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} />

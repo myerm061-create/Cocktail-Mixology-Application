@@ -42,7 +42,7 @@ export default function BottomNav({
   const animIndex = useRef(new Animated.Value(index)).current;
 
   useEffect(() => {
-    if (matchedIndex !== index) setIndex(matchedIndex);
+    if (matchedIndex !== index) {setIndex(matchedIndex);}
   }, [matchedIndex, pathname]);
 
   // animate the red dot to the new index
@@ -130,7 +130,7 @@ export default function BottomNav({
     </View>
   );
 
-  if (!safeArea) return <View style={styles.wrap}>{Bar}</View>;
+  if (!safeArea) {return <View style={styles.wrap}>{Bar}</View>;}
   return <SafeAreaView style={styles.wrap}>{Bar}</SafeAreaView>;
 }
 

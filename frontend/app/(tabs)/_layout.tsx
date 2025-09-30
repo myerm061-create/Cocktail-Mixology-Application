@@ -12,8 +12,8 @@ const STATIC_TAB_PREFIXES = ["/home", "/my-ingredients", "/search", "/settings"]
 
 // Check if the path is a user profile path
 const isProfilePath = (p: string) => {
-  if (!p || p === "/") return false;
-  if (STATIC_TAB_PREFIXES.some((s) => p.startsWith(s))) return false;
+  if (!p || p === "/") {return false;}
+  if (STATIC_TAB_PREFIXES.some((s) => p.startsWith(s))) {return false;}
   return p.split("/").length === 2;
 };
 

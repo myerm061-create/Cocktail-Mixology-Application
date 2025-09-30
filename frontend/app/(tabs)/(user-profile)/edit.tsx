@@ -35,7 +35,7 @@ export default function ProfileEditScreen() {
   const formValid = usernameValid && displayNameValid && bioValid;
 
   const onSave = () => {
-    if (!formValid) return;
+    if (!formValid) {return;}
 
     // demo: update mock store (no backend)
     profiles[me] = {
