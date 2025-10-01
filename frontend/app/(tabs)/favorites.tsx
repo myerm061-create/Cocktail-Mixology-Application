@@ -10,6 +10,7 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Favorites screen, shows user's favorite cocktails
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
 
