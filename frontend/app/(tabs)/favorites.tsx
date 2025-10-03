@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Platform, UIManager } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -23,9 +23,17 @@ export default function FavoritesScreen() {
     { id: "11009", name: "Moscow Mule", thumbUrl: "https://www.thecocktaildb.com/images/media/drink/3pylqc1504370988.jpg" },
   ]);
 
+  // Open drink details screen
   const handleOpen = (id: string | number) => {
-    // TODO: navigate to drink details screen here
-    console.log("open drink", id);
+    const item = items.find(d => String(d.id) === String(id));
+    router.push({
+      pathname: "/drink/[drinkId]",
+      params: {
+        drinkId: String(id),
+        name: item?.name,
+        thumbUrl: item?.thumbUrl,
+      },
+    });
   };
 
   const handleToggleFavorite = (id: string | number, next: boolean) => {
