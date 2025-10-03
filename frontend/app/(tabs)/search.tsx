@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Platform,
   UIManager,
+  Keyboard,
 } from "react-native";
 import { Stack } from "expo-router";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
@@ -24,14 +25,15 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 // Mock data to show on first load and as fallback
 const MOCK: Cocktail[] = [
-  { idDrink: "m1", strDrink: "Margarita",      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
-  { idDrink: "m2", strDrink: "Old Fashioned",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
-  { idDrink: "m3", strDrink: "Mojito",         strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
+  { idDrink: "m1", strDrink: "Margarita",     strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
+  { idDrink: "m2", strDrink: "Old Fashioned", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
+  { idDrink: "m3", strDrink: "Mojito",        strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
 ];
 
+// Search screen, allows searching by ingredient or name
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Cocktail[]>(MOCK);
+  const [results, setResults] = useState<Cocktail[]>(MOCK); 
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
@@ -41,18 +43,29 @@ export default function SearchScreen() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trimmed = useMemo(() => query.trim(), [query]);
 
+  // FlatList ref to jump to top
+  const listRef = useRef<FlatList<Cocktail>>(null);
+
   // Pagination
   const PAGE_SIZE = 20;
   const [page, setPage] = useState(1);
   const pagedResults = results.slice(0, page * PAGE_SIZE);
 
+  // Reset to first page and jump to top whenever search text changes
   useEffect(() => {
     setPage(1);
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
   }, [trimmed]);
+
+  // Also jump to top when a new result set arrives (after API resolves)
+  useEffect(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [results]);
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
 
+    // If query is short, show default list and stop loading state
     if (trimmed.length < 2) {
       setLoading(false);
       setError(null);
@@ -64,6 +77,8 @@ export default function SearchScreen() {
       setLoading(true);
       setError(null);
       try {
+        Keyboard.dismiss(); // hide keyboard as search kicks off
+
         const words = trimmed.split(/\s+/);
         let drinks: Cocktail[] = [];
 
@@ -75,6 +90,7 @@ export default function SearchScreen() {
         }
 
         if (!drinks.length) {
+          // fallback so you always see something
           drinks = MOCK.filter((d) =>
             d.strDrink.toLowerCase().includes(trimmed.toLowerCase())
           );
@@ -116,6 +132,8 @@ export default function SearchScreen() {
             onChangeText={setQuery}
             autoCapitalize="none"
             style={styles.input}
+            returnKeyType="search"
+            onSubmitEditing={() => setQuery((q) => q.trim())}
           />
 
           <Pressable
@@ -136,6 +154,7 @@ export default function SearchScreen() {
           )}
 
           <FlatList
+            ref={listRef}
             data={pagedResults}
             keyExtractor={(item) => item.idDrink}
             contentContainerStyle={{ paddingBottom: 24 }}
