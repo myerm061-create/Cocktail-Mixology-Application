@@ -30,10 +30,9 @@ const MOCK: Cocktail[] = [
   { idDrink: "m3", strDrink: "Mojito",        strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
 ];
 
-// Search screen, allows searching by ingredient or name
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Cocktail[]>(MOCK); 
+  const [results, setResults] = useState<Cocktail[]>(MOCK); // show list right away
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
@@ -111,6 +110,9 @@ export default function SearchScreen() {
     };
   }, [trimmed]);
 
+  const onPressSearch = () => setQuery((q) => q.trim());
+  const canSearch = trimmed.length >= 2;
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -121,28 +123,32 @@ export default function SearchScreen() {
       </View>
 
       <SafeAreaView style={styles.safe} edges={["top"]}>
-        {/* Fixed header with title + search bar */}
+        {/* Header with title + search row */}
         <View style={[styles.headerWrap, { paddingTop: insets.top + 56 }]}>
           <Text style={styles.title}>Search</Text>
 
-          <TextInput
-            placeholder="Type an ingredient or a drink…"
-            placeholderTextColor="#9A968A"
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            style={styles.input}
-            returnKeyType="search"
-            onSubmitEditing={() => setQuery((q) => q.trim())}
-          />
+          {/* Search Input + Button */}
+          <View style={styles.searchRow}>
+            <TextInput
+              placeholder="Type an ingredient or a drink…"
+              placeholderTextColor="#9A968A"
+              value={query}
+              onChangeText={setQuery}
+              autoCapitalize="none"
+              style={styles.searchInput}
+              returnKeyType="search"
+              onSubmitEditing={onPressSearch}
+            />
 
-          <Pressable
-            onPress={() => setQuery((q) => q.trim())}
-            style={styles.button}
-            accessibilityRole="button"
-          >
-            <Text style={styles.buttonText}>Search</Text>
-          </Pressable>
+            <Pressable
+              onPress={onPressSearch}
+              style={[styles.searchBtn, !canSearch && styles.searchBtnDisabled]}
+              accessibilityRole="button"
+              disabled={!canSearch}
+            >
+              <Text style={styles.searchBtnText}>Search</Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Results below header */}
@@ -207,23 +213,37 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 12,
   },
-  input: {
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 12,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
     borderWidth: 1,
     borderColor: "#3A3A3A",
     color: "#F5F0E1",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "#111",
   },
-  button: {
-    alignSelf: "flex-start",
-    paddingVertical: 8,
+  searchBtn: {
+    height: 44,
     paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: "#3A3A3A",
-    borderRadius: 8,
+    borderRadius: 10,
+    backgroundColor: "#1d1d1d",
   },
-  buttonText: { color: "#F5F0E1" },
+  searchBtnDisabled: {
+    opacity: 0.5,
+  },
+  searchBtnText: { color: "#F5F0E1", fontWeight: "700" },
+
   resultsWrap: { flex: 1, padding: 16 },
   error: { color: "#ff8a80", marginTop: 8 },
   empty: { color: "#D9D4C5", opacity: 0.8, marginTop: 8 },
