@@ -1,6 +1,26 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, TextInput, FlatList, Pressable, StyleSheet, Image, ActivityIndicator } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Image,
+  ActivityIndicator,
+  Platform,
+  UIManager,
+} from "react-native";
+import { Stack } from "expo-router";
+import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
+import BackButton from "@/components/ui/BackButton";
+import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import { searchByName, filterByIngredient, hydrateThumbs, Cocktail } from "../lib/cocktails";
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const MOCK: Cocktail[] = [
   { idDrink: "m1", strDrink: "Margarita", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
@@ -14,6 +34,7 @@ export default function SearchScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const insets = useSafeAreaInsets();
   const debounceMs = 350;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trimmed = useMemo(() => query.trim(), [query]);
@@ -42,77 +63,144 @@ export default function SearchScreen() {
         }
 
         if (!drinks.length) {
-          // fallback so you always see *something* during demos
-          drinks = MOCK.filter(d => d.strDrink.toLowerCase().includes(trimmed.toLowerCase()));
+          drinks = MOCK.filter((d) =>
+            d.strDrink.toLowerCase().includes(trimmed.toLowerCase())
+          );
         }
 
         drinks = await hydrateThumbs(drinks, 12);
         setResults(drinks);
       } catch (e: any) {
         setError(e?.message || "Something went wrong.");
-        setResults(MOCK); // fallback in error case
+        setResults(MOCK);
       } finally {
         setLoading(false);
       }
     }, debounceMs);
 
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, [trimmed]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Search Cocktails</Text>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
 
-      <TextInput
-        placeholder="Type an ingredient (e.g., gin) or a drink (e.g., margarita)…"
-        placeholderTextColor="#9A968A"
-        value={query}
-        onChangeText={setQuery}
-        autoCapitalize="none"
-        style={styles.input}
-      />
+      {/* Back button overlay */}
+      <View style={[styles.backWrap, { top: Math.max(14, insets.top) }]}>
+        <BackButton />
+      </View>
 
-      <Pressable onPress={() => setQuery(q => q.trim())} style={styles.button} accessibilityRole="button">
-        <Text style={styles.buttonText}>Search</Text>
-      </Pressable>
+      <SafeAreaView style={styles.safe} edges={["top"]}>
+        {/* Fixed header with title + search bar */}
+        <View style={[styles.headerWrap, { paddingTop: insets.top + 56 }]}>
+          <Text style={styles.title}>Search</Text>
 
-      {loading && <View style={{ marginTop: 12 }}><ActivityIndicator /></View>}
-      {error && !loading && <Text style={styles.error}>Error: {error}</Text>}
-      {!loading && !error && results.length === 0 && trimmed.length >= 2 && (
-        <Text style={styles.empty}>No results. Try another ingredient or drink name.</Text>
-      )}
+          <TextInput
+            placeholder="Type an ingredient or a drink…"
+            placeholderTextColor="#9A968A"
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            style={styles.input}
+          />
 
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.idDrink}
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            {item.strDrinkThumb ? (
-              <Image source={{ uri: item.strDrinkThumb }} style={styles.thumb} resizeMode="cover" />
-            ) : (
-              <View style={[styles.thumb, styles.thumbFallback]}>
-                <Text style={{ color: "#9A968A" }}>No Image</Text>
+          <Pressable
+            onPress={() => setQuery((q) => q.trim())}
+            style={styles.button}
+            accessibilityRole="button"
+          >
+            <Text style={styles.buttonText}>Search</Text>
+          </Pressable>
+        </View>
+
+        {/* Results list below header */}
+        <View style={styles.resultsWrap}>
+          {loading && <ActivityIndicator style={{ margin: 12 }} />}
+          {error && !loading && <Text style={styles.error}>Error: {error}</Text>}
+          {!loading && !error && results.length === 0 && trimmed.length >= 2 && (
+            <Text style={styles.empty}>No results. Try another ingredient or drink name.</Text>
+          )}
+
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item.idDrink}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                {item.strDrinkThumb ? (
+                  <Image
+                    source={{ uri: item.strDrinkThumb }}
+                    style={styles.thumb}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.thumb, styles.thumbFallback]}>
+                    <Text style={{ color: "#9A968A" }}>No Image</Text>
+                  </View>
+                )}
+                <Text style={styles.cardTitle}>{item.strDrink}</Text>
               </View>
             )}
-            <Text style={styles.cardTitle}>{item.strDrink}</Text>
-          </View>
-        )}
-      />
-    </View>
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12, backgroundColor: "#101010" },
-  title: { fontSize: 22, color: "#F5F0E1", marginBottom: 4 },
-  input: { borderWidth: 1, borderColor: "#3A3A3A", color: "#F5F0E1", padding: 12, borderRadius: 8 },
-  button: { alignSelf: "flex-start", paddingVertical: 10, paddingHorizontal: 16, borderWidth: 1, borderColor: "#3A3AA", borderRadius: 8, marginTop: 6 },
+  safe: { flex: 1, backgroundColor: "#101010" },
+  headerWrap: {
+    backgroundColor: Colors.background,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  backWrap: { position: "absolute", left: 14, zIndex: 10 },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: Colors.textPrimary,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+    color: "#F5F0E1",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  button: {
+    alignSelf: "flex-start",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+    borderRadius: 8,
+  },
   buttonText: { color: "#F5F0E1" },
+  resultsWrap: { flex: 1, padding: 16 },
   error: { color: "#ff8a80", marginTop: 8 },
   empty: { color: "#D9D4C5", opacity: 0.8, marginTop: 8 },
-  card: { borderWidth: 1, borderColor: "#2a2a2a", borderRadius: 10, padding: 12, marginBottom: 10, backgroundColor: "#141414" },
-  thumb: { width: "100%", height: 180, borderRadius: 8, marginBottom: 8, backgroundColor: "#222" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#2a2a2a",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+    backgroundColor: "#141414",
+  },
+  thumb: {
+    width: "100%",
+    height: 180,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: "#222",
+  },
   thumbFallback: { alignItems: "center", justifyContent: "center" },
   cardTitle: { color: "#F5F0E1", fontSize: 18, fontWeight: "600" },
 });
