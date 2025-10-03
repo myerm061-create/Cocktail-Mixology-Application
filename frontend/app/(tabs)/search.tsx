@@ -22,29 +22,41 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Mock data to show on first load and as fallback
 const MOCK: Cocktail[] = [
-  { idDrink: "m1", strDrink: "Margarita", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
-  { idDrink: "m2", strDrink: "Old Fashioned", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
-  { idDrink: "m3", strDrink: "Mojito", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
+  { idDrink: "m1", strDrink: "Margarita",      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
+  { idDrink: "m2", strDrink: "Old Fashioned",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
+  { idDrink: "m3", strDrink: "Mojito",         strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
 ];
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Cocktail[]>([]);
+  const [results, setResults] = useState<Cocktail[]>(MOCK);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error,   setError]   = useState<string | null>(null);
 
   const insets = useSafeAreaInsets();
+
   const debounceMs = 350;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trimmed = useMemo(() => query.trim(), [query]);
 
+  // Pagination
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  const pagedResults = results.slice(0, page * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(1);
+  }, [trimmed]);
+
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
+
     if (trimmed.length < 2) {
-      setResults([]);
-      setError(null);
       setLoading(false);
+      setError(null);
+      setResults(MOCK);
       return;
     }
 
@@ -72,7 +84,7 @@ export default function SearchScreen() {
         setResults(drinks);
       } catch (e: any) {
         setError(e?.message || "Something went wrong.");
-        setResults(MOCK);
+        setResults(MOCK); // fallback
       } finally {
         setLoading(false);
       }
@@ -115,7 +127,7 @@ export default function SearchScreen() {
           </Pressable>
         </View>
 
-        {/* Results list below header */}
+        {/* Results below header */}
         <View style={styles.resultsWrap}>
           {loading && <ActivityIndicator style={{ margin: 12 }} />}
           {error && !loading && <Text style={styles.error}>Error: {error}</Text>}
@@ -124,7 +136,7 @@ export default function SearchScreen() {
           )}
 
           <FlatList
-            data={results}
+            data={pagedResults}
             keyExtractor={(item) => item.idDrink}
             contentContainerStyle={{ paddingBottom: 24 }}
             renderItem={({ item }) => (
@@ -144,6 +156,16 @@ export default function SearchScreen() {
               </View>
             )}
             showsVerticalScrollIndicator={false}
+            ListFooterComponent={() =>
+              pagedResults.length < results.length ? (
+                <Pressable
+                  onPress={() => setPage((p) => p + 1)}
+                  style={{ padding: 16, alignItems: "center" }}
+                >
+                  <Text style={{ color: "#fff" }}>Load more</Text>
+                </Pressable>
+              ) : null
+            }
           />
         </View>
       </SafeAreaView>
