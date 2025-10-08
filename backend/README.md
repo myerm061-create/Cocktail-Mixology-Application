@@ -1,30 +1,34 @@
-# Cocktail API (Backend)
+## Quick Start
 
-## Quick Start (Dev)
-
-**Environment Variables**
-- Copy `.env.example` → `.env`
-- Fill in `DATABASE_URL` with the team’s shared Postgres connection string
-- The actual connection string will be shared privately (not in GitHub)
-
-1) **Set up a virtual environment** (recommended)
+1) **Set up environment**
    ```bash
-   # Windows PowerShell
    cd backend
+   cp .env.example .env
+   # Edit .env with your database credentials
+   ```
+
+2) **Install and run**
+   ```bash
    python -m venv venv
-   .\venv\Scripts\activate
+   .\venv\Scripts\activate  # Windows
+   # source venv/bin/activate  # Mac/Linux
+   
+   pip install -r requirements.txt
+   python -m alembic upgrade head
+   uvicorn app.main:app --reload --port 8000
+   ```
 
-   # Mac/Linux
-   cd backend
-   python3 -m venv venv
-   source venv/bin/activate
+3) **Test**
+   Open http://127.0.0.1:8000/api/v1/health
+   Should return: `{"status": "ok"}`
 
-2) Install dependencies
-pip install -r requirements.txt
+## Database Migrations
 
-3) Run the server
-uvicorn app.main:app --reload --port 8000
+```bash
+python -m alembic revision --autogenerate -m "description"
+python -m alembic upgrade head
+```
 
-4) Test health check
-Open http://127.0.0.1:8000/api/v1/health
-return: status : ok
+## Environment Variables
+
+See `.env.example` for all required configuration variables.
