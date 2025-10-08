@@ -44,3 +44,5 @@ venv/
 # Byte-compiled / cache
 __pycache__/
 *.py[cod]
+# python venv
+backend/.venv/
