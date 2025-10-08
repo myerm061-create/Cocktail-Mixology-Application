@@ -5,3 +5,5 @@ psycopg[binary]
 alembic
 python-dotenv
 bcrypt
+python-jose[cryptography]
+requests
