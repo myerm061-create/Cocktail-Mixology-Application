@@ -58,7 +58,7 @@ export default function DrinkDetailsScreen() {
           <View style={styles.heroCard}>
             <Image source={{ uri: heroSrc }} style={styles.heroImage} contentFit="cover" transition={100} />
             <Pressable onPress={() => setIsFav(v => !v)} hitSlop={12} style={styles.heartBtn}>
-              <Ionicons name={isFav ? "heart" : "heart-outline"} size={22} color={isFav ? (Colors.accent ?? "#FF6B6B") : Colors.textPrimary} />
+              <Ionicons name={isFav ? "heart" : "heart-outline"} size={22} color={isFav ? ("#FF6B6B") : Colors.textPrimary} />
             </Pressable>
             <View style={styles.heroTitlePill}>
               <Text numberOfLines={1} style={styles.heroTitleText}>{title}</Text>

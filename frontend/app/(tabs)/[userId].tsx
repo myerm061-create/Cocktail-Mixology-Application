@@ -109,7 +109,12 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   key={f.id}
                   style={styles.friendRow}
-                  onPress={() => router.push("../" + String(f.id))}
+                  onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/[userId]",
+                    params: { userId: String(f.id) },
+                  })
+                }
                 >
                   <Image
                     source={{ uri: f.avatarUrl || "https://i.pravatar.cc/150?img=8" }}
