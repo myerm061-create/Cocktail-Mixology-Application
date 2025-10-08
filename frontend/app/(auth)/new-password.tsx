@@ -34,7 +34,7 @@ export default function NewPasswordScreen() {
       alert("Please fix the highlighted issues before creating your account.");
       return;
     }
-    console.log("Creating account with:", password);
+    // console.log("Creating account with:", password);
     // TODO: integrate backend
     router.replace("/login");
   };

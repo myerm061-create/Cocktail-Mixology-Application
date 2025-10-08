@@ -147,7 +147,7 @@ export default function SettingsScreen() {
           <View style={styles.reveal}>
             <FormButton
               title="Go to Change Password"
-              onPress={() => console.log("navigate to change-password")}
+              // onPress={() => console.log("navigate to change-password")}
             />
           </View>
         )}
@@ -167,7 +167,7 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmClearCache(false)}
         onConfirm={() => {
           setConfirmClearCache(false);
-          console.log("clear local data");
+          // console.log("clear local data");
         }}
       />
 
@@ -179,7 +179,7 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmDeleteAcct(false)}
         onConfirm={() => {
           setConfirmDeleteAcct(false);
-          console.log("delete account");
+          // console.log("delete account");
           router.replace("/(auth)/login");
         }}
       />
@@ -192,7 +192,7 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmSignOut(false)}
         onConfirm={() => {
           setConfirmSignOut(false);
-          console.log("sign out");
+          // console.log("sign out");
           router.replace("/(auth)/login");
         }}
       />

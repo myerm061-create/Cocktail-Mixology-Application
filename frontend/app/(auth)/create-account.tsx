@@ -35,7 +35,7 @@ export default function CreateAccountScreen() {
       alert("Please fix the highlighted issues before creating your account.");
       return;
     }
-    console.log("Creating account with:", email, password);
+    // console.log("Creating account with:", email, password);
     // TODO: integrate backend
     router.replace("/login");
   };

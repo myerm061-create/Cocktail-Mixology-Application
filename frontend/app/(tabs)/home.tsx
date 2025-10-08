@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { router } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
-import { ME_ID } from "@/scripts/data/mockProfiles";
+// import { ME_ID } from "@/scripts/data/mockProfiles";
 
 export default function HomeScreen() {
   return (

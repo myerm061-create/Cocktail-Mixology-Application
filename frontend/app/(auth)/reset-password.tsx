@@ -29,7 +29,7 @@ export default function ResetPasswordScreen() {
       }
 
       // TODO: call backend API to send reset email
-      console.log("Sending password reset link to:", trimmed);
+      // console.log("Sending password reset link to:", trimmed);
 
       // Later: after real API success
       // router.push("/(auth)/reset-password-sent");
