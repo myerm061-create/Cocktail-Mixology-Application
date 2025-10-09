@@ -1,3 +1,4 @@
+// For now put placeholder credentials.ts file to satisfy this typecheck error
 import { CREDENTIALS } from './credentials';
 
 // Unsplash API Configuration

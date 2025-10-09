@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text, View, StyleSheet, ActivityIndicator, Image } from "react-native";
-import GooglePng from "@/assets/images/Google.png";
+import GooglePng from "../../assets/images/Google.png";
 
 type Props = {
   title?: string;

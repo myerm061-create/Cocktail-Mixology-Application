@@ -1,14 +1,14 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import { View, StyleSheet, Pressable, Animated, Platform, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { usePathname, Link } from "expo-router";
+import { usePathname, Link, type Href } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
 // Define the type for each navigation item
 type Item = {
   icon: keyof typeof Ionicons.glyphMap;
-  route: string;
-  href?: string;
+  route: Href;
+  href?: Href;
   match?: (path: string) => boolean;
 };
 
@@ -33,7 +33,7 @@ export default function BottomNav({
   const matchedIndex = Math.max(
     0,
     items.findIndex((it) =>
-      it.match ? it.match(pathname ?? "") : (pathname ?? "").startsWith(it.route)
+      it.match ? it.match(pathname ?? "") : (pathname ?? "").startsWith(String(it.route))
     )
   );
 
@@ -104,10 +104,10 @@ export default function BottomNav({
           active && String(it.icon).endsWith("-outline")
             ? (String(it.icon).replace("-outline", "") as any)
             : it.icon;
-        const href = it.href ?? it.route;
+        const href: Href = it.href ?? it.route;
 
         return (
-          <Link key={`${it.route}-${i}`} href={href} asChild>
+          <Link key={`${String(it.route)}-${i}`} href={href} asChild>
             <Pressable
               style={StyleSheet.flatten([
                 styles.tab,

@@ -32,7 +32,7 @@ export default function SettingsScreen() {
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const insets = useSafeAreaInsets();
 
-  const toggle = (fn: (v: boolean) => void) => {
+  const toggle = (fn: React.Dispatch<React.SetStateAction<boolean>>) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     fn((v) => !v);
   };
@@ -147,7 +147,7 @@ export default function SettingsScreen() {
           <View style={styles.reveal}>
             <FormButton
               title="Go to Change Password"
-              // onPress={() => console.log("navigate to change-password")}
+              onPress={() => router.push("/(auth)/new-password")}
             />
           </View>
         )}
