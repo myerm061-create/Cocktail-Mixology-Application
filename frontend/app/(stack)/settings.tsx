@@ -39,23 +39,24 @@ export default function SettingsScreen() {
 
   return (
     <>
-      {/* Hide default header/back button */}
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.backWrap}>
+      {/* Back button overlay*/}
+      <View style={[styles.backWrap, { top: Math.max(14, insets.top) }]}>
         <BackButton />
       </View>
 
+      {/* Fixed header */}
+      <View style={[styles.headerWrap, { paddingTop: insets.top + 56 }]}>
+        <Text style={styles.title}>Settings</Text>
+      </View>
+
+      {/* Scrollable content */}
       <ScrollView
         style={styles.container}
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + 56 },
-        ]}
+        contentContainerStyle={[styles.content, { paddingBottom: 32 }]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Settings</Text>
-
         {/* Notifications */}
         <Text style={styles.section}>Notifications</Text>
         <Row
@@ -156,6 +157,8 @@ export default function SettingsScreen() {
         <View style={styles.footer}>
           <FormButton title="Sign Out" onPress={() => setConfirmSignOut(true)} variant="dangerLogo" />
         </View>
+
+        <View style={{ height: 8 }} />
       </ScrollView>
 
       {/* Confirm dialogs */}
@@ -167,7 +170,6 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmClearCache(false)}
         onConfirm={() => {
           setConfirmClearCache(false);
-          // console.log("clear local data");
         }}
       />
 
@@ -179,7 +181,6 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmDeleteAcct(false)}
         onConfirm={() => {
           setConfirmDeleteAcct(false);
-          // console.log("delete account");
           router.replace("/(auth)/login");
         }}
       />
@@ -192,7 +193,6 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmSignOut(false)}
         onConfirm={() => {
           setConfirmSignOut(false);
-          // console.log("sign out");
           router.replace("/(auth)/login");
         }}
       />
@@ -220,9 +220,16 @@ function Row({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  content: { paddingHorizontal: 20, paddingBottom: 32 },
-  backWrap: { position: "absolute", top: 14, left: 14, zIndex: 10 },
-  title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 12 },
+  content: { paddingHorizontal: 20 },
+  headerWrap: { backgroundColor: Colors.background },
+  backWrap: { position: "absolute", left: 14, zIndex: 10 },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: Colors.textPrimary,
+    textAlign: "center",
+    marginBottom: 12,
+  },
   section: { marginTop: 18, marginBottom: 6, fontSize: 18, fontWeight: "700", color: Colors.textPrimary },
   row: { height: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   rowLabel: { fontSize: 16, color: Colors.textSecondary },
@@ -232,5 +239,5 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: "#2a2a2a" },
   chipText: { color: Colors.textSecondary, fontWeight: "600" },
   chipTextActive: { color: Colors.textPrimary },
-  footer: { marginTop: 16 }, 
+  footer: { marginTop: 16 },
 });
