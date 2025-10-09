@@ -16,7 +16,8 @@ import { Stack } from "expo-router";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import { searchByName, filterByIngredient, hydrateThumbs, Cocktail } from "../lib/cocktails";
+import type { Cocktail } from "../lib/cocktails";
+import { searchByName, filterByIngredient, hydrateThumbs } from "../lib/cocktails";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {

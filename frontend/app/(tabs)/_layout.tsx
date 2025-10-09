@@ -2,11 +2,11 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { Slot, usePathname } from "expo-router";
 import BottomNav from "@/components/ui/BottomNav";
-import { ME_ID } from "@/scripts/data/mockProfiles";
+// import { ME_ID } from "@/scripts/data/mockProfiles";
 
 // Constants for self profile route
-const ME = String(ME_ID);
-const SELF_PROFILE = `/${ME}`;
+// const ME = String(ME_ID);
+// const SELF_PROFILE = `/${ME}`;
 
 const STATIC_TAB_PREFIXES = ["/home", "/my-ingredients", "/search", "/settings"];
 

@@ -4,7 +4,8 @@ import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import CocktailGrid, { CocktailItem } from "@/components/ui/CocktailGrid";
+import type { CocktailItem } from "@/components/ui/CocktailGrid";
+import CocktailGrid from "@/components/ui/CocktailGrid";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
