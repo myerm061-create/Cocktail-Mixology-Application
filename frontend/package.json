@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:ci": "jest --ci --runInBand"
+    "test:ci": "jest --ci --runInBand",
+    "verif": "npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
     "@expo-google-fonts/ubuntu": "^0.4.0",
