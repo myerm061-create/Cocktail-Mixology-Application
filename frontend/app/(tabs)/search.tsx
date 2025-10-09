@@ -65,7 +65,6 @@ export default function SearchScreen() {
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
 
-    // If query is short, show default list and stop loading state
     if (trimmed.length < 2) {
       setLoading(false);
       setError(null);
@@ -73,37 +72,39 @@ export default function SearchScreen() {
       return;
     }
 
-    timer.current = setTimeout(async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        Keyboard.dismiss(); // hide keyboard as search kicks off
+    timer.current = setTimeout(() => {
+      // wrap the async work so the callback itself returns void
+      void (async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          Keyboard.dismiss();
 
-        const words = trimmed.split(/\s+/);
-        let drinks: Cocktail[] = [];
+          const words = trimmed.split(/\s+/);
+          let drinks: Cocktail[] = [];
 
-        if (words.length === 1) {
-          drinks = await filterByIngredient(trimmed);
-          if (!drinks.length) drinks = await searchByName(trimmed);
-        } else {
-          drinks = await searchByName(trimmed);
+          if (words.length === 1) {
+            drinks = await filterByIngredient(trimmed);
+            if (!drinks.length) drinks = await searchByName(trimmed);
+          } else {
+            drinks = await searchByName(trimmed);
+          }
+
+          if (!drinks.length) {
+            drinks = MOCK.filter((d) =>
+              d.strDrink.toLowerCase().includes(trimmed.toLowerCase())
+            );
+          }
+
+          drinks = await hydrateThumbs(drinks, 12);
+          setResults(drinks);
+        } catch (e: any) {
+          setError(e?.message || "Something went wrong.");
+          setResults(MOCK);
+        } finally {
+          setLoading(false);
         }
-
-        if (!drinks.length) {
-          // fallback so you always see something
-          drinks = MOCK.filter((d) =>
-            d.strDrink.toLowerCase().includes(trimmed.toLowerCase())
-          );
-        }
-
-        drinks = await hydrateThumbs(drinks, 12);
-        setResults(drinks);
-      } catch (e: any) {
-        setError(e?.message || "Something went wrong.");
-        setResults(MOCK); // fallback
-      } finally {
-        setLoading(false);
-      }
+      })();
     }, debounceMs);
 
     return () => {

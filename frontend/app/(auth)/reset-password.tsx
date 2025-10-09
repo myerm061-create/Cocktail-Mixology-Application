@@ -55,7 +55,7 @@ export default function ResetPasswordScreen() {
 
       <FormButton
         title={submitting ? "Sending..." : "Send reset link"}
-        onPress={handleReset}
+        onPress={() => { void handleReset(); }}
         disabled={submitting || !email.trim()}
       />
 

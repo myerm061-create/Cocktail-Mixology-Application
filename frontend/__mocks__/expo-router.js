@@ -1,6 +1,18 @@
-export const router = { push: jest.fn(), replace: jest.fn(), back: jest.fn(), setParams: jest.fn() };
-export const usePathname = () => '/';
-export const useLocalSearchParams = () => ({});
-export const Link = ({ children }: any) => children; // passthrough
-export type Href = string;
-export const Stack = { Screen: () => null };
+const React = require('react');
+
+const noop = () => {};
+const mk = () => (globalThis?.jest?.fn ? globalThis.jest.fn() : noop);
+
+const router = {
+  push: mk(),
+  replace: mk(),
+  back: mk(),
+  setParams: mk(),
+};
+
+const usePathname = () => '/';
+const useLocalSearchParams = () => ({});
+const Link = ({ children }) => React.createElement(React.Fragment, null, children);
+const Stack = { Screen: () => null };
+
+module.exports = { router, usePathname, useLocalSearchParams, Link, Stack };

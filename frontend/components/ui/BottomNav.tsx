@@ -43,7 +43,7 @@ export default function BottomNav({
 
   useEffect(() => {
     if (matchedIndex !== index) setIndex(matchedIndex);
-  }, [matchedIndex, pathname]);
+  }, [matchedIndex, index]);
 
   // animate the red dot to the new index
   useEffect(() => {
@@ -53,19 +53,19 @@ export default function BottomNav({
       bounciness: 10,
       speed: 14,
     }).start();
-  }, [index]);
+  }, [index, animIndex]);
 
   const tabWidthPct = useMemo(
     () => (items.length > 0 ? 100 / items.length : 100),
-    [items.length]
+    [items]
   );
   const tabW = useMemo(
     () => (barW && items.length ? barW / items.length : 0),
-    [barW, items.length]
+    [barW, items]
   );
   const centers = useMemo(
     () => (tabW ? items.map((_, i) => i * tabW + tabW / 2) : []),
-    [tabW, items.length]
+    [tabW, items]
   );
   const canAnimate = centers.length >= 2;
 
