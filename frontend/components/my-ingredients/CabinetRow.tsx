@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { View, Text, Pressable, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import unsplashService from "@/services/unsplashService";
@@ -21,25 +21,23 @@ export default function CabinetRow({
   const [imageUrl, setImageUrl] = useState<string | null>(item.imageUrl || null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
 
+  const loadImage = useCallback(async () => {
+      setIsLoadingImage(true);
+      try {
+        const url = await unsplashService.getIngredientImage(item.name);
+        if (url) setImageUrl(url);
+      } catch (error) {
+        console.warn(`Failed to load image for ${item.name}:`, error);
+      } finally {
+        setIsLoadingImage(false);
+      }
+    }, [item.name]);
+
   useEffect(() => {
     if (!imageUrl && !isLoadingImage) {
-      loadImage();
+      void loadImage(); 
     }
-  }, []);
-
-  const loadImage = async () => {
-    setIsLoadingImage(true);
-    try {
-      const url = await unsplashService.getIngredientImage(item.name);
-      if (url) {
-        setImageUrl(url);
-      }
-    } catch (error) {
-      console.warn(`Failed to load image for ${item.name}:`, error);
-    } finally {
-      setIsLoadingImage(false);
-    }
-  };
+  }, [imageUrl, isLoadingImage, loadImage]);
 
   const handleOpen = (direction: "left" | "right") => {
     if (direction === "left") onAddToShopping(item.id);

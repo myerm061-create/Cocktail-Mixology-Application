@@ -61,7 +61,10 @@ export default function LoginScreen() {
         <View style={styles.divider} />
       </View>
 
-      <GoogleAuthButton onPress={handleGoogle} loading={gLoading} />
+      <GoogleAuthButton
+        onPress={() => { void handleGoogle(); }} 
+        loading={gLoading}
+      />
 
       <Text style={styles.newUserText}>
         New user?{" "}
