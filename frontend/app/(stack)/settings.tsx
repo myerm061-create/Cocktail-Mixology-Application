@@ -39,18 +39,19 @@ export default function SettingsScreen() {
 
   return (
     <>
-      {/* Hide default header/back button */}
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={styles.backWrap}>
+      {/* Back button overlay*/}
       <View style={[styles.backWrap, { top: Math.max(14, insets.top) }]}>
         <BackButton />
       </View>
 
+      {/* Fixed header */}
       <View style={[styles.headerWrap, { paddingTop: insets.top + 56 }]}>
         <Text style={styles.title}>Settings</Text>
       </View>
 
+      {/* Scrollable content */}
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingBottom: 32 }]}
