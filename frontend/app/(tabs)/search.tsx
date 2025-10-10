@@ -12,7 +12,7 @@ import {
   UIManager,
   Keyboard,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -115,6 +115,18 @@ export default function SearchScreen() {
   const onPressSearch = () => setQuery((q) => q.trim());
   const canSearch = trimmed.length >= 2;
 
+  const openDrink = (item: Cocktail) => {
+    if (!item?.idDrink) return;
+    router.push({
+      pathname: "/drink/[drinkId]",
+      params: {
+        drinkId: String(item.idDrink),
+        name: item.strDrink,
+        thumbUrl: item.strDrinkThumb ?? undefined,
+      },
+    });
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -165,9 +177,9 @@ export default function SearchScreen() {
             ref={listRef}
             data={pagedResults}
             keyExtractor={(item) => item.idDrink}
-            contentContainerStyle={{ paddingBottom: 24 }}
+            contentContainerStyle={{ paddingBottom: 140 }} 
             renderItem={({ item }) => (
-              <View style={styles.card}>
+              <Pressable onPress={() => openDrink(item)} style={styles.card} accessibilityRole="button">
                 {item.strDrinkThumb ? (
                   <Image
                     source={{ uri: item.strDrinkThumb }}
@@ -180,7 +192,7 @@ export default function SearchScreen() {
                   </View>
                 )}
                 <Text style={styles.cardTitle}>{item.strDrink}</Text>
-              </View>
+              </Pressable>
             )}
             showsVerticalScrollIndicator={false}
             ListFooterComponent={() =>
