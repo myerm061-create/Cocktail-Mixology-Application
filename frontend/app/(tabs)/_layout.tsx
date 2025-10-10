@@ -8,7 +8,7 @@ import BottomNav from "@/components/ui/BottomNav";
 // const ME = String(ME_ID);
 // const SELF_PROFILE = `/${ME}`;
 
-const STATIC_TAB_PREFIXES = ["/home", "/my-ingredients", "/search", "/settings"];
+const STATIC_TAB_PREFIXES = ["/home", "/my-ingredients", "/search", "/settings", "/favorites"];
 
 // Check if the path is a user profile path
 const isProfilePath = (p: string) => {
@@ -23,17 +23,18 @@ const TABS = [
   { icon: "cube-outline",   route: "/my-ingredients" },
   { icon: "heart-outline",   route: "/favorites" },
   { icon: "search-outline", route: "/search" },
-  { icon: "person-outline", route: "/profile", match: isProfilePath },
+  { icon: "person-outline", route: "/profile", match: (p: string) => isProfilePath(p) || p.startsWith("/user-profile") },
 ];
 
 // Layout component that includes bottom navigation on tab screens
 export default function TabsLayout() {
-  const path = usePathname();
+  const path = usePathname() ?? "";
 
   // highlight the nav if current path matches the tab's base route or href
-  const onATab = TABS.some(
-    (t: any) => (t.match ? t.match(path) : path.startsWith(t.route))
-  );
+  const onATab =
+    STATIC_TAB_PREFIXES.some((s) => path.startsWith(s)) ||
+    path.startsWith("/user-profile") ||
+    isProfilePath(path); 
 
   return (
     <View style={styles.wrap}>
