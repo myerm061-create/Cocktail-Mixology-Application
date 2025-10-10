@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
-import { View, Text, Pressable, StyleSheet, Image, ActivityIndicator } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image, ActivityIndicator, Animated } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import unsplashService from "@/services/unsplashService";
+import SwipeAction from "./SwipeAction";
 
 export type Category = "Spirit" | "Liqueur" | "Mixer" | "Juice" | "Garnish" | "Other";
 export type Ingredient = { id: string; name: string; category: Category; owned: boolean; wanted?: boolean; impactScore?: number; imageUrl?: string };
@@ -47,19 +48,31 @@ export default function CabinetRow({
     requestAnimationFrame(() => swipeRef.current?.close());
   };
 
+  // Super simple actions using reusable component
+  const renderLeftActions = (progress: Animated.AnimatedInterpolation<number>) => (
+    <SwipeAction 
+      progress={progress} 
+      icon="🛒" 
+      label="Add" 
+      backgroundColor="#1E8449" 
+      alignLeft 
+    />
+  );
+
+  const renderRightActions = (progress: Animated.AnimatedInterpolation<number>) => (
+    <SwipeAction 
+      progress={progress} 
+      icon="🗑️" 
+      label="Remove" 
+      backgroundColor="#C0392B" 
+    />
+  );
+
   return (
     <Swipeable
       ref={swipeRef}
-      renderLeftActions={() => (
-        <View style={[styles.actionLeft, styles.actionAdd]}>
-          <Text style={styles.actionText}>Add to Cart</Text>
-        </View>
-      )}
-      renderRightActions={() => (
-        <View style={[styles.actionRight, styles.actionRemove]}>
-          <Text style={styles.actionText}>Remove</Text>
-        </View>
-      )}
+      renderLeftActions={renderLeftActions}
+      renderRightActions={renderRightActions}
       overshootLeft={false}
       overshootRight={false}
       friction={2}
@@ -115,11 +128,6 @@ const styles = StyleSheet.create({
   rowTextWrap: { flex: 1, marginRight: 8, overflow: "hidden" },
   rowTitle: { color: "#EDEDED", fontSize: 16, fontWeight: "600" },
   rowSub: { color: "#9C9CA3", fontSize: 12, marginTop: 2 },
-  actionLeft: { flex: 1, justifyContent: "center", alignItems: "flex-start", paddingLeft: 14 },
-  actionRight: { flex: 1, justifyContent: "center", alignItems: "flex-end", paddingRight: 14 },
-  actionAdd: { backgroundColor: "#287D3C", borderTopRightRadius: 12, borderBottomRightRadius: 12 },
-  actionRemove: { backgroundColor: "#7D2830", borderTopLeftRadius: 12, borderBottomLeftRadius: 12 },
-  actionText: { color: "#FFFFFF", fontWeight: "700" },
   menuButton: {
     width: 34, height: 34, borderRadius: 8, borderWidth: 1, borderColor: "#2A2A30",
     alignItems: "center", justifyContent: "center", backgroundColor: "#1A1A1E", marginLeft: 8, zIndex: 5,

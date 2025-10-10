@@ -5,7 +5,11 @@ export default function Tab({ label, active, onPress }:{
   label: string; active?: boolean; onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={[s.tab, active ? s.active : s.idle]}>
+    <Pressable 
+      onPress={onPress} 
+      style={[s.tab, active ? s.active : s.idle]}
+      android_ripple={{ color: active ? "#3B7BFF20" : "#FFFFFF10", borderless: true }}
+    >
       <Text style={[s.text, active && s.textActive]} numberOfLines={1}>{label}</Text>
     </Pressable>
   );
