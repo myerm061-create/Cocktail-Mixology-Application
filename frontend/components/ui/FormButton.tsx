@@ -1,12 +1,13 @@
 import React from "react";
+import type {
+  GestureResponderEvent,
+  ViewStyle,
+  TextStyle} from "react-native";
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
   ActivityIndicator,
-  GestureResponderEvent,
-  ViewStyle,
-  TextStyle,
   Image,
 } from "react-native";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";

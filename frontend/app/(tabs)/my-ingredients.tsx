@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Pressable, Modal } from "react-native";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 
@@ -36,7 +36,7 @@ export default function MyIngredientsScreen() {
   const [query, setQuery] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<"All" | Category>("All");
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  // const [showSuggestions, setShowSuggestions] = useState(true);
   const [toast, setToast] = useState<{ text: string; onUndo: () => void } | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
@@ -56,11 +56,11 @@ export default function MyIngredientsScreen() {
     return ["All", ...Array.from(set)];
   }, [ingredients]);
 
-  const sortByName = (list: Ingredient[]) => {
+  const sortByName = useCallback((list: Ingredient[]) => {
     const out = [...list].sort((a, b) => a.name.localeCompare(b.name));
     return sortAsc ? out : out.reverse();
-  };
-  const filterByQueryAndCategory = (list: Ingredient[]) => {
+  }, [sortAsc]);
+  const filterByQueryAndCategory = useCallback((list: Ingredient[]) => {
     let out = list;
     if (query.trim()) {
       const q = query.trim().toLowerCase();
@@ -68,15 +68,21 @@ export default function MyIngredientsScreen() {
     }
     if (categoryFilter !== "All") out = out.filter(i => i.category === categoryFilter);
     return out;
-  };
+  }, [query, categoryFilter]);
 
-  const cabinetItems  = useMemo(() => sortByName(filterByQueryAndCategory(ingredients.filter(i => i.owned))), [ingredients, query, categoryFilter, sortAsc]);
-  const shoppingItems = useMemo(() => sortByName(filterByQueryAndCategory(ingredients.filter(i => i.wanted))), [ingredients, query, categoryFilter, sortAsc]);
+  const cabinetItems  = useMemo(
+    () => sortByName(filterByQueryAndCategory(ingredients.filter(i => i.owned))),
+    [ingredients, sortByName, filterByQueryAndCategory]
+  );
+  const shoppingItems = useMemo(
+    () => sortByName(filterByQueryAndCategory(ingredients.filter(i => i.wanted))),
+    [ingredients, sortByName, filterByQueryAndCategory]
+  );
 
-  const suggestions = useMemo(() => {
-    const pool = ingredients.filter(i => !i.owned && !i.wanted);
-    return [...pool].sort((a,b) => (b.impactScore ?? 0) - (a.impactScore ?? 0)).slice(0,6);
-  }, [ingredients]);
+  // const suggestions = useMemo(() => {
+  //   const pool = ingredients.filter(i => !i.owned && !i.wanted);
+  //   return [...pool].sort((a,b) => (b.impactScore ?? 0) - (a.impactScore ?? 0)).slice(0,6);
+  // }, [ingredients]);
 
   /** ----- Actions ----- */
   const clearQuery = () => setQuery("");
