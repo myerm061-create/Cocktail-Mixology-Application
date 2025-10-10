@@ -16,11 +16,13 @@ const getLoader = () =>
   screen.UNSAFE_queryByType(ActivityIndicator);
 
 describe("CocktailCard", () => {
+  // Smoke test is in smoke.test.tsx
   it("renders with accessible label", () => {
     render(<CocktailCard id="1" name="Margarita" />);
     expect(screen.getByLabelText("Open Margarita")).toBeTruthy();
   });
 
+  // Test onPress callback
   it("calls onPress with the id", () => {
     const onPress = jest.fn();
     render(<CocktailCard id="42" name="Negroni" onPress={onPress} />);
@@ -28,6 +30,7 @@ describe("CocktailCard", () => {
     expect(onPress).toHaveBeenCalledWith("42");
   });
 
+  // Test image loading states
   it("shows loader while image loading then hides on onLoadEnd", () => {
     render(<CocktailCard id="2" name="Old Fashioned" thumbUrl="https://example.com/img.jpg" />);
     expect(getLoader()).toBeTruthy();
@@ -38,6 +41,7 @@ describe("CocktailCard", () => {
     expect(getLoader()).toBeNull();
   });
 
+  // Test image error handling
   it("on image error, hides loader and shows fallback (no image role)", () => {
     render(<CocktailCard id="3" name="Mojito" thumbUrl="https://example.com/bad.jpg" />);
 
@@ -51,6 +55,7 @@ describe("CocktailCard", () => {
     expect(screen.UNSAFE_queryByType(RNImage)).toBeNull();
   });
 
+  // Test favorite toggle button and callback
   it("favorite toggle updates a11y label and calls onToggleFavorite", () => {
     const onToggleFavorite = jest.fn();
     render(
