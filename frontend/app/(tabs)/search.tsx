@@ -12,7 +12,7 @@ import {
   UIManager,
   Keyboard,
 } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -115,6 +115,21 @@ export default function SearchScreen() {
   const onPressSearch = () => setQuery((q) => q.trim());
   const canSearch = trimmed.length >= 2;
 
+  const openDrink = (item: Cocktail) => {
+    if (!item?.idDrink) return;
+    router.push({
+      pathname: "/drink/[drinkId]",
+      params: {
+        drinkId: String(item.idDrink),
+        name: item.strDrink,
+        thumbUrl: item.strDrinkThumb ?? undefined,
+      },
+    });
+  };
+
+  const toPreview = (u?: string | null) =>
+      u ? (u.endsWith("/preview") ? u : `${u}/preview`) : undefined;
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -165,22 +180,24 @@ export default function SearchScreen() {
             ref={listRef}
             data={pagedResults}
             keyExtractor={(item) => item.idDrink}
-            contentContainerStyle={{ paddingBottom: 24 }}
+            contentContainerStyle={{ paddingBottom: 140 }} 
             renderItem={({ item }) => (
-              <View style={styles.card}>
+              <Pressable onPress={() => openDrink(item)} style={styles.cardRow} accessibilityRole="button">
                 {item.strDrinkThumb ? (
                   <Image
-                    source={{ uri: item.strDrinkThumb }}
-                    style={styles.thumb}
+                    source={{ uri: toPreview(item.strDrinkThumb) }}
+                    style={styles.thumbSm}
                     resizeMode="cover"
                   />
                 ) : (
-                  <View style={[styles.thumb, styles.thumbFallback]}>
+                  <View style={[styles.thumbSm, styles.thumbFallback]}>
                     <Text style={{ color: "#9A968A" }}>No Image</Text>
                   </View>
                 )}
-                <Text style={styles.cardTitle}>{item.strDrink}</Text>
-              </View>
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  {item.strDrink}
+                </Text>
+              </Pressable>
             )}
             showsVerticalScrollIndicator={false}
             ListFooterComponent={() =>
@@ -249,21 +266,23 @@ const styles = StyleSheet.create({
   resultsWrap: { flex: 1, padding: 16 },
   error: { color: "#ff8a80", marginTop: 8 },
   empty: { color: "#D9D4C5", opacity: 0.8, marginTop: 8 },
-  card: {
+  cardRow: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#2a2a2a",
     borderRadius: 10,
-    padding: 12,
+    padding: 10,
     marginBottom: 10,
     backgroundColor: "#141414",
   },
-  thumb: {
-    width: "100%",
-    height: 180,
+  thumbSm: {
+    width: 72,
+    height: 72,
     borderRadius: 8,
-    marginBottom: 8,
     backgroundColor: "#222",
   },
   thumbFallback: { alignItems: "center", justifyContent: "center" },
-  cardTitle: { color: "#F5F0E1", fontSize: 18, fontWeight: "600" },
+  cardTitle: { flex: 1, color: "#F5F0E1", fontSize: 16, fontWeight: "600" },
 });
