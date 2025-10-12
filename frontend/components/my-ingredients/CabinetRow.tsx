@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { View, Text, Pressable, StyleSheet, Image, ActivityIndicator, Animated } from "react-native";
+import { View, Text, Pressable, StyleSheet, Image, ActivityIndicator, type Animated } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import unsplashService from "@/services/unsplashService";
 import SwipeAction from "./SwipeAction";
