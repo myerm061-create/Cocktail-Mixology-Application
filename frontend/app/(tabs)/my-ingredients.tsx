@@ -192,8 +192,9 @@ export default function MyIngredientsScreen() {
     />
   );
 
-  const renderEmpty = (title: string, subtitle: string) => (
+  const renderEmpty = (title: string, subtitle: string, icon?: string) => (
     <View style={styles.emptyWrap}>
+      {icon && <Text style={styles.emptyIcon}>{icon}</Text>}
       <Text style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.emptySubtitle}>{subtitle}</Text>
     </View>
@@ -224,7 +225,11 @@ export default function MyIngredientsScreen() {
         renderItem={renderCabinetItem}
         contentContainerStyle={[styles.listContent, cabinetItems.length === 0 && { flex: 1 }]}
         style={{ overflow: "visible" }}
-        ListEmptyComponent={renderEmpty(query ? "No matches" : "Cabinet is empty", query ? `No ingredients match "${query}".` : "Add your first items using the ＋ button.")}
+        ListEmptyComponent={renderEmpty(
+          query ? "No matches" : "Cabinet is empty", 
+          query ? `No ingredients match "${query}".` : "Add your first items using the ＋ button.",
+          query ? "🔍" : "🍸"
+        )}
         onScrollBeginDrag={() => { setIsSheetOpen(false); setOpenMenuForId(null); }}
       />
     </>
@@ -258,7 +263,11 @@ export default function MyIngredientsScreen() {
         keyExtractor={i => i.id}
         renderItem={renderShoppingItem}
         contentContainerStyle={[styles.listContent, shoppingItems.length === 0 && { flex: 1 }]}
-        ListEmptyComponent={renderEmpty(query ? "No matches" : "No items", query ? `No items match “${query}”.` : "Add items to your Shopping List using the ＋ button.")}
+        ListEmptyComponent={renderEmpty(
+          query ? "No matches" : "No items", 
+          query ? `No items match "${query}".` : "Add items to your Shopping List using the ＋ button.",
+          query ? "🔍" : "🛒"
+        )}
         onScrollBeginDrag={() => { setIsSheetOpen(false); setOpenMenuForId(null); }}
       />
     </>
@@ -331,9 +340,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.dark.background, overflow: "visible" },
   tabsRow: { flexDirection: "row", paddingHorizontal: 12, paddingTop: 16, paddingBottom: 8, gap: 8 },
 
-  header: { paddingTop: 16, paddingHorizontal: 20, paddingBottom: 6 },
-  title: { fontSize: 24, fontWeight: "700", color: "#F5F0E1" },
-  subtitle: { marginTop: 4, fontSize: 13, color: "#A9A9A9" },
+  header: { paddingTop: 20, paddingHorizontal: 20, paddingBottom: 8 },
+  title: { fontSize: 26, fontWeight: "700", color: "#F5F0E1", letterSpacing: -0.5 },
+  subtitle: { marginTop: 6, fontSize: 14, color: "#A9A9A9", fontWeight: "500" },
 
   filtersRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12, flexWrap: "wrap", columnGap: 8, rowGap: 8 },
   categoriesWrap: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", rowGap: 8, columnGap: 8, flexShrink: 1 },
@@ -341,18 +350,20 @@ const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 10, paddingBottom: 120, paddingTop: 10, overflow: "visible" },
 
   emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
-  emptyTitle: { color: "#EDEDED", fontSize: 18, fontWeight: "700", marginBottom: 6 },
-  emptySubtitle: { color: "#A9A9A9", fontSize: 14, textAlign: "center" },
+  emptyIcon: { fontSize: 48, marginBottom: 16, opacity: 0.6 },
+  emptyTitle: { color: "#EDEDED", fontSize: 18, fontWeight: "700", marginBottom: 8 },
+  emptySubtitle: { color: "#A9A9A9", fontSize: 14, textAlign: "center", lineHeight: 20 },
 
   primaryBtn: { backgroundColor: "#3B7BFF", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: "#3B7BFF" },
   primaryBtnText: { color: "#FFFFFF", fontWeight: "700" },
 
   fab: {
-    position: "absolute", right: 20, bottom: 28, width: 56, height: 56, borderRadius: 28, backgroundColor: "#3B7BFF",
+    position: "absolute", right: 20, bottom: 28, width: 58, height: 58, borderRadius: 29, backgroundColor: "#3B7BFF",
     alignItems: "center", justifyContent: "center",
-    shadowColor: "#000", shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6,
+    shadowColor: "#3B7BFF", shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+    borderWidth: 2, borderColor: "#4A8BFF",
   },
-  fabPlus: { color: "#FFFFFF", fontSize: 28, marginTop: -2, fontWeight: "600" },
+  fabPlus: { color: "#FFFFFF", fontSize: 30, marginTop: -2, fontWeight: "600" },
 
   // Modal
   modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.7)", justifyContent: "center", alignItems: "center", paddingHorizontal: 20 },
