@@ -18,6 +18,8 @@ import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import type { Cocktail } from "../lib/cocktails";
 import { searchByName, filterByIngredient, hydrateThumbs } from "../lib/cocktails";
+import { useFavorites } from "@/app/lib/useFavorites";
+import { Ionicons } from "@expo/vector-icons";
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -30,7 +32,7 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
  *  - Mojito:         11000
  *  - Old Fashioned:  11001
  *  - Manhattan:      11008
- *  - Vodka Martini:  17222
+ *  - Vodka Martini:  14167 
  *  - Moscow Mule:    11009
  */
 const STARTERS: Cocktail[] = [
@@ -38,16 +40,19 @@ const STARTERS: Cocktail[] = [
   { idDrink: "11000", strDrink: "Mojito",         strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
   { idDrink: "11001", strDrink: "Old Fashioned",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
   { idDrink: "11008", strDrink: "Manhattan",      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/yk70e31606771240.jpg" },
-  { idDrink: "17222", strDrink: "Vodka Martini",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/qyxrqw1439906528.jpg" },
+  { idDrink: "14167", strDrink: "Vodka Martini",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/qyxrqw1439906528.jpg" },
   { idDrink: "11009", strDrink: "Moscow Mule",    strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/3pylqc1504370988.jpg" },
 ];
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Cocktail[]>(STARTERS); 
+  const [results, setResults] = useState<Cocktail[]>(STARTERS);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
   const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
+
+  const { items: favItems, toggle } = useFavorites();
+  const favIds = useMemo(() => new Set((favItems ?? []).map(f => f.id)), [favItems]);
 
   const insets = useSafeAreaInsets();
 
@@ -113,7 +118,7 @@ export default function SearchScreen() {
             drinks = STARTERS;
           }
 
-          // Make sure thumbs are present 
+          // Ensure thumbs are present if any lookup lacked them
           drinks = await hydrateThumbs(drinks, 12);
 
           setResults(drinks);
@@ -208,31 +213,38 @@ export default function SearchScreen() {
             data={pagedResults}
             keyExtractor={(item) => item.idDrink}
             contentContainerStyle={{ paddingBottom: 140 }}
-            renderItem={({ item }) => (
-              <Pressable onPress={() => openDrink(item)} style={styles.cardRow} accessibilityRole="button">
-                {item.strDrinkThumb ? (
-                  <Image
-                    source={{ uri: toPreview(item.strDrinkThumb) }}
-                    style={styles.thumbSm}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={[styles.thumbSm, styles.thumbFallback]}>
-                    <Text style={{ color: "#9A968A" }}>No Image</Text>
-                  </View>
-                )}
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {item.strDrink}
-                </Text>
-              </Pressable>
-            )}
+            renderItem={({ item }) => {
+              const fav = favIds.has(item.idDrink);
+              return (
+                <View style={styles.cardRow}>
+                  <Pressable onPress={() => openDrink(item)} accessibilityRole="button" style={styles.rowLeft}>
+                    {item.strDrinkThumb ? (
+                      <Image source={{ uri: toPreview(item.strDrinkThumb) }} style={styles.thumbSm} resizeMode="cover" />
+                    ) : (
+                      <View style={[styles.thumbSm, styles.thumbFallback]}>
+                        <Text style={{ color: "#9A968A" }}>No Image</Text>
+                      </View>
+                    )}
+                    <Text style={styles.cardTitle} numberOfLines={2}>{item.strDrink}</Text>
+                  </Pressable>
+
+                  {/* Heart toggle (persisted) */}
+                  <Pressable
+                    onPress={() => void toggle({ id: item.idDrink, name: item.strDrink, thumbUrl: item.strDrinkThumb ?? null })}
+                    hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityLabel={fav ? "Remove from favorites" : "Add to favorites"}
+                    style={styles.heartBtn}
+                  >
+                    <Ionicons name={fav ? "heart" : "heart-outline"} size={20} color={fav ? "#FF6B6B" : (Colors.textPrimary as string)} />
+                  </Pressable>
+                </View>
+              );
+            }}
             showsVerticalScrollIndicator={false}
             ListFooterComponent={() =>
               pagedResults.length < results.length ? (
-                <Pressable
-                  onPress={() => setPage((p) => p + 1)}
-                  style={{ padding: 16, alignItems: "center" }}
-                >
+                <Pressable onPress={() => setPage((p) => p + 1)} style={{ padding: 16, alignItems: "center" }}>
                   <Text style={{ color: "#fff" }}>Load more</Text>
                 </Pressable>
               ) : null
@@ -246,75 +258,38 @@ export default function SearchScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#101010" },
-  headerWrap: {
-    backgroundColor: Colors.background,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
+  headerWrap: { backgroundColor: Colors.background, paddingHorizontal: 16, paddingBottom: 12 },
   backWrap: { position: "absolute", left: 14, zIndex: 10 },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: Colors.textPrimary,
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginTop: 12,
-  },
+  title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 12 },
+  searchRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 },
   searchInput: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: "#3A3A3A",
-    color: "#F5F0E1",
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    backgroundColor: "#111",
+    flex: 1, height: 44, borderWidth: 1, borderColor: "#3A3A3A",
+    color: "#F5F0E1", paddingHorizontal: 12, borderRadius: 10, backgroundColor: "#111",
   },
   searchBtn: {
-    height: 44,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#3A3A3A",
-    borderRadius: 10,
-    backgroundColor: "#1d1d1d",
+    height: 44, paddingHorizontal: 16, alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: "#3A3A3A", borderRadius: 10, backgroundColor: "#1d1d1d",
   },
   searchBtnDisabled: { opacity: 0.5 },
   searchBtnText: { color: "#F5F0E1", fontWeight: "700" },
 
-  banner: {
-    marginTop: 10,
-    color: Colors.textSecondary ?? "#D9D4C5",
-    fontSize: 13,
-    textAlign: "center",
-  },
+  banner: { marginTop: 10, color: Colors.textSecondary ?? "#D9D4C5", fontSize: 13, textAlign: "center" },
 
   resultsWrap: { flex: 1, padding: 16 },
   error: { color: "#ff8a80", marginTop: 8 },
   empty: { color: "#D9D4C5", opacity: 0.8, marginTop: 8 },
+
   cardRow: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#2a2a2a",
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: "#141414",
+    flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#2a2a2a",
+    borderRadius: 10, padding: 10, marginBottom: 10, backgroundColor: "#141414",
   },
-  thumbSm: {
-    width: 72,
-    height: 72,
-    borderRadius: 8,
-    backgroundColor: "#222",
-  },
+  rowLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
+  thumbSm: { width: 72, height: 72, borderRadius: 8, backgroundColor: "#222" },
   thumbFallback: { alignItems: "center", justifyContent: "center" },
   cardTitle: { flex: 1, color: "#F5F0E1", fontSize: 16, fontWeight: "600" },
+
+  heartBtn: {
+    width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.25)",
+  },
 });
