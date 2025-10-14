@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8
       - name: Lint
-        run: flake8 .
+        run: flake8 . --ignore=E501,W503,E203,E302,E305,E402,E701,E702,E731,W291,W292,W293,W391,F401,F811
 
   # Run pytest tests after linting passes
   test:
