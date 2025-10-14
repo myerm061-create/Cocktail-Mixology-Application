@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import { getDetailsById, type CocktailDetails } from "@/app/lib/cocktails";
+import { useFavorites } from "@/app/lib/useFavorites";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -27,7 +28,10 @@ export default function DrinkDetailsScreen() {
   const { drinkId, name, thumbUrl } =
     useLocalSearchParams<{ drinkId?: string; name?: string; thumbUrl?: string }>();
 
-  const [isFav, setIsFav] = React.useState(false);
+  const { items: favItems, toggle } = useFavorites();
+  const favIds = React.useMemo(() => new Set((favItems ?? []).map((f) => f.id)), [favItems]);
+  const isFav = drinkId ? favIds.has(String(drinkId)) : false;
+
   const [drink, setDrink] = React.useState<CocktailDetails | null>(null);
   const [err, setErr] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState<boolean>(!!drinkId);
@@ -43,6 +47,9 @@ export default function DrinkDetailsScreen() {
         if (!alive) return;
         setDrink(details);
         setErr(details ? null : "Not found");
+        if (__DEV__ && details && name && details.strDrink !== name) {
+          console.warn(`Route name (${name}) != API name (${details.strDrink}) for id ${drinkId}`);
+        }
       } catch (e: any) {
         if (!alive) return;
         setErr(e?.message || "Failed to load drink");
@@ -50,10 +57,8 @@ export default function DrinkDetailsScreen() {
         if (alive) setLoading(false);
       }
     })();
-    return () => {
-      alive = false;
-    };
-  }, [drinkId]);
+    return () => { alive = false; };
+  }, [drinkId, name]);
 
   const title = drink?.strDrink || name || "Drink Details";
   const heroSrc =
@@ -64,18 +69,17 @@ export default function DrinkDetailsScreen() {
   const steps = toSteps(drink?.strInstructions);
   const ingredients = drink?.ingredients ?? [];
 
+  const onToggleFav = () => {
+    if (!drinkId) return;
+    void toggle({ id: String(drinkId), name: title, thumbUrl: heroSrc });
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Make sure back button is always tappable and above content */}
-      <View
-        style={[
-          styles.backWrap,
-          { top: Math.max(14, insets.top) },
-        ]}
-        pointerEvents="box-none"
-      >
+      <View style={[styles.backWrap, { top: Math.max(14, insets.top) }]} pointerEvents="box-none">
         <BackButton />
       </View>
 
@@ -89,25 +93,15 @@ export default function DrinkDetailsScreen() {
           {!drink?.strCategory && !!drinkId && <Text style={styles.subtitle}>ID: {drinkId}</Text>}
         </View>
 
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.content}
-          showsVerticalScrollIndicator={false}
-        >
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {/* HERO */}
           <View style={styles.heroCard}>
             <Image source={{ uri: heroSrc }} style={styles.heroImage} contentFit="cover" transition={100} />
-            <Pressable onPress={() => setIsFav((v) => !v)} hitSlop={12} style={styles.heartBtn}>
-              <Ionicons
-                name={isFav ? "heart" : "heart-outline"}
-                size={22}
-                color={isFav ? "#FF6B6B" : Colors.textPrimary}
-              />
+            <Pressable onPress={onToggleFav} hitSlop={12} style={styles.heartBtn}>
+              <Ionicons name={isFav ? "heart" : "heart-outline"} size={22} color={isFav ? "#FF6B6B" : (Colors.textPrimary as string)} />
             </Pressable>
             <View style={styles.heroTitlePill}>
-              <Text numberOfLines={1} style={styles.heroTitleText}>
-                {title}
-              </Text>
+              <Text numberOfLines={1} style={styles.heroTitleText}>{title}</Text>
             </View>
           </View>
 
@@ -132,12 +126,7 @@ export default function DrinkDetailsScreen() {
               <Text style={styles.sectionTitle}>Ingredients</Text>
               {ingredients.map((it, idx) => (
                 <View key={`${it.ingredient}-${idx}`} style={styles.ingredientRow}>
-                  <Ionicons
-                    name="ellipse"
-                    size={6}
-                    color={Colors.textSecondary ?? "#9BA3AF"}
-                    style={{ marginTop: 8, marginRight: 8 }}
-                  />
+                  <Ionicons name="ellipse" size={6} color={Colors.textSecondary ?? "#9BA3AF"} style={{ marginTop: 8, marginRight: 8 }} />
                   <Text style={styles.ingredientText}>
                     <Text style={styles.ingredientName}>{it.ingredient}</Text>
                     {it.measure ? <Text style={styles.ingredientMeasure}> — {it.measure}</Text> : null}
@@ -165,9 +154,7 @@ export default function DrinkDetailsScreen() {
           {/* Fallback if no details available */}
           {!loading && !err && ingredients.length === 0 && steps.length === 0 && (
             <View style={styles.placeholderBox}>
-              <Text style={styles.placeholderText}>
-                Full recipe details will appear here once loaded.
-              </Text>
+              <Text style={styles.placeholderText}>Full recipe details will appear here once loaded.</Text>
             </View>
           )}
         </ScrollView>
@@ -180,58 +167,26 @@ const RADIUS = 18;
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  backWrap: {
-    position: "absolute",
-    left: 14,
-    zIndex: 20,          
-    elevation: 20,      
-  },
+  backWrap: { position: "absolute", left: 14, zIndex: 20, elevation: 20 },
   headerWrap: { backgroundColor: Colors.background, alignItems: "center", paddingBottom: 12 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center" },
   subtitle: { marginTop: 6, fontSize: 12, color: Colors.textSecondary ?? "#9BA3AF" },
   scroll: { flex: 1, backgroundColor: Colors.background },
   content: { paddingHorizontal: 16, paddingBottom: 140 },
 
-  heroCard: {
-    marginTop: 8,
-    borderRadius: RADIUS,
-    overflow: "hidden",
-    position: "relative",
-    backgroundColor: Colors.cardBackground ?? "#1A1921",
-  },
+  heroCard: { marginTop: 8, borderRadius: RADIUS, overflow: "hidden", position: "relative", backgroundColor: Colors.cardBackground ?? "#1A1921" },
   heroImage: { width: "100%", aspectRatio: 4 / 5, borderRadius: RADIUS },
   heartBtn: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.35)",
+    position: "absolute", top: 10, right: 10, width: 36, height: 36, borderRadius: 18,
+    alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.35)",
   },
   heroTitlePill: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    right: 10,
-    alignItems: "center",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    position: "absolute", bottom: 10, left: 10, right: 10, alignItems: "center",
+    paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999, backgroundColor: "rgba(0,0,0,0.45)",
   },
   heroTitleText: { fontSize: 22, fontWeight: "800", color: "#fff", textAlign: "center" },
 
-  section: {
-    marginTop: 18,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder ?? "#2C2A35",
-    backgroundColor: Colors.buttonBackground,
-  },
+  section: { marginTop: 18, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: Colors.cardBorder ?? "#2C2A35", backgroundColor: Colors.buttonBackground },
   sectionTitle: { fontSize: 18, fontWeight: "800", color: Colors.textPrimary, marginBottom: 10 },
 
   ingredientRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 6 },
@@ -241,14 +196,8 @@ const styles = StyleSheet.create({
 
   stepRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 10 },
   stepBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.background,
-    marginRight: 10,
-    marginTop: 2,
+    width: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center",
+    backgroundColor: Colors.background, marginRight: 10, marginTop: 2,
   },
   stepBadgeText: { color: Colors.textPrimary, fontWeight: "800", fontSize: 12 },
   stepText: { color: Colors.textPrimary, fontSize: 14, flex: 1 },
@@ -258,14 +207,8 @@ const styles = StyleSheet.create({
   infoTextSmall: { color: Colors.textSecondary ?? "#9BA3AF", fontSize: 12, marginTop: 6 },
 
   placeholderBox: {
-    marginTop: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder ?? "#2C2A35",
-    backgroundColor: Colors.buttonBackground,
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    marginTop: 16, borderRadius: 12, borderWidth: 1, borderColor: Colors.cardBorder ?? "#2C2A35",
+    backgroundColor: Colors.buttonBackground, padding: 20, alignItems: "center", justifyContent: "center",
   },
   placeholderText: { color: Colors.textSecondary ?? "#9BA3AF" },
 });

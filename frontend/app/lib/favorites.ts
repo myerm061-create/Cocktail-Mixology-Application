@@ -1,13 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Favorite = {
-  id: string;              // TheCocktailDB id
-  name: string;            // display name
+  id: string;
+  name: string;
   thumbUrl?: string | null;
-  addedAt: number;         // for sorting
+  addedAt: number;
 };
 
 const KEY = "favorites:v1";
+
+type Listener = () => void;
+const listeners = new Set<Listener>();
+function emit() {
+  listeners.forEach((fn) => {
+    try { fn(); } catch { /* noop */ }
+  });
+}
+export function subscribe(listener: Listener) {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); }; 
+}
 
 async function read(): Promise<Record<string, Favorite>> {
   try {
@@ -22,6 +34,7 @@ async function read(): Promise<Record<string, Favorite>> {
 
 async function write(map: Record<string, Favorite>) {
   await AsyncStorage.setItem(KEY, JSON.stringify(map));
+  emit(); 
 }
 
 export async function listFavorites(): Promise<Favorite[]> {
@@ -48,16 +61,15 @@ export async function removeFavorite(id: string) {
   }
 }
 
-/** Toggle and return the *new* state */
+/** Toggle and return the *new* state (true if now favorited) */
 export async function toggleFavorite(item: Omit<Favorite, "addedAt">): Promise<boolean> {
   const map = await read();
-  if (map[item.id]) {
+  const exists = !!map[item.id];
+  if (exists) {
     delete map[item.id];
-    await write(map);
-    return false;
   } else {
     map[item.id] = { ...item, addedAt: Date.now() };
-    await write(map);
-    return true;
   }
+  await write(map);
+  return !exists;
 }
