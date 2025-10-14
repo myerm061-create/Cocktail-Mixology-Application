@@ -14,7 +14,7 @@ export default function Toast({ text, onUndo }:{ text: string; onUndo: () => voi
 
 const s = StyleSheet.create({
   container: {
-    position: "absolute", bottom: 80, left: 20, right: 20,
+    position: "absolute", bottom: 100, left: 20, right: 20,
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingVertical: 12, paddingHorizontal: 16,
     backgroundColor: "#1C1C22", borderRadius: 14, borderWidth: 1, borderColor: "#32323C",

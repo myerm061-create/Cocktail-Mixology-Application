@@ -1,3 +1,6 @@
+import { normalizeIngredient, normalizeSet } from "../utils/normalize";
+
+// --- cocktail API client ---
 export type Cocktail = {
   idDrink: string;
   strDrink: string;
@@ -5,11 +8,14 @@ export type Cocktail = {
 };
 
 // Full details for a single drink screen
-export type CocktailDetails = Cocktail & {
-  strInstructions?: string | null;
-  strCategory?: string | null;
-  ingredients?: { ingredient: string; measure?: string }[];
-};
+ // Full details for a single drink screen
+ export type CocktailDetails = Cocktail & {
+   strInstructions?: string | null;
+   strCategory?: string | null;
+   ingredients?: { ingredient: string; measure?: string }[];
+   // Derived (not from API):
+   ingredientsNormalized?: string[];
+ };
 
 // normalize { drinks: null } -> []
 function safeDrinks(data: any): any[] {
@@ -38,15 +44,18 @@ function toSummary(drink: any): Cocktail {
   };
 }
 
-// map raw drink to detailed CocktailDetails
-function toDetails(drink: any): CocktailDetails {
-  return {
-    ...toSummary(drink),
-    strInstructions: drink.strInstructions ?? null,
-    strCategory: drink.strCategory ?? null,
-    ingredients: parseIngredients(drink),
-  };
-}
+ // map raw drink to detailed CocktailDetails
+ function toDetails(drink: any): CocktailDetails {
+  const details: CocktailDetails = {
+     ...toSummary(drink),
+     strInstructions: drink.strInstructions ?? null,
+     strCategory: drink.strCategory ?? null,
+     ingredients: parseIngredients(drink),
+   };
+  details.ingredientsNormalized =
+    details.ingredients?.map((it) => normalizeIngredient(it.ingredient)) ?? [];
+  return details;
+ }
 
 // --- robust fetch helpers ---
 
@@ -111,4 +120,33 @@ export async function hydrateThumbs(drinks: Cocktail[], limit = 12): Promise<Coc
         }
       : d;
   });
+}
+
+// -------- Pantry matching helpers (local use in app) --------
+export function canMakeFromPantry(
+  cocktail: CocktailDetails,
+  pantryNames: string[]
+): boolean {
+  const have = normalizeSet(pantryNames);
+  const need = cocktail.ingredientsNormalized ?? [];
+  return need.length > 0 && need.every((n) => have.has(n));
+}
+
+export function missingFromPantry(
+  cocktail: CocktailDetails,
+  pantryNames: string[]
+): string[] {
+  const have = normalizeSet(pantryNames);
+  const need = (cocktail.ingredients ?? []).map((i) => i.ingredient);
+  return need.filter((ing) => !have.has(normalizeIngredient(ing)));
+}
+
+export function matchScoreFromPantry(
+  cocktail: CocktailDetails,
+  pantryNames: string[]
+): { matched: number; total: number } {
+  const have = normalizeSet(pantryNames);
+  const need = cocktail.ingredientsNormalized ?? [];
+  const matched = need.filter((n) => have.has(n)).length;
+  return { matched, total: need.length };
 }

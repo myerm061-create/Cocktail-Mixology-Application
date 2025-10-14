@@ -15,7 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-
+import { normalizeIngredient } from "../utils/normalize";
 
 // Components
 import Chip from "@/components/my-ingredients/Chip";
@@ -35,20 +35,20 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 /** ---------- Types & Demo Data ---------- */
 type Ingredient = CabinetIngredient;
-const INITIAL_INGREDIENTS: Ingredient[] = [
-  { id: "1",  name: "Gin (London Dry)",       category: "Spirit",  owned: true,  impactScore: 0.92 },
-  { id: "2",  name: "Vodka",                  category: "Spirit",  owned: false, impactScore: 0.88 },
-  { id: "3",  name: "Tequila (Blanco)",       category: "Spirit",  owned: true,  impactScore: 0.86 },
-  { id: "4",  name: "White Rum",              category: "Spirit",  owned: false, impactScore: 0.84 },
-  { id: "5",  name: "Sweet Vermouth",         category: "Liqueur", owned: true,  impactScore: 0.70 },
-  { id: "6",  name: "Triple Sec / Cointreau", category: "Liqueur", owned: false, impactScore: 0.90 },
-  { id: "7",  name: "Angostura Bitters",      category: "Other",   owned: true,  impactScore: 0.65 },
-  { id: "8",  name: "Simple Syrup",           category: "Mixer",   owned: true,  impactScore: 0.78 },
-  { id: "9",  name: "Club Soda",              category: "Mixer",   owned: false, impactScore: 0.66 },
-  { id: "10", name: "Lime Juice",             category: "Juice",   owned: true,  impactScore: 0.76 },
-  { id: "11", name: "Lemon Juice",            category: "Juice",   owned: false, impactScore: 0.72 },
-  { id: "12", name: "Mint Leaves",            category: "Garnish", owned: true,  impactScore: 0.60 },
-];
+// const INITIAL_INGREDIENTS: Ingredient[] = [
+//   { id: "1",  name: "Gin (London Dry)",       category: "Spirit",  owned: true,  impactScore: 0.92 },
+//   { id: "2",  name: "Vodka",                  category: "Spirit",  owned: false, impactScore: 0.88 },
+//   { id: "3",  name: "Tequila (Blanco)",       category: "Spirit",  owned: true,  impactScore: 0.86 },
+//   { id: "4",  name: "White Rum",              category: "Spirit",  owned: false, impactScore: 0.84 },
+//   { id: "5",  name: "Sweet Vermouth",         category: "Liqueur", owned: true,  impactScore: 0.70 },
+//   { id: "6",  name: "Triple Sec / Cointreau", category: "Liqueur", owned: false, impactScore: 0.90 },
+//   { id: "7",  name: "Angostura Bitters",      category: "Other",   owned: true,  impactScore: 0.65 },
+//   { id: "8",  name: "Simple Syrup",           category: "Mixer",   owned: true,  impactScore: 0.78 },
+//   { id: "9",  name: "Club Soda",              category: "Mixer",   owned: false, impactScore: 0.66 },
+//   { id: "10", name: "Lime Juice",             category: "Juice",   owned: true,  impactScore: 0.76 },
+//   { id: "11", name: "Lemon Juice",            category: "Juice",   owned: false, impactScore: 0.72 },
+//   { id: "12", name: "Mint Leaves",            category: "Garnish", owned: true,  impactScore: 0.60 },
+// ];
 
 const STORAGE_KEY = "@mixology:cabinet_v1";
 
@@ -56,7 +56,7 @@ const STORAGE_KEY = "@mixology:cabinet_v1";
 export default function MyIngredientsScreen() {
   const insets = useSafeAreaInsets();
 
-  const [ingredients, setIngredients] = useState<Ingredient[]>(INITIAL_INGREDIENTS);
+  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [activeTab, setActiveTab] = useState<"cabinet" | "shopping">("cabinet");
   const [query, setQuery] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
@@ -168,18 +168,41 @@ export default function MyIngredientsScreen() {
 
 
   const onPressAdd = () => {
-    const id = (ingredients.length + 1).toString();
+    const id = `${Date.now()}`; 
     setIngredients((prev) => [
       ...prev,
       {
         id,
-        name: activeTab === "cabinet" ? `New Ingredient #${id}` : `Needed Ingredient #${id}`,
+        name: activeTab === "cabinet" ? `New Ingredient` : `Needed Ingredient`,
         category: "Other",
         owned: activeTab === "cabinet",
         wanted: activeTab === "shopping",
         impactScore: Math.random(),
+        normalized: normalizeIngredient(
+          activeTab === "cabinet" ? `New Ingredient` : `Needed Ingredient`
+        ),
       },
     ]);
+  };
+
+  const deleteIngredient = (id: string) => {
+    setIngredients((prev) => {
+      const idx = prev.findIndex((i) => i.id === id);
+      if (idx === -1) return prev;
+      const removed = prev[idx];
+      const next = [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+      setToast({
+        text: `Deleted “${removed.name}”`,
+        onUndo: () => {
+          setIngredients((prev2) => {
+            const exists = prev2.some((x) => x.id === removed.id);
+            return exists ? prev2 : [...prev2.slice(0, idx), removed, ...prev2.slice(idx)];
+          });
+          setToast(null);
+        },
+      });
+      return next;
+    });
   };
 
   const addToShopping = (id: string) =>
@@ -253,7 +276,11 @@ export default function MyIngredientsScreen() {
       return;
     }
     setIngredients((prev) =>
-      prev.map((i) => (i.id === renamingItem.id ? { ...i, name: trimmed } : i))
+      prev.map((i) =>
+        i.id === renamingItem.id
+          ? { ...i, name: trimmed, normalized: normalizeIngredient(trimmed) }
+          : i
+   )
     );
     setToast({
       text: `Renamed "${renamingItem.name}" to "${trimmed}"`,
@@ -413,11 +440,15 @@ const ShoppingView = (
     !openMenuForId
       ? []
       : activeTab === "cabinet"
-      ? [{ label: "Rename", onPress: () => handleRename(openMenuForId) }]
+      ? [
+        { label: "Rename", onPress: () => handleRename(openMenuForId) },
+        { label: "Delete", danger: true, onPress: () => deleteIngredient(openMenuForId) },
+        ]
       : [
           { label: "Rename", onPress: () => handleRename(openMenuForId) },
           { label: "Mark Purchased", onPress: () => markPurchasedSingle(openMenuForId) },
           { label: "Remove from Shopping", danger: true, onPress: () => removeFromShopping(openMenuForId) },
+          { label: "Delete", danger: true, onPress: () => deleteIngredient(openMenuForId) },
         ];
 
    return (
