@@ -6,21 +6,20 @@ import AuthInput from "@/components/ui/AuthInput";
 import PasswordRules from "@/components/ui/PasswordRules";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-// (optional) stub; swap with your real API call
-async function updatePasswordAPI(current: string, next: string) {
-  // TODO: call your backend: PUT /auth/password or similar
-  // throw new Error("Incorrect current password"); // example
+async function updatePasswordAPI(_current: string, _next: string) {
+  // TODO: call backend: PUT /auth/password or similar
   await new Promise((r) => setTimeout(r, 600));
   return { ok: true };
 }
 
+// Screen for changing password when already authenticated
 export default function ChangePasswordScreen() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // rules: >= 6 chars and contains a digit (match your PasswordRules)
+  // Validation checks: Add more rules as needed
   const passwordValid = useMemo(
     () => password.length >= 6 && /\d/.test(password),
     [password]
@@ -30,13 +29,13 @@ export default function ChangePasswordScreen() {
     [password, confirmPassword]
   );
 
-  // FIXED: should be `passwordValid && passwordsMatch`
+  // should be `passwordValid && passwordsMatch`
   const allValid = useMemo(
     () => passwordValid && passwordsMatch,
     [passwordValid, passwordsMatch]
   );
 
-  const onSubmit = async () => {
+  const onSubmit = async (): Promise<void> => {
     if (!allValid) {
       Alert.alert("Check your entries", "Please fix the highlighted issues.");
       return;
@@ -90,9 +89,12 @@ export default function ChangePasswordScreen() {
 
       <PasswordRules password={password} confirmPassword={confirmPassword} />
 
+      {/* Wrap async handler so onPress receives a void function */}
       <FormButton
         title={submitting ? "Updating..." : "Update Password"}
-        onPress={onSubmit}
+        onPress={() => {
+          void onSubmit();
+        }}
         disabled={!allValid || submitting}
       />
 
