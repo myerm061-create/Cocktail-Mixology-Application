@@ -43,8 +43,27 @@ export default function LoginScreen() {
       <Text style={styles.title}>Welcome Back!</Text>
       <Text style={styles.subtitle}>Please enter your account here</Text>
 
-      <AuthInput placeholder="Email" value={email} onChangeText={setEmail} type="email" />
-      <AuthInput placeholder="Password" value={password} onChangeText={setPassword} type="password" />
+      <AuthInput
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        type="email"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        autoComplete="email"
+        textContentType="emailAddress"
+        returnKeyType="next"
+      />
+
+      <AuthInput
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        type="password"
+        autoComplete="password"
+        textContentType="password"
+        returnKeyType="done"
+      />
 
       <View style={styles.row}>
         <CheckBox checked={rememberMe} onChange={setRememberMe} label="Keep me signed in" />
