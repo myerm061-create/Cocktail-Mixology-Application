@@ -325,11 +325,6 @@ export default function MyIngredientsScreen() {
   /** ----- Views ----- */
   const CabinetView = (
     <>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Cabinet</Text>
-        <Text style={styles.sectionSub}>{ownedCount} owned</Text>
-      </View>
-
       <SearchBar value={query} onChangeText={setQuery} onClear={clearQuery} />
 
       <View style={styles.filtersRow}>
@@ -347,11 +342,12 @@ export default function MyIngredientsScreen() {
       </View>
 
       <FlatList
+        style={styles.list}
         data={cabinetItems}
         keyExtractor={(i) => i.id}
         renderItem={renderCabinetItem}
-        contentContainerStyle={[styles.listContent, cabinetItems.length === 0 && { flex: 1 }]}
-        style={{ overflow: "visible" }}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
         ListEmptyComponent={renderEmpty(
           query ? "No matches" : "Cabinet is empty",
           query ? `No ingredients match "${query}".` : "Add your first items using the ＋ button.",
@@ -367,11 +363,6 @@ export default function MyIngredientsScreen() {
 
 const ShoppingView = (
     <>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Shopping List</Text>
-        <Text style={styles.sectionSub}>{wantedCount} items</Text>
-      </View>
-
       <SearchBar value={query} onChangeText={setQuery} onClear={clearQuery} />
 
       <View style={styles.filtersRow}>
@@ -399,10 +390,12 @@ const ShoppingView = (
       </View>
 
       <FlatList
+        style={styles.list}
         data={shoppingItems}
         keyExtractor={(i) => i.id}
         renderItem={renderShoppingItem}
-        contentContainerStyle={[styles.listContent, shoppingItems.length === 0 && { flex: 1 }]}
+        contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
         ListEmptyComponent={renderEmpty(
           query ? "No matches" : "No items",
           query ? `No items match "${query}".` : "Add items to your Shopping List using the ＋ button.",
@@ -450,18 +443,19 @@ const ShoppingView = (
         {/* Tabs */}
         <View style={styles.tabsRow}>
           <Tab
-            label={`Cabinet (${ownedCount})`}
+            label={`Owned (${ownedCount})`}
             active={activeTab === "cabinet"}
             onPress={() => setActiveTab("cabinet")}
           />
           <Tab
-            label={`Shopping (${wantedCount})`}
+            label={`Shopping List (${wantedCount})`}
             active={activeTab === "shopping"}
             onPress={() => setActiveTab("shopping")}
           />
         </View>
-
-        {activeTab === "cabinet" ? CabinetView : ShoppingView}
+        <View style={styles.body}>
+          {activeTab === "cabinet" ? CabinetView : ShoppingView}
+        </View>
 
         {/* FAB */}
         <TouchableOpacity style={styles.fab} onPress={onPressAdd} activeOpacity={0.85}>
@@ -523,7 +517,8 @@ const ShoppingView = (
 /** ---------- Styles ---------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, overflow: "visible" },
-
+  body: { flex: 1 },  
+  list: { flex: 1, overflow: "visible" },
   headerWrap: { backgroundColor: Colors.background, alignItems: "center" },
   backWrap: { position: "absolute", left: 14, zIndex: 10 },
   title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 4 }, 
@@ -553,7 +548,7 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
 
-  listContent: { paddingHorizontal: 10, paddingBottom: 120, paddingTop: 10, overflow: "visible" },
+  listContent: { paddingHorizontal: 10, paddingBottom: 120, paddingTop: 10, flexGrow: 1 },
 
   emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
   emptyIcon: { fontSize: 48, marginBottom: 16, opacity: 0.6 },
