@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, Image, ActivityIndicator, type Anima
 import { Swipeable } from "react-native-gesture-handler";
 import unsplashService from "@/services/unsplashService";
 import SwipeAction from "./SwipeAction";
+import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
 export type Category = "Spirit" | "Liqueur" | "Mixer" | "Juice" | "Garnish" | "Other";
 export type Ingredient = { id: string; name: string; category: Category; owned: boolean; wanted?: boolean; impactScore?: number; imageUrl?: string };
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   rowWrap: { position: "relative", marginHorizontal: 6, marginVertical: 4, overflow: "visible" },
   rowCard: {
     flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 10,
-    backgroundColor: "#141419", borderWidth: 1, borderColor: "#232329", borderRadius: 14, overflow: "visible",
+    backgroundColor: Colors.buttonBackground, borderWidth: 1, borderColor: "#232329", borderRadius: 14, overflow: "visible",
   },
   imageContainer: {
     width: 40, height: 40, marginRight: 12, borderRadius: 8, overflow: "hidden",
@@ -124,8 +125,8 @@ const styles = StyleSheet.create({
     color: "#9C9CA3", fontSize: 16, fontWeight: "600",
   },
   rowTextWrap: { flex: 1, marginRight: 8, overflow: "hidden" },
-  rowTitle: { color: "#EDEDED", fontSize: 16, fontWeight: "600" },
-  rowSub: { color: "#9C9CA3", fontSize: 12, marginTop: 2 },
+  rowTitle: { color: Colors.textPrimary, fontSize: 16, fontWeight: "600" },
+  rowSub: { color: Colors.textSecondary ?? "#9BA3AF", fontSize: 12, marginTop: 2 },
   menuButton: {
     width: 34, height: 34, borderRadius: 8, borderWidth: 1, borderColor: "#2A2A30",
     alignItems: "center", justifyContent: "center", backgroundColor: "#1A1A1E", marginLeft: 8, zIndex: 5,

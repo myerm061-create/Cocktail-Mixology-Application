@@ -16,7 +16,7 @@ export default function HomeScreen() {
 
         {/* navigation buttons */}
         {/* <FormButton title="Scan Ingredients" onPress={() => router.push("/(stack)/ingredient-scanner")} /> */}
-        <FormButton title="My Cabinet" onPress={() => router.push("/my-ingredients")} />
+        <FormButton title="My Cabinet" onPress={() => router.push("/cabinet")} />
         {/* <FormButton title="Recommendations" onPress={() => router.push("/(stack)/recommendations")} /> */}
         <FormButton title="Favorites" onPress={() => router.push("/favorites")} />
         <FormButton title="Profile" onPress={() => router.push(`/profile`)} />

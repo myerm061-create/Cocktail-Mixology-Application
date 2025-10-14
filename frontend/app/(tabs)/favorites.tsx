@@ -1,4 +1,3 @@
-// app/(tabs)/favorites.tsx
 import React from "react";
 import { View, Text, StyleSheet, Platform, UIManager } from "react-native";
 import { Stack, router } from "expo-router";
