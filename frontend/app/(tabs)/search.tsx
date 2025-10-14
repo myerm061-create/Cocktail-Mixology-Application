@@ -24,18 +24,30 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Mock data to show on first load and as fallback
-const MOCK: Cocktail[] = [
-  { idDrink: "m1", strDrink: "Margarita",     strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
-  { idDrink: "m2", strDrink: "Old Fashioned", strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
-  { idDrink: "m3", strDrink: "Mojito",        strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
+/**
+ * Real starter items from TheCocktailDB:
+ *  - Margarita:      11007
+ *  - Mojito:         11000
+ *  - Old Fashioned:  11001
+ *  - Manhattan:      11008
+ *  - Vodka Martini:  17222
+ *  - Moscow Mule:    11009
+ */
+const STARTERS: Cocktail[] = [
+  { idDrink: "11007", strDrink: "Margarita",      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
+  { idDrink: "11000", strDrink: "Mojito",         strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
+  { idDrink: "11001", strDrink: "Old Fashioned",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg" },
+  { idDrink: "11008", strDrink: "Manhattan",      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/yk70e31606771240.jpg" },
+  { idDrink: "17222", strDrink: "Vodka Martini",  strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/qyxrqw1439906528.jpg" },
+  { idDrink: "11009", strDrink: "Moscow Mule",    strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/3pylqc1504370988.jpg" },
 ];
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<Cocktail[]>(MOCK); // show list right away
+  const [results, setResults] = useState<Cocktail[]>(STARTERS); 
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
+  const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
 
   const insets = useSafeAreaInsets();
 
@@ -65,10 +77,12 @@ export default function SearchScreen() {
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
 
+    // Short queries → show curated starters
     if (trimmed.length < 2) {
       setLoading(false);
       setError(null);
-      setResults(MOCK);
+      setNotFoundTerm(null);
+      setResults(STARTERS);
       return;
     }
 
@@ -77,6 +91,7 @@ export default function SearchScreen() {
       void (async () => {
         setLoading(true);
         setError(null);
+        setNotFoundTerm(null);
         try {
           Keyboard.dismiss();
 
@@ -84,23 +99,28 @@ export default function SearchScreen() {
           let drinks: Cocktail[] = [];
 
           if (words.length === 1) {
+            // single token → try ingredient first, then name
             drinks = await filterByIngredient(trimmed);
             if (!drinks.length) drinks = await searchByName(trimmed);
           } else {
+            // multi-token → name search
             drinks = await searchByName(trimmed);
           }
 
           if (!drinks.length) {
-            drinks = MOCK.filter((d) =>
-              d.strDrink.toLowerCase().includes(trimmed.toLowerCase())
-            );
+            // Mark "not found" and fall back to curated starters
+            setNotFoundTerm(trimmed);
+            drinks = STARTERS;
           }
 
+          // Make sure thumbs are present 
           drinks = await hydrateThumbs(drinks, 12);
+
           setResults(drinks);
         } catch (e: any) {
           setError(e?.message || "Something went wrong.");
-          setResults(MOCK);
+          setNotFoundTerm(null);
+          setResults(STARTERS);
         } finally {
           setLoading(false);
         }
@@ -128,7 +148,7 @@ export default function SearchScreen() {
   };
 
   const toPreview = (u?: string | null) =>
-      u ? (u.endsWith("/preview") ? u : `${u}/preview`) : undefined;
+    u ? (u.endsWith("/preview") ? u : `${u}/preview`) : undefined;
 
   return (
     <>
@@ -166,13 +186,20 @@ export default function SearchScreen() {
               <Text style={styles.searchBtnText}>Search</Text>
             </Pressable>
           </View>
+
+          {/* Not found banner */}
+          {!!notFoundTerm && !loading && !error && (
+            <Text style={styles.banner}>
+              “{notFoundTerm}” not found — showing popular drinks instead
+            </Text>
+          )}
         </View>
 
         {/* Results below header */}
         <View style={styles.resultsWrap}>
           {loading && <ActivityIndicator style={{ margin: 12 }} />}
           {error && !loading && <Text style={styles.error}>Error: {error}</Text>}
-          {!loading && !error && results.length === 0 && trimmed.length >= 2 && (
+          {!loading && !error && results.length === 0 && (
             <Text style={styles.empty}>No results. Try another ingredient or drink name.</Text>
           )}
 
@@ -180,7 +207,7 @@ export default function SearchScreen() {
             ref={listRef}
             data={pagedResults}
             keyExtractor={(item) => item.idDrink}
-            contentContainerStyle={{ paddingBottom: 140 }} 
+            contentContainerStyle={{ paddingBottom: 140 }}
             renderItem={({ item }) => (
               <Pressable onPress={() => openDrink(item)} style={styles.cardRow} accessibilityRole="button">
                 {item.strDrinkThumb ? (
@@ -258,10 +285,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#1d1d1d",
   },
-  searchBtnDisabled: {
-    opacity: 0.5,
-  },
+  searchBtnDisabled: { opacity: 0.5 },
   searchBtnText: { color: "#F5F0E1", fontWeight: "700" },
+
+  banner: {
+    marginTop: 10,
+    color: Colors.textSecondary ?? "#D9D4C5",
+    fontSize: 13,
+    textAlign: "center",
+  },
 
   resultsWrap: { flex: 1, padding: 16 },
   error: { color: "#ff8a80", marginTop: 8 },

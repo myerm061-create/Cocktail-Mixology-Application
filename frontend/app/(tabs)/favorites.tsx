@@ -15,12 +15,12 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
 
-  // TODO: replace with your real favorites store
+  // TODO: replace with real favorites store
   const [items, setItems] = useState<CocktailItem[]>([
     { id: "11007", name: "Margarita",  thumbUrl: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
     { id: "11000", name: "Mojito",     thumbUrl: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
     { id: "11008", name: "Manhattan",  thumbUrl: "https://www.thecocktaildb.com/images/media/drink/yk70e31606771240.jpg" },
-    { id: "17222", name: "Vodka Martini", thumbUrl: "https://www.thecocktaildb.com/images/media/drink/qyxrqw1439906528.jpg" },
+    { id: "14167", name: "Vodka Martini", thumbUrl: "https://www.thecocktaildb.com/images/media/drink/qyxrqw1439906528.jpg" },
     { id: "11009", name: "Moscow Mule", thumbUrl: "https://www.thecocktaildb.com/images/media/drink/3pylqc1504370988.jpg" },
   ]);
 
@@ -42,7 +42,6 @@ export default function FavoritesScreen() {
     if (!next) {
       setItems((prev) => prev.filter((d) => String(d.id) !== String(id)));
     }
-    // If you want to support toggling back to true within the grid, you can update state instead.
   };
 
   return (
