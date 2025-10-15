@@ -179,7 +179,7 @@ describe("SettingsScreen", () => {
     render(<SettingsScreen />);
     fireEvent.press(screen.getByText("Change Password"));
     fireEvent.press(screen.getByText("Go to Change Password"));
-    expect(mockPush).toHaveBeenCalledWith("/(auth)/new-password");
+    expect(mockPush).toHaveBeenCalledWith("/(stack)/change-password");
   });
 
   // Units chips: oz (Imperial) & ml (Metric)

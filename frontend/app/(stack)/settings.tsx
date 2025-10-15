@@ -148,7 +148,7 @@ export default function SettingsScreen() {
           <View style={styles.reveal}>
             <FormButton
               title="Go to Change Password"
-              onPress={() => router.push("/(auth)/new-password")}
+              onPress={() => router.push("/(stack)/change-password")}
             />
           </View>
         )}
