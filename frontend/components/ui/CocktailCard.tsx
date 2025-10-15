@@ -24,6 +24,7 @@ export default function CocktailCard({
   const [loading, setLoading] = useState(!!thumbUrl);
   const [error, setError] = useState(false);
   const [fav, setFav] = useState(!!isFavorite);
+  React.useEffect(() => { setFav(!!isFavorite); }, [isFavorite]);
 
   const toggleFav = () => {
     const next = !fav;

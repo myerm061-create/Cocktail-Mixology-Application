@@ -1,64 +1,56 @@
-import React, { useState } from "react";
+// app/(tabs)/favorites.tsx
+import React from "react";
 import { View, Text, StyleSheet, Platform, UIManager } from "react-native";
 import { Stack, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import type { CocktailItem } from "@/components/ui/CocktailGrid";
-import CocktailGrid from "@/components/ui/CocktailGrid";
+import CocktailGrid, { type CocktailItem } from "@/components/ui/CocktailGrid";
+import { useFavorites } from "@/app/lib/useFavorites";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-// Favorites screen, shows user's favorite cocktails
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
+  const { items, busy, toggle } = useFavorites(); // persisted via AsyncStorage
 
-  // TODO: replace with your real favorites store
-  const [items, setItems] = useState<CocktailItem[]>([
-    { id: "11007", name: "Margarita",  thumbUrl: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
-    { id: "11000", name: "Mojito",     thumbUrl: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
-    { id: "11008", name: "Manhattan",  thumbUrl: "https://www.thecocktaildb.com/images/media/drink/yk70e31606771240.jpg" },
-    { id: "17222", name: "Vodka Martini", thumbUrl: "https://www.thecocktaildb.com/images/media/drink/qyxrqw1439906528.jpg" },
-    { id: "11009", name: "Moscow Mule", thumbUrl: "https://www.thecocktaildb.com/images/media/drink/3pylqc1504370988.jpg" },
-  ]);
+  const data: CocktailItem[] = (items ?? []).map(f => ({
+    id: f.id,
+    name: f.name,
+    thumbUrl: f.thumbUrl ?? null,
+    isFavorite: true,
+  }));
 
-  // Open drink details screen
   const handleOpen = (id: string | number) => {
-    const item = items.find(d => String(d.id) === String(id));
+    const it = data.find(d => String(d.id) === String(id));
+    if (!it) return;
     router.push({
       pathname: "/drink/[drinkId]",
-      params: {
-        drinkId: String(id),
-        name: item?.name,
-        thumbUrl: item?.thumbUrl,
-      },
+      params: { drinkId: String(it.id), name: it.name, thumbUrl: it.thumbUrl ?? undefined },
     });
   };
 
-  const handleToggleFavorite = (id: string | number, next: boolean) => {
-    // Since this is the Favorites screen, when next === false we remove it.
-    if (!next) {
-      setItems((prev) => prev.filter((d) => String(d.id) !== String(id)));
-    }
-    // If you want to support toggling back to true within the grid, you can update state instead.
+  const handleToggleFavorite = (id: string | number, _next: boolean) => {
+    const it = data.find(d => String(d.id) === String(id));
+    if (!it) return;
+    void toggle({ id: String(it.id), name: it.name, thumbUrl: it.thumbUrl ?? null });
   };
 
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-
-      <View style={[styles.backWrap, { top: Math.max(14, insets.top) }]}>
-        <BackButton />
-      </View>
+      <View style={[styles.backWrap, { top: Math.max(14, insets.top) }]}><BackButton /></View>
 
       <View style={[styles.headerWrap, { paddingTop: insets.top + 56 }]}>
         <Text style={styles.title}>Favorites</Text>
+        {busy ? <Text style={styles.subtle}>Syncing…</Text> : null}
+        {data.length === 0 && <Text style={styles.empty}>No favorites yet. Add from Search or the Drink page </Text>}
       </View>
 
       <CocktailGrid
-        data={items}
+        data={data}
         onPressItem={handleOpen}
         onToggleFavorite={handleToggleFavorite}
         bottomPad={140}
@@ -68,13 +60,9 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  headerWrap: { backgroundColor: Colors.background },
+  headerWrap: { backgroundColor: Colors.background, alignItems: "center" },
   backWrap: { position: "absolute", left: 14, zIndex: 10 },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: Colors.textPrimary,
-    textAlign: "center",
-    marginBottom: 12,
-  },
+  title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 4 },
+  subtle: { color: Colors.textSecondary ?? "#9BA3AF", fontSize: 12, marginBottom: 8 },
+  empty: { color: Colors.textSecondary ?? "#9BA3AF", fontSize: 13, marginTop: 6 },
 });
