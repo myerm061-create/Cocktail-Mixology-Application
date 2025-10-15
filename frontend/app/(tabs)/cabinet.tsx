@@ -20,17 +20,13 @@ import { normalizeIngredient } from "../utils/normalize";
 import { ingredientImageUrl } from "../utils/cocktaildb";
 import { loadIngredientCatalog } from "../utils/ingredientCatalog";
 
-
 // Components
 import Chip from "@/components/my-ingredients/Chip";
 import Tab from "@/components/my-ingredients/Tab";
 import SearchBar from "@/components/my-ingredients/Searchbar";
 import Toast from "@/components/my-ingredients/Toast";
 import ActionSheet from "@/components/my-ingredients/ActionSheet";
-import CabinetRow, {
-  type Ingredient as CabinetIngredient,
-  type Category,
-} from "@/components/my-ingredients/CabinetRow";
+import CabinetRow, { type Category } from "@/components/my-ingredients/CabinetRow";
 import ShoppingRow from "@/components/my-ingredients/ShoppingRow";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -52,7 +48,6 @@ export type Ingredient = {
 
 const STORAGE_KEY = "@mixology:cabinet_v1";
 
-
 /** ---------- Main Screen Component ---------- */
 export default function MyIngredientsScreen() {
   const insets = useSafeAreaInsets();
@@ -63,7 +58,6 @@ export default function MyIngredientsScreen() {
   const [sortAsc, setSortAsc] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<"All" | Category>("All");
 
-  // const [showSuggestions, setShowSuggestions] = useState(true);
   const [toast, setToast] = useState<{ text: string; onUndo: () => void } | null>(null);
   const toastTimerRef = useRef<number | null>(null);
 
@@ -77,23 +71,23 @@ export default function MyIngredientsScreen() {
   // local persistence state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const saveTimer = useRef<NodeJS.Timeout | null>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // adding new ingredient
   const [addVisible, setAddVisible] = useState(false);
   const [catalog, setCatalog] = useState<{ name: string }[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [addQuery, setAddQuery] = useState("");
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(1); // stepper in Add modal (1 = full)
 
   /** ----- Persistence ----- */
   useEffect(() => {
-    (async () => {
+    void (async () => { 
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as Ingredient[];
-          setIngredients(parsed);
+          setIngredients(parsed.map(i => ({ ...i, qty: typeof i.qty === "number" ? i.qty : 1 })));
         }
       } catch (e) {
         console.warn("Failed to load cabinet:", e);
@@ -105,18 +99,21 @@ export default function MyIngredientsScreen() {
 
   useEffect(() => {
     if (loading) return;
-    // debounce saves a bit to avoid thrashing storage
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(async () => {
-      try {
-        setSaving(true);
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients));
-      } catch (e) {
-        console.warn("Failed to save cabinet:", e);
-      } finally {
-        setSaving(false);
-      }
+
+    saveTimer.current = setTimeout(() => {
+      void (async () => {             
+        try {
+          setSaving(true);
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ingredients));
+        } catch (e) {
+          console.warn("Failed to save cabinet:", e);
+        } finally {
+          setSaving(false);
+        }
+      })();
     }, 250);
+
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
@@ -163,23 +160,21 @@ export default function MyIngredientsScreen() {
     [ingredients, sortByName, filterByQueryAndCategory]
   );
 
-  // const suggestions = useMemo(() => {
-  //   const pool = ingredients.filter(i => !i.owned && !i.wanted);
-  //   return [...pool].sort((a,b) => (b.impactScore ?? 0) - (a.impactScore ?? 0)).slice(0,6);
-  // }, [ingredients]);
-
   /** ----- Actions ----- */
   const clearQuery = () => setQuery("");
 
   const toggleWanted = (id: string) =>
     setIngredients((prev) => prev.map((i) => (i.id === id ? { ...i, wanted: !i.wanted } : i)));
 
-
   const onPressAdd = async () => {
     setAddVisible(true);
     if (!catalog.length && !catalogLoading) {
       setCatalogLoading(true);
-      try { setCatalog(await loadIngredientCatalog()); } finally { setCatalogLoading(false); }
+      try {
+        setCatalog(await loadIngredientCatalog());
+      } finally {
+        setCatalogLoading(false);
+      }
     }
   };
 
@@ -232,17 +227,28 @@ export default function MyIngredientsScreen() {
     });
   };
 
+  // NEW: qty adjust handler (clamp & round to 2 decimals)
+  const adjustQty = useCallback((id: string, nextQty: number) => {
+    const clamped = Math.max(0, Math.min(1, nextQty));
+    const rounded = Math.round(clamped * 100) / 100;
+    setIngredients((prev) => prev.map((i) => (i.id === id ? { ...i, qty: rounded } : i)));
+  }, []);
+
   const markPurchasedSingle = (id: string) => {
     const it = ingredients.find((i) => i.id === id);
     if (!it) return;
     setIngredients((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, wanted: false, owned: true } : i))
+      prev.map((i) =>
+        i.id === id ? { ...i, wanted: false, owned: true, qty: 1 } : i
+      )
     );
     setToast({
       text: `Marked “${it.name}” as purchased`,
       onUndo: () => {
         setIngredients((prev) =>
-          prev.map((i) => (i.id === id ? { ...i, wanted: true, owned: false } : i))
+          prev.map((i) =>
+            i.id === id ? { ...i, wanted: true, owned: false, qty: it.qty ?? 1 } : i
+          )
         );
         setToast(null);
       },
@@ -251,7 +257,9 @@ export default function MyIngredientsScreen() {
 
   const markPurchased = () => {
     if (shoppingItems.length === 0) return;
-    setIngredients((prev) => prev.map((i) => (i.wanted ? { ...i, wanted: false, owned: true } : i)));
+    setIngredients((prev) =>
+      prev.map((i) => (i.wanted ? { ...i, wanted: false, owned: true, qty: 1 } : i))
+    );
   };
 
   const handleRename = (id: string) => {
@@ -277,9 +285,13 @@ export default function MyIngredientsScreen() {
     setIngredients((prev) =>
       prev.map((i) =>
         i.id === renamingItem.id
-          ? { ...i, name: displayName, imageUrl: ingredientImageUrl(canonicalName || displayName, "Small") }
+          ? {
+              ...i,
+              name: displayName,
+              imageUrl: ingredientImageUrl(canonicalName || displayName, "Small"),
+            }
           : i
-   )
+      )
     );
     setToast({
       text: `Renamed "${renamingItem.name}" to "${trimmed}"`,
@@ -327,8 +339,10 @@ export default function MyIngredientsScreen() {
       }}
       onAddToShopping={addToShopping}
       onRemoveFromCabinet={removeFromCabinet}
+      onAdjustQty={adjustQty} // << integrate qty control
     />
   );
+
   const renderShoppingItem = ({ item }: { item: Ingredient }) => (
     <ShoppingRow
       item={item}
@@ -390,17 +404,14 @@ export default function MyIngredientsScreen() {
     </>
   );
 
-const ShoppingView = (
+  const ShoppingView = (
     <>
       <SearchBar value={query} onChangeText={setQuery} onClear={clearQuery} />
 
       <View style={styles.filtersRow}>
         <TouchableOpacity
           onPress={markPurchased}
-          style={[
-            styles.primaryBtn,
-            shoppingItems.length === 0 && { opacity: 0.5 },
-          ]}
+          style={[styles.primaryBtn, shoppingItems.length === 0 && { opacity: 0.5 }]}
           disabled={shoppingItems.length === 0}
         >
           <Text style={styles.primaryBtnText}>Mark purchased</Text>
@@ -446,8 +457,8 @@ const ShoppingView = (
       ? []
       : activeTab === "cabinet"
       ? [
-        { label: "Rename", onPress: () => handleRename(openMenuForId) },
-        { label: "Delete", danger: true, onPress: () => deleteIngredient(openMenuForId) },
+          { label: "Rename", onPress: () => handleRename(openMenuForId) },
+          { label: "Delete", danger: true, onPress: () => deleteIngredient(openMenuForId) },
         ]
       : [
           { label: "Rename", onPress: () => handleRename(openMenuForId) },
@@ -456,7 +467,7 @@ const ShoppingView = (
           { label: "Delete", danger: true, onPress: () => deleteIngredient(openMenuForId) },
         ];
 
-   return (
+  return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
 
@@ -489,12 +500,14 @@ const ShoppingView = (
             onPress={() => setActiveTab("shopping")}
           />
         </View>
-        <View style={styles.body}>
-          {activeTab === "cabinet" ? CabinetView : ShoppingView}
-        </View>
+        <View style={styles.body}>{activeTab === "cabinet" ? CabinetView : ShoppingView}</View>
 
         {/* FAB */}
-        <TouchableOpacity style={styles.fab} onPress={onPressAdd} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => { void onPressAdd(); }} 
+          activeOpacity={0.85}
+        >
           <Text style={styles.fabPlus}>＋</Text>
         </TouchableOpacity>
 
@@ -548,102 +561,130 @@ const ShoppingView = (
 
         {/* Add Ingredient Modal */}
         <Modal visible={addVisible} transparent animationType="fade" onRequestClose={() => setAddVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxWidth: 420 }]}>
-            <Text style={styles.modalTitle}>Add Ingredient</Text>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { maxWidth: 420 }]}>
+              <Text style={styles.modalTitle}>Add Ingredient</Text>
 
-            {/* Search input */}
-            <TextInput
-              value={addQuery}
-              onChangeText={setAddQuery}
-              placeholder="Search CocktailDB (e.g., Gin, Triple Sec, Lime)"
-              placeholderTextColor="#8B8B8B"
-              style={styles.modalInput}
-            />
+              {/* Search input */}
+              <TextInput
+                value={addQuery}
+                onChangeText={setAddQuery}
+                placeholder="Search CocktailDB (e.g., Gin, Triple Sec, Lime)"
+                placeholderTextColor="#8B8B8B"
+                style={styles.modalInput}
+              />
 
-            {/* Quantity stepper */}
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <Text style={{ color: "#CFCFCF", fontWeight: "600" }}>Quantity</Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <TouchableOpacity onPress={() => setQty(Math.max(1, qty - 1))} style={[styles.modalButton, { paddingHorizontal: 12 }]}>
-                  <Text style={{ color: "#CFCFCF", fontSize: 18 }}>−</Text>
-                </TouchableOpacity>
-                <Text style={{ color: "#fff", minWidth: 24, textAlign: "center" }}>{qty}</Text>
-                <TouchableOpacity onPress={() => setQty(qty + 1)} style={[styles.modalButton, { paddingHorizontal: 12 }]}>
-                  <Text style={{ color: "#CFCFCF", fontSize: 18 }}>＋</Text>
+              {/* Quantity stepper (interpreted as fraction of a bottle: 1 = full) */}
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <Text style={{ color: "#CFCFCF", fontWeight: "600" }}>Quantity</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => setQty(Math.max(0, qty - 0.25))}
+                    style={[styles.modalButton, { paddingHorizontal: 12 }]}
+                  >
+                    <Text style={{ color: "#CFCFCF", fontSize: 18 }}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={{ color: "#fff", minWidth: 48, textAlign: "center" }}>
+                    {Math.round(Math.max(0, Math.min(1, qty)) * 100)}%
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setQty(Math.min(1, qty + 0.25))}
+                    style={[styles.modalButton, { paddingHorizontal: 12 }]}
+                  >
+                    <Text style={{ color: "#CFCFCF", fontSize: 18 }}>＋</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Results list */}
+              <View style={{ maxHeight: 340 }}>
+                {catalogLoading ? (
+                  <Text style={{ color: "#9BA3AF" }}>Loading catalog…</Text>
+                ) : (
+                  <FlatList
+                    keyboardShouldPersistTaps="handled"
+                    data={catalog.filter((c) =>
+                      c.name.toLowerCase().includes(addQuery.trim().toLowerCase())
+                    )}
+                    keyExtractor={(i) => i.name}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        onPress={() => {
+                          const id = `${Date.now()}`;
+                          const { displayName, canonicalName } = normalizeIngredient(item.name);
+                          const name = displayName;
+                          setIngredients((prev) => [
+                            ...prev,
+                            {
+                              id,
+                              name,
+                              category: "Other",
+                              owned: true,
+                              wanted: false,
+                              impactScore: Math.random(),
+                              imageUrl: ingredientImageUrl(canonicalName || name, "Small"),
+                              qty: Math.max(0, Math.min(1, qty)), // save fraction
+                            },
+                          ]);
+                          setAddVisible(false);
+                          setAddQuery("");
+                          setQty(1);
+                        }}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          paddingVertical: 10,
+                          paddingHorizontal: 8,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: "#232329",
+                          marginBottom: 8,
+                          backgroundColor: "#141418",
+                        }}
+                      >
+                        <Image
+                          source={{ uri: ingredientImageUrl(item.name, "Small") }}
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 8,
+                            marginRight: 12,
+                            backgroundColor: "#26262B",
+                            borderWidth: 1,
+                            borderColor: "#2C2C34",
+                          }}
+                        />
+                        <Text style={{ color: "#EAEAEA", fontWeight: "600", flex: 1 }} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                        <Text style={{ color: "#9BA3AF", fontSize: 12 }}>Tap to add</Text>
+                      </TouchableOpacity>
+                    )}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                    overScrollMode="never"
+                  />
+                )}
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  onPress={() => setAddVisible(false)}
+                  style={[styles.modalButton, styles.modalButtonCancel]}
+                >
+                  <Text style={styles.modalButtonTextCancel}>Close</Text>
                 </TouchableOpacity>
               </View>
             </View>
-
-            {/* Results list */}
-            <View style={{ maxHeight: 340 }}>
-              {catalogLoading ? (
-                <Text style={{ color: "#9BA3AF" }}>Loading catalog…</Text>
-              ) : (
-                <FlatList
-                  keyboardShouldPersistTaps="handled"
-                  data={catalog.filter((c) => c.name.toLowerCase().includes(addQuery.trim().toLowerCase()))}
-                  keyExtractor={(i) => i.name}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        const id = `${Date.now()}`;
-                        const { displayName, canonicalName } = normalizeIngredient(item.name);
-                        const name = displayName;
-                        setIngredients((prev) => [
-                          ...prev,
-                          {
-                            id,
-                            name,
-                            category: "Other",
-                            owned: true,
-                            wanted: false,
-                            impactScore: Math.random(),
-                            imageUrl: ingredientImageUrl(canonicalName || name, "Small"),
-                          },
-                        ]);
-                        setAddVisible(false);
-                        setAddQuery("");
-                        setQty(1);
-                      }}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        paddingVertical: 10,
-                        paddingHorizontal: 8,
-                        borderRadius: 10,
-                        borderWidth: 1,
-                        borderColor: "#232329",
-                        marginBottom: 8,
-                        backgroundColor: "#141418",
-                      }}
-                    >
-                      <Image
-                        source={{ uri: ingredientImageUrl(item.name, "Small") }}
-                        style={{ width: 36, height: 36, borderRadius: 8, marginRight: 12, backgroundColor: "#26262B", borderWidth: 1, borderColor: "#2C2C34" }}
-                      />
-                      <Text style={{ color: "#EAEAEA", fontWeight: "600", flex: 1 }} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <Text style={{ color: "#9BA3AF", fontSize: 12 }}>Tap to add</Text>
-                    </TouchableOpacity>
-                  )}
-                  showsVerticalScrollIndicator={false}
-                  showsHorizontalScrollIndicator={false}
-                  overScrollMode="never"
-                />
-              )}
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity onPress={() => setAddVisible(false)} style={[styles.modalButton, styles.modalButtonCancel]}>
-                <Text style={styles.modalButtonTextCancel}>Close</Text>
-              </TouchableOpacity>
-            </View>
           </View>
-        </View>
-      </Modal>
-
+        </Modal>
       </SafeAreaView>
     </>
   );
@@ -652,11 +693,11 @@ const ShoppingView = (
 /** ---------- Styles ---------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background, overflow: "visible" },
-  body: { flex: 1 },  
+  body: { flex: 1 },
   list: { flex: 1, overflow: "visible" },
   headerWrap: { backgroundColor: Colors.background, alignItems: "center" },
   backWrap: { position: "absolute", left: 14, zIndex: 10 },
-  title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 4 }, 
+  title: { fontSize: 28, fontWeight: "800", color: Colors.textPrimary, textAlign: "center", marginBottom: 4 },
   subtle: { color: Colors.textSecondary ?? "#9BA3AF", fontSize: 12, marginBottom: 8 },
 
   tabsRow: { flexDirection: "row", paddingHorizontal: 12, paddingTop: 16, paddingBottom: 8, gap: 8 },
@@ -720,7 +761,13 @@ const styles = StyleSheet.create({
   fabPlus: { color: "#FFFFFF", fontSize: 30, marginTop: -2, fontWeight: "600" },
 
   // Modal
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.7)", justifyContent: "center", alignItems: "center", paddingHorizontal: 20 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
   modalContent: {
     backgroundColor: Colors.surface,
     borderRadius: 16,
@@ -745,7 +792,8 @@ const styles = StyleSheet.create({
   modalButtons: { flexDirection: "row", gap: 12 },
   modalButton: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", borderWidth: 1 },
   modalButtonCancel: { backgroundColor: "transparent", borderColor: "#2A2A30" },
-  modalButtonConfirm: { backgroundColor: Colors.accentPrimary, borderColor: Colors.accentPrimary },  modalButtonTextCancel: { color: "#CFCFCF", fontSize: 16, fontWeight: "600" },
-  modalButtonTextConfirm: { color: Colors.accentContrast, fontSize: 16, fontWeight: "700" }, 
+  modalButtonConfirm: { backgroundColor: Colors.accentPrimary, borderColor: Colors.accentPrimary },
+  modalButtonTextCancel: { color: "#CFCFCF", fontSize: 16, fontWeight: "600" },
+  modalButtonTextConfirm: { color: Colors.accentContrast, fontSize: 16, fontWeight: "700" },
   modalButtonTextDisabled: { color: "#8B8B8B" },
 });

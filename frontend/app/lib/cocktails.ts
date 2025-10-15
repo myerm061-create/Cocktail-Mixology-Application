@@ -45,17 +45,21 @@ function toSummary(drink: any): Cocktail {
 }
 
  // map raw drink to detailed CocktailDetails
- function toDetails(drink: any): CocktailDetails {
-  const details: CocktailDetails = {
-     ...toSummary(drink),
-     strInstructions: drink.strInstructions ?? null,
-     strCategory: drink.strCategory ?? null,
-     ingredients: parseIngredients(drink),
-   };
-  details.ingredientsNormalized =
-    details.ingredients?.map((it) => normalizeIngredient(it.ingredient)) ?? [];
-  return details;
- }
+  function toDetails(drink: any): CocktailDetails {
+    const details: CocktailDetails = {
+      ...toSummary(drink),
+      strInstructions: drink.strInstructions ?? null,
+      strCategory: drink.strCategory ?? null,
+      ingredients: parseIngredients(drink),
+    };
+
+    const ingrs = details.ingredients ?? [];
+    details.ingredientsNormalized = ingrs.map(({ ingredient }) =>
+      normalizeIngredient(ingredient).canonicalName
+    );
+
+    return details;
+  }
 
 // --- robust fetch helpers ---
 
@@ -138,7 +142,7 @@ export function missingFromPantry(
 ): string[] {
   const have = normalizeSet(pantryNames);
   const need = (cocktail.ingredients ?? []).map((i) => i.ingredient);
-  return need.filter((ing) => !have.has(normalizeIngredient(ing)));
+  return need.filter((ing) => !have.has(normalizeIngredient(ing).canonicalName));
 }
 
 export function matchScoreFromPantry(
