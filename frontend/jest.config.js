@@ -1,14 +1,15 @@
+/** @type {import('jest').Config} */
 module.exports = {
   preset: 'jest-expo',
-  testEnvironment: 'jsdom',
+  // Keep gesture handler setup here
   setupFiles: [
     'react-native-gesture-handler/jestSetup',
+  ],
+  // Load our matchers/mocks after env is ready
+  setupFilesAfterEnv: [
     '<rootDir>/jest.setup.js',
   ],
-  setupFilesAfterEnv: [
-
-  ],
-    moduleNameMapper: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
     '^expo(?:/.*)?$': '<rootDir>/__mocks__/expo.js',
     '^expo-modules-core$': '<rootDir>/__mocks__/expo-modules-core.js',
@@ -17,7 +18,7 @@ module.exports = {
     '^expo-image$': '<rootDir>/__mocks__/expo-image.js',
     '^@expo/vector-icons$': '<rootDir>/__mocks__/@expo/vector-icons.js',
     '\\.(png|jpg|jpeg|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
-    },
+  },
   transformIgnorePatterns: [
     'node_modules/(?!(react-native'
       + '|@react-native'
@@ -31,5 +32,11 @@ module.exports = {
       + '|react-native-.*'
       + ')/)',
   ],
-  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/e2e/',
+    '/dist/',
+    '/.expo/',
+    '/coverage/',
+  ],
 };
