@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity,
   Modal,
+  Image,
   Platform,
   UIManager,
 } from "react-native";
@@ -16,6 +17,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import BackButton from "@/components/ui/BackButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import { normalizeIngredient } from "../utils/normalize";
+import { ingredientImageUrl } from "../utils/cocktaildb";
+import { loadIngredientCatalog } from "../utils/ingredientCatalog";
+
 
 // Components
 import Chip from "@/components/my-ingredients/Chip";
@@ -33,24 +37,21 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-/** ---------- Types & Demo Data ---------- */
-type Ingredient = CabinetIngredient;
-// const INITIAL_INGREDIENTS: Ingredient[] = [
-//   { id: "1",  name: "Gin (London Dry)",       category: "Spirit",  owned: true,  impactScore: 0.92 },
-//   { id: "2",  name: "Vodka",                  category: "Spirit",  owned: false, impactScore: 0.88 },
-//   { id: "3",  name: "Tequila (Blanco)",       category: "Spirit",  owned: true,  impactScore: 0.86 },
-//   { id: "4",  name: "White Rum",              category: "Spirit",  owned: false, impactScore: 0.84 },
-//   { id: "5",  name: "Sweet Vermouth",         category: "Liqueur", owned: true,  impactScore: 0.70 },
-//   { id: "6",  name: "Triple Sec / Cointreau", category: "Liqueur", owned: false, impactScore: 0.90 },
-//   { id: "7",  name: "Angostura Bitters",      category: "Other",   owned: true,  impactScore: 0.65 },
-//   { id: "8",  name: "Simple Syrup",           category: "Mixer",   owned: true,  impactScore: 0.78 },
-//   { id: "9",  name: "Club Soda",              category: "Mixer",   owned: false, impactScore: 0.66 },
-//   { id: "10", name: "Lime Juice",             category: "Juice",   owned: true,  impactScore: 0.76 },
-//   { id: "11", name: "Lemon Juice",            category: "Juice",   owned: false, impactScore: 0.72 },
-//   { id: "12", name: "Mint Leaves",            category: "Garnish", owned: true,  impactScore: 0.60 },
-// ];
+/** ---------- Types */
+export type Ingredient = {
+  id: string;
+  name: string;
+  category: Category;
+  owned: boolean;
+  wanted?: boolean;
+  impactScore?: number;
+  imageUrl?: string;
+  /** 0..1 fraction remaining. default 1 (full). */
+  qty?: number;
+};
 
 const STORAGE_KEY = "@mixology:cabinet_v1";
+
 
 /** ---------- Main Screen Component ---------- */
 export default function MyIngredientsScreen() {
@@ -77,6 +78,13 @@ export default function MyIngredientsScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // adding new ingredient
+  const [addVisible, setAddVisible] = useState(false);
+  const [catalog, setCatalog] = useState<{ name: string }[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [addQuery, setAddQuery] = useState("");
+  const [qty, setQty] = useState(1);
 
   /** ----- Persistence ----- */
   useEffect(() => {
@@ -167,22 +175,12 @@ export default function MyIngredientsScreen() {
     setIngredients((prev) => prev.map((i) => (i.id === id ? { ...i, wanted: !i.wanted } : i)));
 
 
-  const onPressAdd = () => {
-    const id = `${Date.now()}`; 
-    setIngredients((prev) => [
-      ...prev,
-      {
-        id,
-        name: activeTab === "cabinet" ? `New Ingredient` : `Needed Ingredient`,
-        category: "Other",
-        owned: activeTab === "cabinet",
-        wanted: activeTab === "shopping",
-        impactScore: Math.random(),
-        normalized: normalizeIngredient(
-          activeTab === "cabinet" ? `New Ingredient` : `Needed Ingredient`
-        ),
-      },
-    ]);
+  const onPressAdd = async () => {
+    setAddVisible(true);
+    if (!catalog.length && !catalogLoading) {
+      setCatalogLoading(true);
+      try { setCatalog(await loadIngredientCatalog()); } finally { setCatalogLoading(false); }
+    }
   };
 
   const deleteIngredient = (id: string) => {
@@ -269,6 +267,7 @@ export default function MyIngredientsScreen() {
   const confirmRename = () => {
     if (!renamingItem || !newName.trim()) return;
     const trimmed = newName.trim();
+    const { displayName, canonicalName } = normalizeIngredient(trimmed);
     if (trimmed === renamingItem.name) {
       setRenameModalVisible(false);
       setRenamingItem(null);
@@ -278,7 +277,7 @@ export default function MyIngredientsScreen() {
     setIngredients((prev) =>
       prev.map((i) =>
         i.id === renamingItem.id
-          ? { ...i, name: trimmed, normalized: normalizeIngredient(trimmed) }
+          ? { ...i, name: displayName, imageUrl: ingredientImageUrl(canonicalName || displayName, "Small") }
           : i
    )
     );
@@ -375,6 +374,9 @@ export default function MyIngredientsScreen() {
         renderItem={renderCabinetItem}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        overScrollMode="never"
         ListEmptyComponent={renderEmpty(
           query ? "No matches" : "Cabinet is empty",
           query ? `No ingredients match "${query}".` : "Add your first items using the ＋ button.",
@@ -423,6 +425,9 @@ const ShoppingView = (
         renderItem={renderShoppingItem}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        overScrollMode="never"
         ListEmptyComponent={renderEmpty(
           query ? "No matches" : "No items",
           query ? `No items match "${query}".` : "Add items to your Shopping List using the ＋ button.",
@@ -540,6 +545,105 @@ const ShoppingView = (
             </View>
           </View>
         </Modal>
+
+        {/* Add Ingredient Modal */}
+        <Modal visible={addVisible} transparent animationType="fade" onRequestClose={() => setAddVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxWidth: 420 }]}>
+            <Text style={styles.modalTitle}>Add Ingredient</Text>
+
+            {/* Search input */}
+            <TextInput
+              value={addQuery}
+              onChangeText={setAddQuery}
+              placeholder="Search CocktailDB (e.g., Gin, Triple Sec, Lime)"
+              placeholderTextColor="#8B8B8B"
+              style={styles.modalInput}
+            />
+
+            {/* Quantity stepper */}
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <Text style={{ color: "#CFCFCF", fontWeight: "600" }}>Quantity</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <TouchableOpacity onPress={() => setQty(Math.max(1, qty - 1))} style={[styles.modalButton, { paddingHorizontal: 12 }]}>
+                  <Text style={{ color: "#CFCFCF", fontSize: 18 }}>−</Text>
+                </TouchableOpacity>
+                <Text style={{ color: "#fff", minWidth: 24, textAlign: "center" }}>{qty}</Text>
+                <TouchableOpacity onPress={() => setQty(qty + 1)} style={[styles.modalButton, { paddingHorizontal: 12 }]}>
+                  <Text style={{ color: "#CFCFCF", fontSize: 18 }}>＋</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Results list */}
+            <View style={{ maxHeight: 340 }}>
+              {catalogLoading ? (
+                <Text style={{ color: "#9BA3AF" }}>Loading catalog…</Text>
+              ) : (
+                <FlatList
+                  keyboardShouldPersistTaps="handled"
+                  data={catalog.filter((c) => c.name.toLowerCase().includes(addQuery.trim().toLowerCase()))}
+                  keyExtractor={(i) => i.name}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        const id = `${Date.now()}`;
+                        const { displayName, canonicalName } = normalizeIngredient(item.name);
+                        const name = displayName;
+                        setIngredients((prev) => [
+                          ...prev,
+                          {
+                            id,
+                            name,
+                            category: "Other",
+                            owned: true,
+                            wanted: false,
+                            impactScore: Math.random(),
+                            imageUrl: ingredientImageUrl(canonicalName || name, "Small"),
+                          },
+                        ]);
+                        setAddVisible(false);
+                        setAddQuery("");
+                        setQty(1);
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: 10,
+                        paddingHorizontal: 8,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: "#232329",
+                        marginBottom: 8,
+                        backgroundColor: "#141418",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: ingredientImageUrl(item.name, "Small") }}
+                        style={{ width: 36, height: 36, borderRadius: 8, marginRight: 12, backgroundColor: "#26262B", borderWidth: 1, borderColor: "#2C2C34" }}
+                      />
+                      <Text style={{ color: "#EAEAEA", fontWeight: "600", flex: 1 }} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text style={{ color: "#9BA3AF", fontSize: 12 }}>Tap to add</Text>
+                    </TouchableOpacity>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  overScrollMode="never"
+                />
+              )}
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity onPress={() => setAddVisible(false)} style={[styles.modalButton, styles.modalButtonCancel]}>
+                <Text style={styles.modalButtonTextCancel}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       </SafeAreaView>
     </>
   );
@@ -618,7 +722,7 @@ const styles = StyleSheet.create({
   // Modal
   modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.7)", justifyContent: "center", alignItems: "center", paddingHorizontal: 20 },
   modalContent: {
-    backgroundColor: "#1C1C22",
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 20,
     width: "100%",
@@ -641,8 +745,7 @@ const styles = StyleSheet.create({
   modalButtons: { flexDirection: "row", gap: 12 },
   modalButton: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center", borderWidth: 1 },
   modalButtonCancel: { backgroundColor: "transparent", borderColor: "#2A2A30" },
-  modalButtonConfirm: { backgroundColor: "#3B7BFF", borderColor: "#3B7BFF" },
-  modalButtonTextCancel: { color: "#CFCFCF", fontSize: 16, fontWeight: "600" },
-  modalButtonTextConfirm: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  modalButtonConfirm: { backgroundColor: Colors.accentPrimary, borderColor: Colors.accentPrimary },  modalButtonTextCancel: { color: "#CFCFCF", fontSize: 16, fontWeight: "600" },
+  modalButtonTextConfirm: { color: Colors.accentContrast, fontSize: 16, fontWeight: "700" }, 
   modalButtonTextDisabled: { color: "#8B8B8B" },
 });
