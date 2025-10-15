@@ -20,7 +20,7 @@ const isProfilePath = (p: string) => {
 // Define the tabs for bottom navigation 
 const TABS = [
   { icon: "home-outline",   route: "/home" },
-  { icon: "cube-outline",   route: "/my-ingredients" },
+  { icon: "cube-outline",   route: "/cabinet" },
   { icon: "heart-outline",   route: "/favorites" },
   { icon: "search-outline", route: "/search" },
   { icon: "person-outline", route: "/profile", match: (p: string) => isProfilePath(p) || p.startsWith("/user-profile") },
