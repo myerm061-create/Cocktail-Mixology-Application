@@ -19,10 +19,12 @@ export default function ShoppingRow({
   item,
   onToggleMenu,
   onToggleWanted,
+  onMarkPurchased,
 }: {
   item: Ingredient;
   onToggleMenu: (id: string) => void;
   onToggleWanted: (id: string) => void;
+  onMarkPurchased: (id: string) => void;
 }) {
   const swipeRef = useRef<Swipeable>(null);
   const [idx, setIdx] = useState(0);
@@ -56,9 +58,10 @@ export default function ShoppingRow({
   }, [bustedSrc, allFailed]);
 
   const handleOpen = (direction: "left" | "right") => {
-    if (direction === "left") onToggleWanted(item.id);
-    else if (direction === "right") {
-      // Remove from shopping list
+    if (direction === "left") {
+      // Add to owned tab
+      onMarkPurchased(item.id);
+    } else if (direction === "right") {
       onToggleWanted(item.id);
     }
     requestAnimationFrame(() => swipeRef.current?.close());
@@ -75,8 +78,8 @@ export default function ShoppingRow({
     return (
       <View style={styles.leftActionContainer}>
         <Animated.View style={[styles.leftAction, { transform: [{ scale }] }]}>
-          <Text style={styles.actionIcon}>✓</Text>
-          <Text style={styles.actionLabel}>Check</Text>
+          <Text style={styles.actionIcon}>+</Text>
+          <Text style={styles.actionLabel}>Add</Text>
         </Animated.View>
       </View>
     );

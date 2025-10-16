@@ -351,6 +351,7 @@ export default function MyIngredientsScreen() {
         setIsSheetOpen(true);
       }}
       onToggleWanted={toggleWanted}
+      onMarkPurchased={markPurchasedSingle}
     />
   );
 
