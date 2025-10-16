@@ -1,10 +1,19 @@
-import React, { useRef } from "react";
-import { View, Text, Pressable, StyleSheet, Animated } from "react-native";
+import React, { useRef, useState, useMemo, useEffect } from "react";
+import { View, Text, Pressable, StyleSheet, Animated, ActivityIndicator } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
+import { Image as ExpoImage } from "expo-image";
+import { fallbackIngredientImageUrls } from "../../app/utils/cocktaildb";
 import type { Category } from "./CabinetRow";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-export type Ingredient = { id: string; name: string; category: Category; owned: boolean; wanted?: boolean };
+export type Ingredient = { 
+  id: string; 
+  name: string; 
+  category: Category; 
+  owned: boolean; 
+  wanted?: boolean;
+  imageUrl?: string;
+};
 
 export default function ShoppingRow({
   item,
@@ -16,6 +25,35 @@ export default function ShoppingRow({
   onToggleWanted: (id: string) => void;
 }) {
   const swipeRef = useRef<Swipeable>(null);
+  const [idx, setIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [allFailed, setAllFailed] = useState(false);
+
+  // Build candidates: custom → CocktailDB fallbacks (Small/Medium/Large), de-duped
+  const candidates = useMemo<string[]>(() => {
+    const list = [
+      ...(item.imageUrl ? [item.imageUrl] : []),
+      ...fallbackIngredientImageUrls(item.name),
+    ];
+    return Array.from(new Set(list));
+  }, [item.imageUrl, item.name]);
+
+  const currentSrc = candidates[Math.min(idx, Math.max(0, candidates.length - 1))];
+  // Bust cache between attempts so cached 404s don't stick (especially on web)
+  const bustedSrc = currentSrc
+    ? `${currentSrc}${currentSrc.includes("?") ? "&" : "?"}try=${idx}`
+    : undefined;
+
+  // Reset image attempt state when the row changes
+  useEffect(() => {
+    setIdx(0);
+    setAllFailed(false);
+  }, [item.id, item.name, item.imageUrl]);
+
+  // Show spinner whenever we switch candidates (unless we've given up)
+  useEffect(() => {
+    if (!allFailed) setLoading(true);
+  }, [bustedSrc, allFailed]);
 
   const handleOpen = (direction: "left" | "right") => {
     if (direction === "left") onToggleWanted(item.id);
@@ -73,15 +111,41 @@ export default function ShoppingRow({
       childrenContainerStyle={{ overflow: "visible" }}
     >
       <View style={styles.rowWrap}>
-        <View style={styles.row}>
-          <Pressable
-            onPress={() => onToggleWanted(item.id)}
-            style={[styles.checkbox, item.wanted && styles.checkboxChecked]}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: !!item.wanted }}
-          >
-            {item.wanted ? <Text style={styles.checkboxMark}>✓</Text> : null}
-          </Pressable>
+        <View style={styles.rowCard}>
+          <View style={styles.imageContainer}>
+            {allFailed ? (
+              // Local monogram fallback – no network images resolved
+              <View style={styles.monogram}>
+                <Text style={styles.monogramText}>{item.name.charAt(0).toUpperCase()}</Text>
+              </View>
+            ) : (
+              <>
+                <ExpoImage
+                  key={bustedSrc} // force remount when idx changes
+                  source={{ uri: bustedSrc! }}
+                  style={styles.ingredientImage}
+                  contentFit="cover"
+                  cachePolicy="none" // avoid persisting 404s
+                  transition={100}
+                  onLoad={() => setLoading(false)}
+                  onError={() => {
+                    if (idx < candidates.length - 1) {
+                      setLoading(false);
+                      setIdx((i) => i + 1);
+                    } else {
+                      setLoading(false);
+                      setAllFailed(true);
+                    }
+                  }}
+                />
+                {loading && (
+                  <View style={styles.loaderOverlay}>
+                    <ActivityIndicator size="small" color="#9C9CA3" />
+                  </View>
+                )}
+              </>
+            )}
+          </View>
 
           <View style={styles.rowTextWrap}>
             <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
@@ -99,17 +163,25 @@ export default function ShoppingRow({
 
 const styles = StyleSheet.create({
   rowWrap: { position: "relative", marginHorizontal: 6, marginVertical: 4, overflow: "visible" },
-  row: {
+  rowCard: {
     flexDirection: "row", alignItems: "center",
     paddingVertical: 12, paddingHorizontal: 10,
     backgroundColor: Colors.buttonBackground, borderColor: "#232329", borderWidth: 1, borderRadius: 14,
   },
-  checkbox: {
-    width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: "#3C3C46",
-    alignItems: "center", justifyContent: "center", backgroundColor: "transparent", marginRight: 12,
+  imageContainer: {
+    width: 48, height: 48, borderRadius: 12, marginRight: 12, backgroundColor: "#26262B",
+    borderWidth: 1, borderColor: "#2C2C34", overflow: "hidden", position: "relative",
   },
-  checkboxChecked: { backgroundColor: Colors.accentPrimary, borderColor: Colors.accentPrimary },
-  checkboxMark: { color: "#FFFFFF", fontSize: 14, fontWeight: "800" },
+  ingredientImage: { width: "100%", height: "100%" },
+  monogram: {
+    width: "100%", height: "100%", alignItems: "center", justifyContent: "center",
+    backgroundColor: "#2A2A30",
+  },
+  monogramText: { color: "#CFCFCF", fontSize: 18, fontWeight: "700" },
+  loaderOverlay: {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(38, 38, 43, 0.8)", alignItems: "center", justifyContent: "center",
+  },
   rowTextWrap: { flex: 1, marginRight: 8, overflow: "hidden" },
   rowTitle: { color: Colors.textPrimary, fontSize: 16, fontWeight: "600" },
   rowSub: { color: Colors.textSecondary ?? "#9BA3AF", fontSize: 12, marginTop: 2 },
