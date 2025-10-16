@@ -626,8 +626,8 @@ export default function MyIngredientsScreen() {
                               id,
                               name,
                               category: "Other",
-                              owned: true,
-                              wanted: false,
+                              owned: activeTab === "cabinet",
+                              wanted: activeTab === "shopping",
                               impactScore: Math.random(),
                               imageUrl: ingredientImageUrl(canonicalName || name, "Small"),
                               qty: Math.max(0, Math.min(1, qty)), // save fraction
