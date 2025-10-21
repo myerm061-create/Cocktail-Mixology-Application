@@ -26,6 +26,68 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+// Generic ingredient terms to ignore when searching by ingredient
+const STOP_GENERIC = new Set(["gin","rum","vodka","whiskey","whisky","tequila","brandy","bourbon","scotch","wine","beer","liqueur"]);
+
+// Normalize a string for matching
+function norm(s?: string | null) {
+  return (s ?? "").toLowerCase().normalize("NFKD").replace(/\p{Diacritic}/gu, "");
+}
+
+// Find index of needle in haystack at word boundary, or -1
+function wordBoundaryIndex(hay: string, needle: string) {
+  const rx = new RegExp(`\\b${needle}\\b`, "i");
+  const m = rx.exec(hay);
+  return m ? m.index : -1;
+}
+
+type Rankable = Cocktail & { ingredientsNormalized?: string[] | null };
+
+// Score a drink for relevance to the query
+function scoreDrink(q: string, d: Rankable) {
+  const nq = norm(q);
+  const nname = norm(d.strDrink ?? "");
+  let score = 0;
+
+  // Name quality
+  if (nname === nq) score += 100;
+  else if (nname.startsWith(nq)) score += 60;
+  else if (wordBoundaryIndex(nname, nq) >= 0) score += 40;
+  else if (nname.includes(nq)) score += 20;
+
+  // Ingredient signal (if present)
+  const ings = (d.ingredientsNormalized ?? []).map(norm);
+  if (ings.length) {
+    const idx = ings.indexOf(nq);
+    if (idx >= 0) {
+      score += 50 - Math.min(idx, 4) * 10; // base spirit > garnish
+    } else if (ings.some(s => wordBoundaryIndex(s, nq) >= 0)) {
+      score += 25;
+    } else if (ings.some(s => s.includes(nq))) {
+      score += 10;
+    }
+  }
+
+  // Small boost for having a thumbnail
+  if (d.strDrinkThumb) score += 5;
+
+  return score;
+}
+
+// Rerank and prune a list of drinks for the given query
+function rerankAndPrune(query: string, input: Rankable[]) {
+  const q = query.trim();
+  const genericOneWord = q.split(/\s+/).length === 1 && STOP_GENERIC.has(norm(q));
+  const strictCut = genericOneWord ? 40 : 10;
+
+  return input
+    .map(d => ({ d, s: scoreDrink(q, d) }))
+    .filter(({ s }) => s >= strictCut)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 60)
+    .map(({ d }) => d);
+}
+
 /**
  * Real starter items from TheCocktailDB:
  *  - Margarita:      11007
@@ -35,6 +97,8 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
  *  - Vodka Martini:  14167 
  *  - Moscow Mule:    11009
  */
+
+// Curated starter list
 const STARTERS: Cocktail[] = [
   { idDrink: "11007", strDrink: "Margarita",      strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg" },
   { idDrink: "11000", strDrink: "Mojito",         strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg" },
@@ -44,6 +108,7 @@ const STARTERS: Cocktail[] = [
   { idDrink: "11009", strDrink: "Moscow Mule",    strDrinkThumb: "https://www.thecocktaildb.com/images/media/drink/3pylqc1504370988.jpg" },
 ];
 
+// Main search screen component
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Cocktail[]>(STARTERS);
@@ -51,14 +116,21 @@ export default function SearchScreen() {
   const [error,   setError]   = useState<string | null>(null);
   const [notFoundTerm, setNotFoundTerm] = useState<string | null>(null);
 
+  // Favorites
   const { items: favItems, toggle } = useFavorites();
   const favIds = useMemo(() => new Set((favItems ?? []).map(f => f.id)), [favItems]);
 
+  // Safe area insets
   const insets = useSafeAreaInsets();
 
+  // Debounce timer
   const debounceMs = 350;
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trimmed = useMemo(() => query.trim(), [query]);
+
+  // Generic ingredient terms to ignore when searching by ingredient
+  const STOP_GENERIC = new Set(["gin","rum","vodka","whiskey","whisky","tequila","brandy","bourbon","scotch","wine","beer","liqueur"]);
+
 
   // FlatList ref to jump to top
   const listRef = useRef<FlatList<Cocktail>>(null);
@@ -91,46 +163,86 @@ export default function SearchScreen() {
       return;
     }
 
-    timer.current = setTimeout(() => {
-      // wrap the async work so the callback itself returns void
-      void (async () => {
-        setLoading(true);
-        setError(null);
-        setNotFoundTerm(null);
-        try {
-          Keyboard.dismiss();
+  // Debounced search
+  timer.current = setTimeout(() => {
+    void (async () => {
+      setLoading(true);
+      setError(null);
+      setNotFoundTerm(null);
+      try {
+        Keyboard.dismiss();
 
-          const words = trimmed.split(/\s+/);
-          let drinks: Cocktail[] = [];
+        const words = trimmed.split(/\s+/);
+        const qNorm = trimmed.toLowerCase();
+        const isGenericOneWord = words.length === 1 && STOP_GENERIC.has(qNorm);
 
-          if (words.length === 1) {
-            // single token → try ingredient first, then name
-            drinks = await filterByIngredient(trimmed);
-            if (!drinks.length) drinks = await searchByName(trimmed);
+        // Pull candidates
+        let byName: Cocktail[] = [];
+        let byIng: Cocktail[] = [];
+        let drinks: Cocktail[] = [];
+
+        if (words.length === 1) {
+          // single token
+          byName = await searchByName(trimmed);
+
+          // For generic base spirits (“gin”, “rum”, …), ingredient filter is too broad.
+          if (!isGenericOneWord) {
+            byIng = await filterByIngredient(trimmed);
+          }
+
+          if (byIng.length && byName.length) {
+            // Intersect on id
+            const set = new Set(byName.map(d => d.idDrink));
+            const inter = byIng.filter(d => set.has(d.idDrink));
+
+            // If intersection is too small, backfill with top name results
+            if (inter.length >= 6) {
+              drinks = inter;
+            } else {
+              const used = new Set(inter.map(d => d.idDrink));
+              const backfill = byName.filter(d => !used.has(d.idDrink)).slice(0, 20);
+              drinks = [...inter, ...backfill];
+            }
           } else {
-            // multi-token → name search
-            drinks = await searchByName(trimmed);
+            drinks = byIng.length ? byIng : byName;
           }
-
-          if (!drinks.length) {
-            // Mark "not found" and fall back to curated starters
-            setNotFoundTerm(trimmed);
-            drinks = STARTERS;
-          }
-
-          // Ensure thumbs are present if any lookup lacked them
-          drinks = await hydrateThumbs(drinks, 12);
-
-          setResults(drinks);
-        } catch (e: any) {
-          setError(e?.message || "Something went wrong.");
-          setNotFoundTerm(null);
-          setResults(STARTERS);
-        } finally {
-          setLoading(false);
+        } else {
+          // multi-token → name search only
+          drinks = await searchByName(trimmed);
         }
-      })();
-    }, debounceMs);
+
+        if (!drinks.length) {
+          setNotFoundTerm(trimmed);
+          drinks = STARTERS;
+        }
+
+        // Import on-demand to keep bundle slim.
+        let detailed: (Cocktail & { ingredientsNormalized?: string[] })[] = drinks as any;
+        try {
+          const mod = await import("../lib/cocktails");
+          if (mod.hydrateDetails) {
+            detailed = await mod.hydrateDetails(drinks, 40);
+          }
+        } catch {
+          // no-op if dynamic import fails
+        }
+
+        // Ensure thumbs for first few that still miss it
+        detailed = await hydrateThumbs(detailed, 12) as any;
+
+        // Final local re-ranking + pruning
+        const finalList = rerankAndPrune(trimmed, detailed);
+
+        setResults(finalList.length ? finalList : drinks);
+      } catch (e: any) {
+        setError(e?.message || "Something went wrong.");
+        setNotFoundTerm(null);
+        setResults(STARTERS);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, debounceMs);
 
     return () => {
       if (timer.current) clearTimeout(timer.current);
@@ -152,6 +264,7 @@ export default function SearchScreen() {
     });
   };
 
+  // Helper to get preview image URL
   const toPreview = (u?: string | null) =>
     u ? (u.endsWith("/preview") ? u : `${u}/preview`) : undefined;
 
