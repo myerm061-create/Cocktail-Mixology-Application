@@ -128,10 +128,6 @@ export default function SearchScreen() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trimmed = useMemo(() => query.trim(), [query]);
 
-  // Generic ingredient terms to ignore when searching by ingredient
-  const STOP_GENERIC = new Set(["gin","rum","vodka","whiskey","whisky","tequila","brandy","bourbon","scotch","wine","beer","liqueur"]);
-
-
   // FlatList ref to jump to top
   const listRef = useRef<FlatList<Cocktail>>(null);
 
