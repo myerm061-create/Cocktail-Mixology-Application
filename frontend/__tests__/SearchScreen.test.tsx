@@ -262,16 +262,12 @@ describe("SearchScreen", () => {
 
     await typeAndWait("rickey");
     await flush();
-    const card = screen.getByText("Gin Rickey");
-    const row = card.parent as any;
-    const heartBtn = within(row.parent).getByLabelText("Add to favorites");
-
+    const heartBtn = screen.getAllByTestId("fav-toggle")[0];
     fireEvent.press(heartBtn);
-
     expect((Fav as any).__mock.toggle).toHaveBeenCalledWith({
-        id: "42",
-        name: "Gin Rickey",
-        thumbUrl: null,
+      id: "42",
+      name: "Gin Rickey",
+      thumbUrl: null,
     });
 
   });

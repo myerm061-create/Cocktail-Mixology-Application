@@ -322,6 +322,9 @@ export default function SearchScreen() {
             data={pagedResults}
             keyExtractor={(item) => item.idDrink}
             contentContainerStyle={{ paddingBottom: 140 }}
+            initialNumToRender={40}
+            windowSize={10}
+            removeClippedSubviews={false}
             renderItem={({ item }) => {
               const fav = favIds.has(item.idDrink);
               return (
@@ -339,6 +342,7 @@ export default function SearchScreen() {
 
                   {/* Heart toggle (persisted) */}
                   <Pressable
+                    testID="fav-toggle"
                     onPress={() => void toggle({ id: item.idDrink, name: item.strDrink, thumbUrl: item.strDrinkThumb ?? null })}
                     hitSlop={10}
                     accessibilityRole="button"
