@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 # Pydantic schema for user output
 class UserOut(BaseModel):
@@ -9,3 +9,23 @@ class UserOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserRead(BaseModel):
+    id: int
+    email: EmailStr
+    class Config:
+        orm_mode = True
+
+class TokenPair(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+    expires_in: int 
