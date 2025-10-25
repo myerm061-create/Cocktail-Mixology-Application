@@ -1,3 +1,6 @@
+/* eslint-env jest */
+/* eslint-disable import/no-extraneous-dependencies */
+
 if (!Object.getOwnPropertyDescriptor(globalThis, '__ExpoImportMetaRegistry')) {
   Object.defineProperty(globalThis, '__ExpoImportMetaRegistry', {
     configurable: true,
