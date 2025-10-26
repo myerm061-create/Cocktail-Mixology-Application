@@ -1,8 +1,27 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.routes_health import router as health_router
 from app.api.v1.routes_auth import router as auth_router
+from app.core.db import Base, engine
+from app.models.user import User 
 
+# Dev-only: create tables if missing (use Alembic later)
+Base.metadata.create_all(bind=engine)
+
+# Application instance
 app = FastAPI(title="Cocktail API")
+
+# CORS configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:19006",  # Expo web
+        "exp://127.0.0.1:19000",   # Expo app
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Versioned API
 app.include_router(auth_router, prefix="/api/v1")

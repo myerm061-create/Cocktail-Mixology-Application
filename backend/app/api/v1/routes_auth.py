@@ -13,7 +13,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 DbDep = Annotated[Session, Depends(get_db)]
 
 # ---- Helpers -----
+
+# Issue access and refresh tokens for a given user ID
 def _issue_tokens(*, user_id: int) -> TokenPair:
+    """Generate access and refresh tokens for a user."""
     access_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     refresh_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
@@ -32,19 +35,21 @@ def _issue_tokens(*, user_id: int) -> TokenPair:
         expires_in=int(access_expires.total_seconds()),
     )
 
-
+# Find a user by email
 def _find_user_by_email(db: Session, email: str) -> User | None:
+    """Retrieve a user from the database by email."""
     return db.query(User).filter(User.email == email).first()
 
+# ---- Routes -----
 
-# ----- Routes ----
+# Registration endpoint
 @router.post("/register", response_model=TokenPair, status_code=status.HTTP_201_CREATED)
 def register(payload: UserCreate, db: DbDep):
+    """Create a new user and return auth tokens."""
     existing = _find_user_by_email(db, payload.email.lower())
     if existing:
         raise HTTPException(status_code=409, detail="Email already registered")
-
-    hashed = security.get_password_hash(payload.password)
+    hashed = security.hash_password(payload.password)
     user = User(email=payload.email.lower(), hashed_password=hashed)
     db.add(user)
     db.commit()
@@ -52,7 +57,7 @@ def register(payload: UserCreate, db: DbDep):
 
     return _issue_tokens(user_id=user.id)
 
-
+# Login endpoint
 @router.post("/login", response_model=TokenPair)
 def login(payload: UserLogin, db: DbDep):
     user = _find_user_by_email(db, payload.email.lower())
@@ -62,6 +67,7 @@ def login(payload: UserLogin, db: DbDep):
     return _issue_tokens(user_id=user.id)
 
 
+# Token refresh endpoint
 @router.post("/refresh", response_model=TokenPair)
 def refresh(token_pair: TokenPair):
     try:
@@ -72,13 +78,13 @@ def refresh(token_pair: TokenPair):
     user_id = int(claims.get("sub"))
     return _issue_tokens(user_id=user_id)
 
-
+# Logout endpoint
 @router.post("/logout", status_code=204)
 def logout(_: DbDep, response: Response):
     response.status_code = status.HTTP_204_NO_CONTENT
     return
 
-
+# Get current user endpoint
 @router.get("/me", response_model=UserRead)
 def me(current_user: Annotated[User, Depends(security.get_current_user)]):
     return UserRead(id=current_user.id, email=current_user.email)
