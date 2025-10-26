@@ -1,37 +1,37 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet } from "react-native";
+import { Pressable, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useSegments } from "expo-router";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-// A back button component to navigate to the previous screen
+/**
+ * BackButton
+ * Navigates back if previous segments exist, otherwise replaces with /home.
+ */
 export default function BackButton() {
   const router = useRouter();
   const segments = useSegments();
 
   const handlePress = () => {
-    if (segments.length > 1) {
-      // Normal case
+    if (segments && segments.length > 0) {
       router.back();
     } else {
-      // No previous page
       router.replace("/home");
     }
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
-      <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
-    </TouchableOpacity>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="arrow-back"
+      testID="back-button"
+      onPress={handlePress}
+      style={{ padding: 8 }}
+    >
+      <Ionicons name="arrow-back" size={24} color="#fff" />
+      {/* fallback text for test environments */}
+      <Text accessibilityLabel="arrow-back" style={{ display: "none" }}>
+        Back
+      </Text>
+    </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: "absolute",
-    top: 50,
-    left: 20,
-    zIndex: 10,
-    padding: 8,
-  },
-});
