@@ -1,5 +1,4 @@
-/* eslint-env jest */
-/* eslint-disable import/no-extraneous-dependencies */
+/* global jest */
 
 if (!Object.getOwnPropertyDescriptor(globalThis, '__ExpoImportMetaRegistry')) {
   Object.defineProperty(globalThis, '__ExpoImportMetaRegistry', {
@@ -7,6 +6,7 @@ if (!Object.getOwnPropertyDescriptor(globalThis, '__ExpoImportMetaRegistry')) {
     get(){ return { get: () => undefined, set: () => undefined }; },
   });
 }
+
 // Mock AsyncStorage for tests to avoid NativeModule null errors
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(async () => null),
