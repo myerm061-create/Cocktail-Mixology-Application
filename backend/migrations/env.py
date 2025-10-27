@@ -1,11 +1,15 @@
 from __future__ import annotations
-import os, sys
+
+import os
+import sys
 from logging.config import fileConfig
 
 from alembic import context
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, pool
 from sqlalchemy.engine import URL
-from dotenv import load_dotenv
+
+from app.models.base import Base
 
 # make sure Alembic can import app.* modules
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -30,10 +34,6 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import models + metadata
-from app.models.base import Base
-import app.models.user
-import app.models.ingredient
-
 target_metadata = Base.metadata
 
 

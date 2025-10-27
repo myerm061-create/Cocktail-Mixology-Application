@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.db import get_db
-from app.core.config import settings
 from app.core import security
+from app.core.config import settings
+from app.core.db import get_db
 from app.models.user import User
 from app.schemas.user import UserOut
 from app.services import auth_google
 
 router = APIRouter(prefix="/auth/google", tags=["auth_google"])
+
 
 # Endpoint to initiate Google OAuth2 login
 @router.get("/login")
@@ -18,16 +19,17 @@ def login_via_google():
         redirect_uri=settings.GOOGLE_REDIRECT_URI,
         scope=["openid", "email", "profile"],
         # optional:
-        prompt="consent",          
-        access_type="offline",     
+        prompt="consent",
+        access_type="offline",
     )
     return {"auth_url": url}
+
 
 # Callback endpoint to handle Google's response
 @router.get("/callback")
 def google_callback(
     code: str,
-    code_verifier: str | None = None,  
+    code_verifier: str | None = None,
     db: Session = Depends(get_db),
 ):
     tokens = auth_google.exchange_code_for_token(
@@ -41,15 +43,23 @@ def google_callback(
     if not id_token:
         raise HTTPException(status_code=400, detail="Missing id_token from Google")
 
-    claims = auth_google.verify_google_id_token(id_token, audience=settings.GOOGLE_CLIENT_ID)
+    claims = auth_google.verify_google_id_token(
+        id_token, audience=settings.GOOGLE_CLIENT_ID
+    )
 
     email = claims.get("email")
     sub = claims.get("sub")
     if not email or not sub:
-        raise HTTPException(status_code=400, detail="Google token missing required claims")
+        raise HTTPException(
+            status_code=400, detail="Google token missing required claims"
+        )
 
     # Check if user exists, if not create a new user
-    user = db.query(User).filter(User.provider == "google", User.provider_id == sub).first()
+    user = (
+        db.query(User)
+        .filter(User.provider == "google", User.provider_id == sub)
+        .first()
+    )
     if not user:
         user = User(
             email=email,
@@ -63,4 +73,8 @@ def google_callback(
 
     # Create a JWT token for the user
     access_token = security.create_access_token({"sub": str(user.id)})
-    return {"user": UserOut.model_validate(user), "access_token": access_token, "token_type": "bearer"}
+    return {
+        "user": UserOut.model_validate(user),
+        "access_token": access_token,
+        "token_type": "bearer",
+    }

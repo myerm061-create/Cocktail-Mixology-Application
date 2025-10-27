@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
+
 from app.main import app
+
 
 # Test that invalid/non-existent routes return a 404 status code
 @pytest.mark.asyncio

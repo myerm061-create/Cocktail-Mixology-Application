@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.routes_health import router as health_router
+
 from app.api.v1.routes_auth import router as auth_router
+from app.api.v1.routes_health import router as health_router
 from app.core.db import Base, engine
-from app.models.user import User 
 
 # Dev-only: create tables if missing (use Alembic later)
 Base.metadata.create_all(bind=engine)
