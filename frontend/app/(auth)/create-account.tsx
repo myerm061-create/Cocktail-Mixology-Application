@@ -132,7 +132,7 @@ export default function CreateAccountScreen() {
         onChangeText={setConfirmPassword}
         type="password"
         returnKeyType="go"
-        onSubmitEditing={handleCreate}
+        onSubmitEditing={() => { void handleCreate(); }}
       />
 
       <PasswordRules password={password} confirmPassword={confirmPassword} />
@@ -140,7 +140,11 @@ export default function CreateAccountScreen() {
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
 
-      <FormButton title={busy ? "Creating…" : "Create"} onPress={handleCreate} disabled={!allValid || busy} />
+      <FormButton
+        title={busy ? "Creating…" : "Create"}
+        onPress={() => { void handleCreate(); }}
+        disabled={!allValid || busy}
+      />
       {busy ? <ActivityIndicator style={{ marginTop: 12 }} /> : null}
 
       <Text style={styles.newUserText}>
