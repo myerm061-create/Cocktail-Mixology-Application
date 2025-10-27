@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 # Pydantic schema for user output
 class UserOut(BaseModel):
@@ -13,6 +13,13 @@ class UserOut(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
+    
+    @field_validator("password")
+    @classmethod
+    def strong_enough(cls, v: str):
+        if not any(ch.isdigit() for ch in v):
+            raise ValueError("Password must include at least one number")
+        return v
 
 class UserLogin(BaseModel):
     email: EmailStr

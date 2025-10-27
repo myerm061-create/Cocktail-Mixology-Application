@@ -15,8 +15,12 @@ app = FastAPI(title="Cocktail API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:19006",  # Expo web
-        "exp://127.0.0.1:19000",   # Expo app
+        "http://localhost:8081",
+        "http://localhost:19006",
+        "http://localhost:5173",
+        "http://127.0.0.1:8081",
+        "http://127.0.0.1:19006",
+        "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
