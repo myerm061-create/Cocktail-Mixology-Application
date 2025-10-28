@@ -12,7 +12,7 @@ import {
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, Link } from "expo-router";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
@@ -76,17 +76,18 @@ export default function OnboardingScreen() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+
+    void (async () => {
       try {
         await Promise.all(
-          chosen.filter(Boolean).map(u => RNImage.prefetch(u))
+          chosen.filter(Boolean).map((u) => RNImage.prefetch(u))
         );
       } catch {}
       if (!cancelled) setReady(true);
     })();
+
     return () => { cancelled = true; };
   }, [chosen]);
-
   // Honor the “hasOnboarded” flag
   // useEffect(() => {
   //   (async () => {
