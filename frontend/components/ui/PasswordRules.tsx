@@ -29,7 +29,7 @@ export default function PasswordRules({ password, confirmPassword }: PasswordRul
   return (
     <View style={styles.wrap} accessibilityLabel="Password requirements">
       <Text style={styles.header}>Password must include:</Text>
-      <Rule ok={checks.len6} label="At least 6 characters" />
+      <Rule ok={checks.len6} label="At least 8 characters" />
       <Rule ok={checks.hasNum} label="Contains a number" />
       <Rule ok={checks.match} label="Passwords match" />
     </View>

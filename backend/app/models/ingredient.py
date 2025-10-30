@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.models.base import Base
+
 
 class Ingredient(Base):
     __tablename__ = "ingredients"

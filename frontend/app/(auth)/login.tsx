@@ -1,32 +1,93 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import { View, Text, StyleSheet, ActivityIndicator, Animated, Easing } from "react-native";
 import { Link, router } from "expo-router";
+import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import CheckBox from "@/components/ui/CheckBox";
 import GoogleAuthButton from "@/components/ui/GoogleAuthButton";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+// import * as SecureStore from "expo-secure-store"; // TODO: persist tokens
 
-// A login screen with email/password and Google auth options
+const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+
+  const [busy, setBusy] = useState(false);
   const [gLoading, setGLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleLogin = () => {
-    if (!email.trim() || !password.trim()) {
-      alert("Please enter both email and password.");
+  // shake animation
+  const shakeX = useRef(new Animated.Value(0)).current;
+  const shake = () => {
+    shakeX.setValue(0);
+    Animated.sequence([
+      Animated.timing(shakeX, { toValue: 8, duration: 60, useNativeDriver: true, easing: Easing.linear }),
+      Animated.timing(shakeX, { toValue: -8, duration: 60, useNativeDriver: true, easing: Easing.linear }),
+      Animated.timing(shakeX, { toValue: 6, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeX, { toValue: -6, duration: 50, useNativeDriver: true }),
+      Animated.timing(shakeX, { toValue: 0, duration: 40, useNativeDriver: true }),
+    ]).start();
+  };
+
+  const emailValid = useMemo(() => /\S+@\S+\.\S+/.test(email.trim()), [email]);
+  const pwValid = useMemo(() => password.trim().length >= 1, [password]);
+  const allValid = useMemo(() => emailValid && pwValid, [emailValid, pwValid]);
+
+  const handleLogin = async () => {
+    if (!allValid || busy) {
+      setError("Please enter a valid email and password.");
+      shake();
       return;
     }
-    if (email === "test@test.com" && password === "test") {
-      alert("Login successful (Test account)");
-      router.push("/home");
-      return;
-    }
+    setBusy(true);
+    setError(null);
+    setSuccess(null);
 
-    // TODO: login logic -> if rememberMe true
-    alert("Invalid credentials.");
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      if (res.ok) {
+        // const data = await res.json();
+        // if (rememberMe) {
+        //   await SecureStore.setItemAsync("access_token", data.access_token);
+        //   await SecureStore.setItemAsync("refresh_token", data.refresh_token);
+        // }
+        setSuccess("Signed in! Redirecting…");
+        setTimeout(() => router.replace("/home"), 500);
+        return;
+      }
+
+      if (res.status === 401) {
+        setError("Invalid email or password.");
+        shake();
+        return;
+      }
+
+      if (res.status === 422) {
+        const j = await res.json().catch(() => null);
+        const msg = j?.detail?.[0]?.msg ?? "Please check your inputs.";
+        setError(`Validation error: ${msg}`);
+        shake();
+        return;
+      }
+
+      const text = await res.text().catch(() => "");
+      setError(`Login failed (${res.status}). ${text || "Try again."}`);
+      shake();
+    } catch (e: any) {
+      setError(`Network error: ${e?.message ?? e}`);
+      shake();
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleGoogle = async () => {
@@ -40,7 +101,9 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back!</Text>
+      <Animated.View style={{ transform: [{ translateX: shakeX }] }}>
+        <Text style={styles.title}>Welcome Back!</Text>
+      </Animated.View>
       <Text style={styles.subtitle}>Please enter your account here</Text>
 
       <AuthInput
@@ -62,7 +125,8 @@ export default function LoginScreen() {
         type="password"
         autoComplete="password"
         textContentType="password"
-        returnKeyType="done"
+        returnKeyType="go"
+        onSubmitEditing={() => { void handleLogin(); }}
       />
 
       <View style={styles.row}>
@@ -72,7 +136,15 @@ export default function LoginScreen() {
         </Link>
       </View>
 
-      <FormButton title="Login" onPress={handleLogin} />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
+
+      <FormButton
+        title={busy ? "Signing in…" : "Login"}
+        onPress={() => { void handleLogin(); }}
+        disabled={!allValid || busy}
+      />
+      {busy ? <ActivityIndicator style={{ marginTop: 12 }} /> : null}
 
       <View style={styles.dividerRow}>
         <View style={styles.divider} />
@@ -80,10 +152,7 @@ export default function LoginScreen() {
         <View style={styles.divider} />
       </View>
 
-      <GoogleAuthButton
-        onPress={() => { void handleGoogle(); }} 
-        loading={gLoading}
-      />
+      <GoogleAuthButton onPress={() => { void handleGoogle(); }} loading={gLoading} />
 
       <Text style={styles.newUserText}>
         New user?{" "}
@@ -96,64 +165,16 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: Colors.background,
-  },
-  title: {
-    fontWeight: "bold",
-    fontSize: 28,
-    marginBottom: 10,
-    color: Colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 20,
-    color: Colors.textSecondary,
-    textAlign: "center",
-  },
-  forgotContainer: {
-    width: "100%",
-    alignItems: "flex-end",
-    marginBottom: 10
-    ,
-  },
-  forgotLink: {
-    color: Colors.link,
-    fontSize: 14,
-  },
-  link: {
-    color: Colors.link,
-  },
-  newUserText: {
-    marginTop: 15,
-    color: Colors.textSecondary,
-    fontSize: 14,
-  },
-  row: { 
-    width: "100%", 
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "space-between", 
-    marginBottom: 12 
-  },
-  dividerRow: { 
-    width: "100%", 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 8, 
-    marginVertical: 12
-  },
-  divider: { 
-    flex: 1, 
-    height: 1, 
-    backgroundColor: "#2C2A35" 
-  },
-  dividerText: { 
-    color: Colors.textSecondary, 
-    fontSize: 12 
-  },
+  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: Colors.background },
+  title: { fontWeight: "bold", fontSize: 28, marginBottom: 10, color: Colors.textPrimary, textAlign: "center" },
+  subtitle: { fontSize: 16, marginBottom: 20, color: Colors.textSecondary, textAlign: "center" },
+  link: { color: Colors.link },
+  newUserText: { marginTop: 15, color: Colors.textSecondary, fontSize: 14 },
+  forgotLink: { color: Colors.link, fontSize: 14 },
+  row: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  dividerRow: { width: "100%", flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 12 },
+  divider: { flex: 1, height: 1, backgroundColor: "#2C2A35" },
+  dividerText: { color: Colors.textSecondary, fontSize: 12 },
+  error: { marginTop: 8, color: "#ff6b6b", fontSize: 13 },
+  success: { marginTop: 8, color: "#22c55e", fontSize: 13 },
 });
