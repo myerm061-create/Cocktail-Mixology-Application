@@ -154,3 +154,31 @@ export function matchScoreFromPantry(
   const matched = need.filter((n) => have.has(n)).length;
   return { matched, total: need.length };
 }
+
+// -------- Hydration helpers for search results --------
+export async function hydrateDetails(
+  drinks: Cocktail[],
+  limit = 40
+): Promise<(Cocktail & { ingredientsNormalized?: string[] })[]> {
+  const head = drinks.slice(0, limit);
+  const tail = drinks.slice(limit);
+
+  const lookups = await Promise.all(
+    head.map(d => getDetailsById(d.idDrink).catch(() => null))
+  );
+
+  const mergedHead = head.map((d, i) => {
+    const full = lookups[i];
+    if (!full) return d as Cocktail & { ingredientsNormalized?: string[] };
+    return {
+      ...d,
+      // keep any improved fields
+      strDrink: full.strDrink ?? d.strDrink,
+      strDrinkThumb: full.strDrinkThumb ?? d.strDrinkThumb,
+      // add normalized ingredients for ranking
+      ingredientsNormalized: full.ingredientsNormalized ?? [],
+    };
+  });
+
+  return [...mergedHead, ...tail] as (Cocktail & { ingredientsNormalized?: string[] })[];
+}
