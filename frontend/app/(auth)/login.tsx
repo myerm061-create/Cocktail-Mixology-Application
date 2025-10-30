@@ -102,7 +102,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Animated.View style={{ transform: [{ translateX: shakeX }] }}>
-        <Text style={styles.title}>Welcome Back!</Text>
+        <Text style={styles.title}>Sign in</Text>
       </Animated.View>
       <Text style={styles.subtitle}>Please enter your account here</Text>
 
