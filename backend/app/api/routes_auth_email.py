@@ -19,6 +19,7 @@ from app.services.token_service import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://mycabinet.me")
+REDIRECT_URL = os.getenv("REDIRECT_URL", f"{FRONTEND_URL}/r")
 ALLOWLIST = {e.strip().lower() for e in os.getenv("EMAIL_RATE_ALLOWLIST", "").split(",") if e.strip()}
 
 # --- Check if email is in allowlist for rate limiting bypass ---
@@ -36,7 +37,7 @@ def request_login_link(payload: LoginRequest, bg: BackgroundTasks, db: Session =
     # Rate limit; still return 200 to avoid enumeration.
     if under_limit or is_allowlisted(email):
         raw, _ = create_token(db, email, "login", ttl_minutes=10)
-        login_url = f"{FRONTEND_URL}/login/finish?token={raw}"
+        login_url = f"{REDIRECT_URL}?type=login&token={raw}"
         bg.add_task(send_login_link, email, login_url)
     return {"ok": True}
 
@@ -67,7 +68,7 @@ def request_password_reset(payload: ResetRequest, bg: BackgroundTasks, db: Sessi
         under_limit = count_recent(db, email, "reset") < 3
         if under_limit or is_allowlisted(email):
             raw, _ = create_token(db, email, "reset", ttl_minutes=30)
-            reset_url = f"{FRONTEND_URL}/reset?token={raw}"
+            reset_url = f"{REDIRECT_URL}?type=reset&token={raw}"
             bg.add_task(send_password_reset, email, reset_url)
 
     return {"ok": True}
