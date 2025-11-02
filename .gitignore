@@ -27,6 +27,7 @@ ios/
 
 # Local env
 .env
+.env.*
 .env*.local
 
 # OS / editor
