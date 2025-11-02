@@ -1,7 +1,10 @@
-from app.core.db import Base
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Integer, DateTime, Boolean
 from datetime import datetime, timedelta
+
+from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.db import Base
+
 
 # --- AuthToken model ---
 class AuthToken(Base):
