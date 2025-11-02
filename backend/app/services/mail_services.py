@@ -13,11 +13,11 @@ SMTP_PASS = os.getenv("SMTP_PASS")
 MAIL_FROM = os.getenv("MAIL_FROM", "MyCabinet <no-reply@mycabinet.me>")
 REPLY_TO = os.getenv("REPLY_TO")
 
-# Utility functions
+# --- Utility functions ---
 def _require_creds():
     if not (SMTP_USER and SMTP_PASS):
         raise RuntimeError("SMTP_USER/SMTP_PASS not set. Did you create backend/.env?")
-
+    
 def _build_message(to: str, subject: str, html: str, text: Optional[str] = None) -> EmailMessage:
     msg = EmailMessage()
     msg["From"] = MAIL_FROM

@@ -9,3 +9,4 @@ python-jose[cryptography]
 requests
 pydantic[email]>=2,<3
 email-validator
+argon2-cffi
