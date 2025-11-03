@@ -40,7 +40,7 @@ export default function ResetPasswordScreen() {
 
       // Either way, move to the confirmation screen.
       router.push("/(auth)/reset-password-sent");
-    } catch (err) {
+    } catch {
       Alert.alert("Network error", "Check your connection and try again.");
     } finally {
       setSubmitting(false);
