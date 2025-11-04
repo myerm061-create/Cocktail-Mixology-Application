@@ -8,7 +8,7 @@ import BottomNav from "@/components/ui/BottomNav";
 // const ME = String(ME_ID);
 // const SELF_PROFILE = `/${ME}`;
 
-const STATIC_TAB_PREFIXES = ["/home", "/my-ingredients", "/search", "/settings", "/favorites"];
+const STATIC_TAB_PREFIXES = ["/home", "/my-ingredients", "/search", "/settings", "/favorites", "/assistant"];
 
 // Check if the path is a user profile path
 const isProfilePath = (p: string) => {
@@ -23,6 +23,7 @@ const TABS = [
   { icon: "cube-outline",   route: "/cabinet" },
   { icon: "heart-outline",   route: "/favorites" },
   { icon: "search-outline", route: "/search" },
+  { icon: "chatbubble-outline", route: "/assistant" },
   { icon: "person-outline", route: "/profile", match: (p: string) => isProfilePath(p) || p.startsWith("/user-profile") },
 ];
 
