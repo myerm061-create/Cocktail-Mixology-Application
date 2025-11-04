@@ -54,13 +54,13 @@ export default function PasswordRules({ password, confirmPassword, email }: Pass
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginTop: -5, paddingVertical: 8, alignSelf: "center" },
-  header: { color: Colors.textSecondary, fontSize: 16, marginBottom: 10 },
-  ruleRow: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  bullet: { width: 16, height: 16, borderRadius: 999, marginRight: 10, borderWidth: 2 },
+  wrap: { marginTop: -2, paddingVertical: 4, alignSelf: "center" },
+  header: { color: Colors.textSecondary, fontSize: 14, marginBottom: 6 },
+  ruleRow: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
+  bullet: { width: 14, height: 14, borderRadius: 999, marginRight: 8, borderWidth: 2 },
   bulletOk: { backgroundColor: Colors.accentPrimary, borderColor: Colors.link },
   bulletNot: { backgroundColor: "transparent", borderColor: "#5A585F" },
-  ruleText: { fontSize: 14 },
+  ruleText: { fontSize: 13 },
   textOk: { color: Colors.link },
   textNot: { color: "#C5C5C5" },
   textWarn: { color: "#E4C566" },
