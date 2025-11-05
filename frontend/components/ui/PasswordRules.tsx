@@ -6,12 +6,11 @@ type PasswordRulesProps = {
   password: string;
   confirmPassword: string;
   email?: string;
-  compactWhenSatisfied?: boolean; // new: hide list once all pass
+  compactWhenSatisfied?: boolean; 
 };
 
 const MIN_LEN = 10;
 
-// a tiny client-side hint list (server is authoritative)
 const COMMON_HINTS = ["password", "123456", "qwerty", "letmein", "welcome"];
 
 export default function PasswordRules({
@@ -26,7 +25,7 @@ export default function PasswordRules({
     const containsEmail = !!emailPart && password.toLowerCase().includes(emailPart);
 
     const uniqueChars = new Set(password.toLowerCase());
-    const notTooRepetitive = uniqueChars.size >= 3; // matches backend vibe (not authoritative)
+    const notTooRepetitive = uniqueChars.size >= 3;
     const notHintCommon = !COMMON_HINTS.includes(password.toLowerCase().trim());
     const match = confirmPassword.length > 0 && password === confirmPassword;
 
@@ -95,12 +94,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 4,
-    flexWrap: "wrap", // keep text from running off-screen
+    flexWrap: "wrap", 
   },
   bullet: { width: 12, height: 12, borderRadius: 999, marginRight: 8, borderWidth: 2 },
   bulletOk: { backgroundColor: Colors.accentPrimary, borderColor: Colors.link },
   bulletNot: { backgroundColor: "transparent", borderColor: "#5A585F" },
-  ruleText: { fontSize: 12, flexShrink: 1 }, // smaller and shrink on tiny screens
+  ruleText: { fontSize: 12, flexShrink: 1 }, 
   textOk: { color: Colors.link },
   textNot: { color: "#C5C5C5" },
   textWarn: { color: "#E4C566" },
