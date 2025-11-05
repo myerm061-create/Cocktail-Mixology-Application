@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.security import hash_password
 from app.models.user import User
-from app.services.mail_services import send_login_link, send_password_reset
+from app.services.mail_services import send_login_link, send_password_reset, send_verification_email
 from app.services.password_policy import validate_password
 from app.services.token_service import (
     consume_token,
@@ -90,7 +90,6 @@ def request_password_reset(
 
     return {"ok": True}
 
-
 class ResetConfirm(BaseModel):
     token: str
     # New password to set
@@ -124,3 +123,47 @@ def confirm_password_reset(payload: ResetConfirm, db: Session = Depends(get_db))
     consume_token(db, payload.token, "reset")
 
     return {"ok": True}
+
+class VerifyRequest(BaseModel):
+    email: EmailStr
+
+@router.post("/verify/request")
+def request_verification_link(
+    payload: VerifyRequest, bg: BackgroundTasks, db: Session = Depends(get_db)
+):
+    email = payload.email.lower().strip()
+
+    # Only send if account exists; always return 200 to avoid enumeration
+    user = db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+    if user:
+        # Optional: skip if already verified (only if your model has such a field)
+        already_verified = getattr(user, "is_verified", False)
+        if not already_verified:
+            under_limit = count_recent(db, email, "verify") < 3
+            if under_limit or is_allowlisted(email):
+                raw, _ = create_token(db, email, "verify", ttl_minutes=60)
+                verify_url = f"{REDIRECT_URL}?type=verify&token={raw}"
+                bg.add_task(send_verification_email, email, verify_url)
+
+    return {"ok": True}
+
+
+class VerifyConfirm(BaseModel):
+    token: str
+
+@router.post("/verify/confirm")
+def confirm_verification(payload: VerifyConfirm, db: Session = Depends(get_db)):
+    rec = consume_token(db, payload.token, "verify")
+    if not rec:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    user = db.execute(select(User).where(User.email == rec.email)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=400, detail="Account not found")
+
+    if hasattr(user, "is_verified"):
+        setattr(user, "is_verified", True)
+        db.add(user)
+        db.commit()
+
+    return {"ok": True, "email": rec.email}

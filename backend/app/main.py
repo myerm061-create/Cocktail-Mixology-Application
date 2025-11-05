@@ -32,5 +32,5 @@ app.add_middleware(
 # Versioned API
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
-app.include_router(auth_email_router)
+app.include_router(auth_email_router, prefix="/api/v1")
 app.include_router(redirect_router)
