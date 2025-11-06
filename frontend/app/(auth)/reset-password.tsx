@@ -5,9 +5,11 @@ import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE ?? "http://localhost:8000";
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  process.env.EXPO_PUBLIC_API_BASE ??
+  "http://127.0.0.1:8000/api/v1";
 
-// Screen for resetting password via email
 export default function ResetPasswordScreen() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -16,30 +18,23 @@ export default function ResetPasswordScreen() {
 
   const handleReset = async () => {
     const trimmed = email.trim().toLowerCase();
-
     if (!trimmed || !isValidEmail(trimmed)) {
       Alert.alert("Invalid email", "Please enter a valid email address.");
       return;
     }
-
     try {
       setSubmitting(true);
 
-      const res = await fetch(`${API_BASE}/auth/reset/request`, {
+      // Request a reset OTP (always 200 to avoid enumeration)
+      await fetch(`${API_BASE}/auth/otp/request`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: trimmed }),
+        body: JSON.stringify({ email: trimmed, intent: "reset" }),
       });
 
-      // The backend returns 200 even if the account doesn't exist or you're rate-limited.
-      // If it isn't 2xx (e.g., server down), show a gentle message but don't leak details.
-      if (!res.ok) {
-        // You can log res.status/res.json() to Sentry if you add it later.
-        Alert.alert("Something went wrong", "Please try again in a moment.");
-      }
-
-      // Either way, move to the confirmation screen.
-      router.push("/(auth)/reset-password-sent");
+      // Go to new-password screen where user will enter code + new password
+      const q = encodeURIComponent(trimmed);
+      router.push(`/(auth)/new-password?email=${q}`);
     } catch {
       Alert.alert("Network error", "Check your connection and try again.");
     } finally {
@@ -51,7 +46,7 @@ export default function ResetPasswordScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Reset your password</Text>
       <Text style={styles.subtitle}>
-        Enter the email associated with your account and we’ll send you a reset link.
+        Enter the email associated with your account and we’ll send you a reset code.
       </Text>
 
       <AuthInput
@@ -64,14 +59,14 @@ export default function ResetPasswordScreen() {
       />
 
       <FormButton
-        title={submitting ? "Sending..." : "Send reset link"}
+        title={submitting ? "Sending..." : "Send code"}
         onPress={() => { void handleReset(); }}
         disabled={submitting || !email.trim()}
       />
 
       <Text style={styles.backText}>
         Remembered it?{" "}
-        <Link href="/login" asChild>
+        <Link href="/(auth)/login" asChild>
           <Text style={styles.link}>Back to login</Text>
         </Link>
       </Text>

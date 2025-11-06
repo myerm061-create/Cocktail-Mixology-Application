@@ -2,7 +2,7 @@ import os
 import smtplib
 import ssl
 from email.message import EmailMessage
-from typing import Optional
+from typing import Optional, Literal
 
 from dotenv import load_dotenv
 
@@ -16,12 +16,10 @@ SMTP_PASS = os.getenv("SMTP_PASS")
 MAIL_FROM = os.getenv("MAIL_FROM", "MyCabinet <no-reply@mycabinet.me>")
 REPLY_TO = os.getenv("REPLY_TO")
 
-
-# --- Utility functions ---
+# ---- Utility functions ----
 def _require_creds():
     if not (SMTP_USER and SMTP_PASS):
         raise RuntimeError("SMTP_USER/SMTP_PASS not set. Did you create backend/.env?")
-
 
 def _build_message(
     to: str, subject: str, html: str, text: Optional[str] = None
@@ -32,12 +30,11 @@ def _build_message(
     msg["Subject"] = subject
     if REPLY_TO:
         msg["Reply-To"] = REPLY_TO
-    # Plain text fallback
+    # Plain text fallback (never include secrets beyond the OTP code)
     msg.set_content(text or " ")
     # HTML body
     msg.add_alternative(html, subtype="html")
     return msg
-
 
 def send_email(to: str, subject: str, html: str, text: Optional[str] = None) -> None:
     """Synchronous send. Use with FastAPI BackgroundTasks for non-blocking behavior."""
@@ -49,127 +46,72 @@ def send_email(to: str, subject: str, html: str, text: Optional[str] = None) -> 
         s.login(SMTP_USER, SMTP_PASS)
         s.send_message(msg)
 
+# ---- Shared code template ----
+def _format_code_for_html(code: str) -> str:
+    # normalize and add a bit of tracking-friendly spacing for readability
+    c = "".join(ch for ch in code if ch.isdigit())
+    # group as 3-3 or 4-4 depending on length; fallback to plain
+    if len(c) == 6:
+        return f"{c[:3]}&nbsp;&nbsp;{c[3:]}"
+    if len(c) == 8:
+        return f"{c[:4]}&nbsp;&nbsp;{c[4:]}"
+    return c
 
-# --- Email verification ---
-def send_verification_email(to: str, verify_url: str) -> None:
-    subject = "Verify your MyCabinet account"
-    html = f"""
-    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-    <h2>Welcome to MyCabinet</h2>
-    <p>Confirm your email to finish setting up your account.</p>
-    <p>
-        <a href="{verify_url}"
-        style="background:#111;color:#fff;
-                padding:10px 16px;
-                border-radius:8px;
-                text-decoration:none;">
-        Verify Email
-        </a>
-    </p>
-    <p>
-        If the button doesn’t work, paste this link in your browser:<br/>
-        {verify_url}
-    </p>
-    </div>
+def send_code(to: str, subject: str, code: str) -> None:
     """
-    text = f"Verify your MyCabinet account: {verify_url}"
-    send_email(to, subject, html, text)
-
-
-# --- Login (magic link) ---
-def send_login_link(to: str, login_url: str) -> None:
-    subject = "MyCabinet: Sign in securely"
+    Generic code sender used by all intents (login/verify/reset/delete).
+    No links, no deep links—OTP-only.
+    """
+    safe_code_html = _format_code_for_html(code)
     html = f"""
-    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-    <h2>Sign in to MyCabinet</h2>
-    <p>Tap the button to finish signing in. This link expires soon.</p>
-    <p>
-        <a href="{login_url}"
-        style="background:#111;color:#fff;
-                padding:10px 16px;
-                border-radius:8px;
-                text-decoration:none;">
-        Sign in
-        </a>
-    </p>
-    <p>
-        If the button doesn’t work, paste this link in your browser:<br/>
-        {login_url}
-    </p>
-    <p style="color:#666;font-size:12px;margin-top:16px;">
+    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45">
+      <h2 style="margin:0 0 12px 0">{subject}</h2>
+      <p style="margin:0 0 12px 0">Enter this code in the app. It expires in a few minutes.</p>
+      <div style="font-size:28px;font-weight:700;letter-spacing:6px;margin:12px 0 16px 0">
+        {safe_code_html}
+      </div>
+      <p style="color:#666;font-size:12px;margin:12px 0 0 0">
         If you didn’t request this, you can safely ignore this email.
-    </p>
-    </div>
-    """
-    text = f"Sign in to MyCabinet: {login_url}\nIf you didn’t request this, ignore this email."
-    send_email(to, subject, html, text)
-
-
-# --- Login (one-time 6-digit code) ---
-def send_login_code(to: str, code: str) -> None:
-    subject = "MyCabinet: Your sign-in code"
-    html = f"""
-    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-    <h2>Your sign-in code</h2>
-    <p>Enter this 6-digit code to continue. It expires in a few minutes.</p>
-    <div style="font-size:28px;font-weight:700;letter-spacing:6px;margin:12px 0;">
-        {code}
-    </div>
-    <p style="color:#666;font-size:12px;">
-        If you didn’t request this, you can ignore this email.
-    </p>
-    </div>
-    """
-    text = f"Your MyCabinet sign-in code: {code}\nIf you didn’t request this, ignore this email."
-    send_email(to, subject, html, text)
-
-
-# --- Password reset ---
-def send_password_reset(to: str, reset_url: str) -> None:
-    subject = "MyCabinet: Reset your password"
-    html = f"""
-    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-    <h2>Reset your password</h2>
-    <p>
-        You requested a password reset. Click the button to choose a new password.
-        This link expires soon.
-    </p>
-    <p>
-        <a href="{reset_url}"
-        style="background:#111;color:#fff;
-                padding:10px 16px;
-                border-radius:8px;
-                text-decoration:none;">
-        Reset Password
-        </a>
-    </p>
-    <p>
-        If the button doesn’t work, paste this link in your browser:<br/>
-        {reset_url}
-    </p>
-    <p style="color:#666;font-size:12px;margin-top:16px;">
-        If you didn’t request this, you can safely ignore this email.
-    </p>
+      </p>
     </div>
     """
     text = (
-        "Reset your MyCabinet password: "
-        f"{reset_url}\n"
+        f"{subject}\n"
+        f"Your code: {code}\n"
         "If you didn’t request this, ignore this email."
     )
     send_email(to, subject, html, text)
 
+# ---- Intent-specific wrappers (use these in your routes) ----
+Intent = Literal["login", "verify", "reset", "delete"]
 
-# --- Notify after a successful change ---
+SUBJECTS: dict[Intent, str] = {
+    "login":  "Your MyCabinet code",
+    "verify": "Verify your email – code",
+    "reset":  "Reset code",
+    "delete": "Confirm deletion code",
+}
+
+def send_login_code(to: str, code: str) -> None:
+    send_code(to, SUBJECTS["login"], code)
+
+def send_verify_code(to: str, code: str) -> None:
+    send_code(to, SUBJECTS["verify"], code)
+
+def send_reset_code(to: str, code: str) -> None:
+    send_code(to, SUBJECTS["reset"], code)
+
+def send_delete_code(to: str, code: str) -> None:
+    send_code(to, SUBJECTS["delete"], code)
+
+# ---- Notify after a successful change (kept) ----
 def send_password_changed_notice(to: str) -> None:
     subject = "MyCabinet: Your password was changed"
     html = """
-    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">
-      <h2>Password changed</h2>
-      <p>Your MyCabinet password was just changed. If this wasn’t you, reset it immediately.</p>
+    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45">
+      <h2 style="margin:0 0 12px 0">Password changed</h2>
+      <p style="margin:0">Your MyCabinet password was just changed. If this wasn’t you, reset it immediately.</p>
     </div>
     """
-    text = (
-        "Your MyCabinet password was changed. If this wasn’t you, reset it immediately."
-    )
+    text = "Your MyCabinet password was changed. If this wasn’t you, reset it immediately."
     send_email(to, subject, html, text)

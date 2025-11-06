@@ -1,20 +1,17 @@
 import React, { useMemo, useRef, useState } from "react";
 import { router, Link } from "expo-router";
-import {
-  View, Text, StyleSheet, ActivityIndicator, Animated, Easing, Alert,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Animated, Easing, Alert } from "react-native";
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import PasswordRules from "@/components/ui/PasswordRules";
 
-// Accept either env var name; fall back to local dev default
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   process.env.EXPO_PUBLIC_API_BASE ??
   "http://127.0.0.1:8000/api/v1";
 
-const MIN_LEN = 10; 
+const MIN_LEN = 10;
 
 export default function CreateAccountScreen() {
   const [email, setEmail] = useState("");
@@ -24,7 +21,6 @@ export default function CreateAccountScreen() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // simple shake animation for errors
   const shakeX = useRef(new Animated.Value(0)).current;
   const shake = () => {
     shakeX.setValue(0);
@@ -41,13 +37,24 @@ export default function CreateAccountScreen() {
   const emailValid = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed), [emailTrimmed]);
   const passwordsMatch = useMemo(() => confirmPassword.length > 0 && password === confirmPassword, [password, confirmPassword]);
   const lengthOK = useMemo(() => password.length >= MIN_LEN, [password]);
-
-  // Let the backend do the heavy lifting; UI just blocks obvious mistakes
   const allValid = useMemo(() => emailValid && lengthOK && passwordsMatch, [emailValid, lengthOK, passwordsMatch]);
 
-  const goToPending = (targetEmail: string) => {
+  const goToCode = (targetEmail: string, intent: "verify" | "login") => {
     const q = encodeURIComponent(targetEmail);
-    router.replace(`/(auth)/verify-email-pending?email=${q}`);
+    router.replace(`/(auth)/verify-email?email=${q}&intent=${intent}`);
+  };
+
+  const handleDuplicateFlow = async (which: "login" | "verify") => {
+    try {
+      await fetch(`${API_BASE}/auth/otp/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ email: emailTrimmed, intent: which }),
+      });
+      goToCode(emailTrimmed, which);
+    } catch {
+      Alert.alert("Couldn’t send code", "Please try again.");
+    }
   };
 
   const handleCreate = async () => {
@@ -69,12 +76,23 @@ export default function CreateAccountScreen() {
         body: JSON.stringify({ email: emailTrimmed, password }),
       });
 
+      if (res.status === 409) {
+        // Already registered: offer to send a sign-in code or resend verification
+        setError("That email is already registered.");
+        Alert.alert(
+          "Account exists",
+          "Would you like a sign-in code or a verification code?",
+          [
+            { text: "Sign-in code", onPress: () => handleDuplicateFlow("login") },
+            { text: "Verification code", onPress: () => handleDuplicateFlow("verify") },
+            { text: "Cancel", style: "cancel" },
+          ]
+        );
+        shake();
+        return;
+      }
+
       if (!res.ok) {
-        if (res.status === 409) {
-          setError("That email is already registered. Try signing in.");
-          shake();
-          return;
-        }
         if (res.status === 422) {
           const j = await res.json().catch(() => null);
           const msg = j?.detail?.[0]?.msg ?? j?.detail ?? "Please check your inputs.";
@@ -88,17 +106,16 @@ export default function CreateAccountScreen() {
         return;
       }
 
-      // 2) Best-effort: trigger verification email (ignore result; we route either way)
-      // If your backend uses a different path, update here (e.g., /auth/verify/request).
-      void fetch(`${API_BASE}/auth/verify/request`, {
+      // 2) Request a verification code (new user)
+      await fetch(`${API_BASE}/auth/otp/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: emailTrimmed }),
-      }).catch(() => { /* noop */ });
+        body: JSON.stringify({ email: emailTrimmed, intent: "verify" }),
+      }).catch(() => { /* ignore */ });
 
-      // 3) Route to “waiting/pending” screen
-      setSuccess("Account created! Check your email to verify.");
-      goToPending(emailTrimmed);
+      // 3) Go to code entry screen (verify)
+      setSuccess("Account created! Check your email for a code.");
+      goToCode(emailTrimmed, "verify");
     } catch (e: any) {
       setError(`Network error: ${e?.message ?? e}`);
       shake();
@@ -141,17 +158,12 @@ export default function CreateAccountScreen() {
         onSubmitEditing={() => { void handleCreate(); }}
       />
 
-      {/* UI-only helper; backend is the source of truth */}
       <PasswordRules password={password} confirmPassword={confirmPassword} email={emailTrimmed} />
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
       {success ? <Text style={styles.success}>{success}</Text> : null}
 
-      <FormButton
-        title={busy ? "Creating…" : "Create"}
-        onPress={() => { void handleCreate(); }}
-        disabled={!allValid || busy}
-      />
+      <FormButton title={busy ? "Creating…" : "Create"} onPress={() => { void handleCreate(); }} disabled={!allValid || busy} />
       {busy ? <ActivityIndicator style={{ marginTop: 12 }} /> : null}
 
       <Text style={styles.newUserText}>
