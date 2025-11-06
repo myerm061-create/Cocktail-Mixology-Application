@@ -83,12 +83,14 @@ export default function AssistantScreen() {
     if (loadingMessages) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
 
-    saveTimer.current = setTimeout(async () => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(serializeMessages(messages)));
-      } catch (e) {
-        console.warn("Failed to save assistant messages:", e);
-      }
+    saveTimer.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(serializeMessages(messages)));
+        } catch (e) {
+          console.warn("Failed to save assistant messages:", e);
+        }
+      })();
     }, 500);
 
     return () => {
@@ -327,7 +329,7 @@ export default function AssistantScreen() {
         cancelText="Cancel"
         onConfirm={() => {
           setShowClearDialog(false);
-          handleClearChat();
+          void handleClearChat();
         }}
         onCancel={() => setShowClearDialog(false)}
       />
