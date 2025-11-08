@@ -1,5 +1,6 @@
 import json
 import sys
+
 try:
     import requests
 except ImportError:
@@ -13,15 +14,16 @@ TEST_EMAIL = "test@example.com"
 
 class Colors:
     """ANSI color codes for terminal output"""
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 
 def print_colored(text, color=Colors.ENDC):
@@ -52,21 +54,18 @@ def test_otp_request(email, intent="verify"):
     """Test requesting an OTP"""
     print_colored(f"\n=== Testing OTP Request ({intent}) ===", Colors.HEADER)
     print(f"Email: {email}")
-    
-    payload = {
-        "email": email,
-        "intent": intent
-    }
-    
+
+    payload = {"email": email, "intent": intent}
+
     try:
         response = requests.post(
             f"{BASE_URL}/api/v1/auth/otp/request",
             json=payload,
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
-        
+
         print(f"Status Code: {response.status_code}")
-        
+
         if response.status_code == 200:
             print_colored(f"✓ Success: {response.json()}", Colors.OKGREEN)
             return True
@@ -75,7 +74,7 @@ def test_otp_request(email, intent="verify"):
             try:
                 error_detail = response.json()
                 print(f"Detail: {error_detail.get('detail', 'No detail')}")
-            except:
+            except Exception:
                 pass
             return False
     except Exception as e:
@@ -85,25 +84,17 @@ def test_otp_request(email, intent="verify"):
 
 def test_otp_debug(email, intent="verify"):
     """Test debug endpoint to get the actual OTP code"""
-    print_colored(f"\n=== Getting OTP via Debug Endpoint ===", Colors.HEADER)
-    
-    payload = {
-        "email": email,
-        "intent": intent
-    }
-    
-    headers = {
-        "Content-Type": "application/json",
-        "X-Debug-OTP": "true"
-    }
-    
+    print_colored("\n=== Getting OTP via Debug Endpoint ===", Colors.HEADER)
+
+    payload = {"email": email, "intent": intent}
+
+    headers = {"Content-Type": "application/json", "X-Debug-OTP": "true"}
+
     try:
         response = requests.post(
-            f"{BASE_URL}/api/v1/auth/otp/request/debug",
-            json=payload,
-            headers=headers
+            f"{BASE_URL}/api/v1/auth/otp/request/debug", json=payload, headers=headers
         )
-        
+
         if response.status_code == 200:
             data = response.json()
             if "code" in data:
@@ -113,7 +104,9 @@ def test_otp_debug(email, intent="verify"):
                 print_colored(f"Response: {data}", Colors.OKBLUE)
                 return None
         else:
-            print_colored(f"✗ Debug endpoint returned {response.status_code}", Colors.FAIL)
+            print_colored(
+                f"✗ Debug endpoint returned {response.status_code}", Colors.FAIL
+            )
             print(f"Response: {response.text}")
             return None
     except Exception as e:
@@ -123,29 +116,27 @@ def test_otp_debug(email, intent="verify"):
 
 def test_otp_verify(email, code, intent="verify"):
     """Test OTP verification"""
-    print_colored(f"\n=== Testing OTP Verification ===", Colors.HEADER)
+    print_colored("\n=== Testing OTP Verification ===", Colors.HEADER)
     print(f"Email: {email}")
     print(f"Code: {code}")
     print(f"Intent: {intent}")
-    
-    payload = {
-        "email": email,
-        "code": code,
-        "intent": intent
-    }
-    
+
+    payload = {"email": email, "code": code, "intent": intent}
+
     try:
         response = requests.post(
             f"{BASE_URL}/api/v1/auth/otp/verify",
             json=payload,
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
-        
+
         print(f"Status Code: {response.status_code}")
-        
+
         if response.status_code == 200:
             data = response.json()
-            print_colored(f"✓ Success! Response: {json.dumps(data, indent=2)}", Colors.OKGREEN)
+            print_colored(
+                f"✓ Success! Response: {json.dumps(data, indent=2)}", Colors.OKGREEN
+            )
             return True
         else:
             print_colored(f"✗ Verification failed: {response.text}", Colors.FAIL)
@@ -161,12 +152,12 @@ def test_full_flow(email=TEST_EMAIL):
     print_colored("Testing Complete OTP Flow", Colors.BOLD)
     print_colored(f"Email: {email}", Colors.BOLD)
     print_colored(f"{'='*50}", Colors.BOLD)
-    
+
     # 1. Check health
     if not test_health():
         print_colored("\n❌ API is not responding", Colors.FAIL)
         return False
-    
+
     # 2. Request OTP
     if not test_otp_request(email, "verify"):
         print_colored("\n❌ Failed to request OTP", Colors.FAIL)
@@ -175,13 +166,13 @@ def test_full_flow(email=TEST_EMAIL):
         print("2. Verify email service credentials")
         print("3. Check server logs for details")
         return False
-    
+
     # 3. Get OTP code via debug endpoint
     otp_code = test_otp_debug(email, "verify")
     if not otp_code:
         print_colored("\n⚠️  Could not get OTP from debug endpoint", Colors.WARNING)
         otp_code = input("\nEnter OTP code manually (check your email): ").strip()
-    
+
     # 4. Verify OTP
     if test_otp_verify(email, otp_code, "verify"):
         print_colored("\n✅ OTP flow completed successfully!", Colors.OKGREEN)
@@ -193,10 +184,10 @@ def test_full_flow(email=TEST_EMAIL):
 
 def main():
     """Main menu for testing"""
-    print_colored("="*50, Colors.BOLD)
+    print_colored("=" * 50, Colors.BOLD)
     print_colored("OTP Authentication Tester", Colors.BOLD)
-    print_colored("="*50, Colors.BOLD)
-    
+    print_colored("=" * 50, Colors.BOLD)
+
     while True:
         print("\n--- Menu ---")
         print("1. Test full OTP flow")
@@ -205,13 +196,16 @@ def main():
         print("4. Get OTP via debug endpoint")
         print("5. Test health endpoint")
         print("0. Exit")
-        
+
         choice = input("\nSelect option: ").strip()
-        
+
         if choice == "0":
             break
         elif choice == "1":
-            email = input("Enter email (or press Enter for default): ").strip() or TEST_EMAIL
+            email = (
+                input("Enter email (or press Enter for default): ").strip()
+                or TEST_EMAIL
+            )
             test_full_flow(email)
         elif choice == "2":
             email = input("Enter email: ").strip()

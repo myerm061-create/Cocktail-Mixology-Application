@@ -7,15 +7,26 @@ MAX_LEN = 128
 
 # Deny list
 _COMMONS = {
-    "password", "password1", "password123", "123456", "123456789", "qwerty",
-    "letmein", "iloveyou", "admin", "welcome", "abc123"
+    "password",
+    "password1",
+    "password123",
+    "123456",
+    "123456789",
+    "qwerty",
+    "letmein",
+    "iloveyou",
+    "admin",
+    "welcome",
+    "abc123",
 }
 
 _WHITESPACE_ONLY = re.compile(r"^\s+$")
 
+
 def _too_few_unique_chars(pw: str, min_unique: int = 3) -> bool:
     # prevents "aaaaaaaaaa" or "1111111111"
     return len(set(pw.lower())) < min_unique
+
 
 def validate_password(pw: str, email: Optional[str] = None) -> List[str]:
     """

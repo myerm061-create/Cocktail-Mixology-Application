@@ -1,5 +1,7 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationInfo
-from ..services.password_policy import validate_password, MIN_LEN
+from pydantic import BaseModel, EmailStr, Field, ValidationInfo, field_validator
+
+from ..services.password_policy import MIN_LEN, validate_password
+
 
 # Pydantic schema for user output
 class UserOut(BaseModel):
@@ -9,6 +11,7 @@ class UserOut(BaseModel):
     provider: str
 
     model_config = {"from_attributes": True}
+
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -26,15 +29,18 @@ class UserCreate(BaseModel):
             raise ValueError("; ".join(errs))
         return v
 
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
 
 class UserRead(BaseModel):
     id: int
     email: EmailStr
 
     model_config = {"from_attributes": True}
+
 
 class TokenPair(BaseModel):
     access_token: str

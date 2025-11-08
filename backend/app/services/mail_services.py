@@ -2,7 +2,7 @@ import os
 import smtplib
 import ssl
 from email.message import EmailMessage
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from dotenv import load_dotenv
 
@@ -16,10 +16,12 @@ SMTP_PASS = os.getenv("SMTP_PASS")
 MAIL_FROM = os.getenv("MAIL_FROM", "MyCabinet <no-reply@mycabinet.me>")
 REPLY_TO = os.getenv("REPLY_TO")
 
+
 # ---- Utility functions ----
 def _require_creds():
     if not (SMTP_USER and SMTP_PASS):
         raise RuntimeError("SMTP_USER/SMTP_PASS not set. Did you create backend/.env?")
+
 
 def _build_message(
     to: str, subject: str, html: str, text: Optional[str] = None
@@ -36,6 +38,7 @@ def _build_message(
     msg.add_alternative(html, subtype="html")
     return msg
 
+
 def send_email(to: str, subject: str, html: str, text: Optional[str] = None) -> None:
     """Synchronous send. Use with FastAPI BackgroundTasks for non-blocking behavior."""
     _require_creds()
@@ -45,6 +48,7 @@ def send_email(to: str, subject: str, html: str, text: Optional[str] = None) -> 
         s.starttls(context=ctx)
         s.login(SMTP_USER, SMTP_PASS)
         s.send_message(msg)
+
 
 # ---- Shared code template ----
 def _format_code_for_html(code: str) -> str:
@@ -56,6 +60,7 @@ def _format_code_for_html(code: str) -> str:
     if len(c) == 8:
         return f"{c[:4]}&nbsp;&nbsp;{c[4:]}"
     return c
+
 
 def send_code(to: str, subject: str, code: str) -> None:
     """
@@ -82,27 +87,33 @@ def send_code(to: str, subject: str, code: str) -> None:
     )
     send_email(to, subject, html, text)
 
+
 # ---- Intent-specific wrappers (use these in your routes) ----
 Intent = Literal["login", "verify", "reset", "delete"]
 
 SUBJECTS: dict[Intent, str] = {
-    "login":  "Your MyCabinet code",
+    "login": "Your MyCabinet code",
     "verify": "Verify your email – code",
-    "reset":  "Reset code",
+    "reset": "Reset code",
     "delete": "Confirm deletion code",
 }
+
 
 def send_login_code(to: str, code: str) -> None:
     send_code(to, SUBJECTS["login"], code)
 
+
 def send_verify_code(to: str, code: str) -> None:
     send_code(to, SUBJECTS["verify"], code)
+
 
 def send_reset_code(to: str, code: str) -> None:
     send_code(to, SUBJECTS["reset"], code)
 
+
 def send_delete_code(to: str, code: str) -> None:
     send_code(to, SUBJECTS["delete"], code)
+
 
 # ---- Notify after a successful change (kept) ----
 def send_password_changed_notice(to: str) -> None:
@@ -110,8 +121,11 @@ def send_password_changed_notice(to: str) -> None:
     html = """
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45">
       <h2 style="margin:0 0 12px 0">Password changed</h2>
-      <p style="margin:0">Your MyCabinet password was just changed. If this wasn’t you, reset it immediately.</p>
+      <p style="margin:0">Your MyCabinet password was just changed.
+      If this wasn’t you, reset it immediately.</p>
     </div>
     """
-    text = "Your MyCabinet password was changed. If this wasn’t you, reset it immediately."
+    text = (
+        "Your MyCabinet password was changed. If this wasn’t you, reset it immediately."
+    )
     send_email(to, subject, html, text)
