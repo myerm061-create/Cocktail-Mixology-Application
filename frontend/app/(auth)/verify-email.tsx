@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import type { Href } from "expo-router";
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
@@ -27,7 +28,11 @@ export default function VerifyEmailCodeScreen() {
   const inputs = useRef<(TextInput | null)[]>([]);
 
   const normalizedEmail = useMemo(() => (email || "").toLowerCase().trim(), [email]);
-  const targetRoute = useMemo(() => next ?? "/(tabs)/home", [next]);
+  const targetRoute = useMemo<Href>(() => {
+    const n = typeof next === "string" ? next : "";
+    // Allow only absolute paths; otherwise fallback to a known route literal
+    return (n.startsWith("/") ? (n as unknown as Href) : "/(tabs)/home");
+  }, [next]);
 
   useEffect(() => {
     inputs.current[0]?.focus();
@@ -120,7 +125,7 @@ export default function VerifyEmailCodeScreen() {
         {Array.from({ length: CODE_LEN }).map((_, i) => (
           <TextInput
             key={i}
-            ref={(el) => (inputs.current[i] = el)}
+            ref={(el) => { inputs.current[i] = el; }}
             value={codes[i]}
             onChangeText={(v) => setDigit(i, v)}
             onKeyPress={({ nativeEvent }) => onKeyPress(i, nativeEvent.key)}
