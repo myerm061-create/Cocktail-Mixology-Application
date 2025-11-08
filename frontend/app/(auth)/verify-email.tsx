@@ -13,25 +13,23 @@ const API_BASE =
 const CODE_LEN = 6;
 
 export default function VerifyEmailCodeScreen() {
-  const { email, intent: rawIntent, next } =
+  const { email, next } =
     useLocalSearchParams<{ email?: string; intent?: string; next?: string }>();
 
-  const intent = (rawIntent === "login" ? "login" : "verify") as "login" | "verify";
-  const title = intent === "login" ? "Enter your sign-in code" : "Verify your email";
-  const subtitle =
-    intent === "login"
-      ? "We emailed you a 6-digit sign-in code."
-      : "We emailed you a 6-digit verification code.";
+  const intent: "verify" = "verify";
+  const title = "Verify your email";
+  const subtitle = "We emailed you a 6-digit verification code.";
 
   const [codes, setCodes] = useState<string[]>(Array(CODE_LEN).fill(""));
   const [submitting, setSubmitting] = useState(false);
   const inputs = useRef<(TextInput | null)[]>([]);
 
   const normalizedEmail = useMemo(() => (email || "").toLowerCase().trim(), [email]);
+
   const targetRoute = useMemo<Href>(() => {
     const n = typeof next === "string" ? next : "";
     // Allow only absolute paths; otherwise fallback to a known route literal
-    return (n.startsWith("/") ? (n as unknown as Href) : "/(tabs)/home");
+    return n.startsWith("/") ? (n as unknown as Href) : "/(tabs)/home";
   }, [next]);
 
   useEffect(() => {
@@ -77,7 +75,7 @@ export default function VerifyEmailCodeScreen() {
       // If this is a signup flow, finalize by creating the user now
       try {
         const pending = (await import("../lib/signup-flow")).SignupFlowStore.get();
-        if (pending && pending.email === normalizedEmail && intent === "verify") {
+        if (pending && pending.email === normalizedEmail) {
           const reg = await fetch(`${API_BASE}/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -125,7 +123,9 @@ export default function VerifyEmailCodeScreen() {
         {Array.from({ length: CODE_LEN }).map((_, i) => (
           <TextInput
             key={i}
-            ref={(el) => { inputs.current[i] = el; }}
+            ref={(el) => {
+              inputs.current[i] = el;
+            }}
             value={codes[i]}
             onChangeText={(v) => setDigit(i, v)}
             onKeyPress={({ nativeEvent }) => onKeyPress(i, nativeEvent.key)}
@@ -140,11 +140,18 @@ export default function VerifyEmailCodeScreen() {
 
       <FormButton
         title={submitting ? "Verifying…" : "Verify"}
-        onPress={() => { void handleVerify(); }}
+        onPress={() => {
+          void handleVerify();
+        }}
         disabled={!canSubmit || submitting}
       />
 
-      <Text style={styles.resend} onPress={() => { void handleResend(); }}>
+      <Text
+        style={styles.resend}
+        onPress={() => {
+          void handleResend();
+        }}
+      >
         Resend code
       </Text>
     </View>

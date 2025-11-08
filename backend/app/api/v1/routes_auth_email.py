@@ -15,7 +15,6 @@ router = APIRouter(prefix="/auth", tags=["auth:otp"])
 
 # Map external "intent" -> internal token_service purpose
 PURPOSE_MAP = {
-    "login": "login_otp",
     "verify": "verify_otp",
     "reset": "reset_otp",
     "delete": "delete_otp",
@@ -79,11 +78,6 @@ def verify_otp(data: OTPVerifyIn, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid or expired code"
         )
-
-    if data.intent in {"login"}:
-        user = db.query(User).filter(User.email == email).first()
-        if not user:
-            raise HTTPException(status_code=400, detail="Account not found")
 
     # TODO: return real JWTs
     return {"ok": True, "token": "dev-session-token"}

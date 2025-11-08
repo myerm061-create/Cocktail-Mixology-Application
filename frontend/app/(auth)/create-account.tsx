@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { router, Link } from "expo-router";
-import { View, Text, StyleSheet, ActivityIndicator, Animated, Easing, Alert } from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Animated, Easing } from "react-native";
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
@@ -56,19 +56,6 @@ export default function CreateAccountScreen() {
     router.replace(`/(auth)/verify-email?email=${q}&intent=${intent}`);
   };
 
-  const handleDuplicateFlow = async (which: "login" | "verify") => {
-    try {
-      await fetch(`${API_BASE}/auth/otp/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: emailTrimmed, intent: which }),
-      });
-      goToCode(emailTrimmed, which);
-    } catch {
-      Alert.alert("Couldn’t send code", "Please try again.");
-    }
-  };
-
   const handleCreate = async () => {
     if (!allValid || busy) {
       setError("Please fix the issues above.");
@@ -85,14 +72,8 @@ export default function CreateAccountScreen() {
       const exists = await fetchExists(emailTrimmed);
       if (exists) {
         setError("That email is already registered.");
-        Alert.alert(
-          "Account exists",
-          "Would you like a sign-in code?",
-          [
-            { text: "Send sign-in code", onPress: () => { void handleDuplicateFlow("login"); } },
-            { text: "Cancel", style: "cancel" },
-          ]
-        );
+        // simple redirect to password login
+        router.replace("/(auth)/login");
         shake();
         return;
       }
