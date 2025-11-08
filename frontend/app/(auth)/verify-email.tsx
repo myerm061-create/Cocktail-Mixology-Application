@@ -22,9 +22,9 @@ export default function VerifyEmailCodeScreen() {
       ? "We emailed you a 6-digit sign-in code."
       : "We emailed you a 6-digit verification code.";
 
-  const [codes, setCodes] = useState(Array<string>(CODE_LEN).fill(""));
+  const [codes, setCodes] = useState<string[]>(Array(CODE_LEN).fill(""));
   const [submitting, setSubmitting] = useState(false);
-  const inputs = useRef<Array<TextInput | null>>([]);
+  const inputs = useRef<(TextInput | null)[]>([]);
 
   const normalizedEmail = useMemo(() => (email || "").toLowerCase().trim(), [email]);
   const targetRoute = useMemo(() => next ?? "/(tabs)/home", [next]);
@@ -60,7 +60,7 @@ export default function VerifyEmailCodeScreen() {
       const res = await fetch(`${API_BASE}/auth/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, intent, otp: codeString }),
+        body: JSON.stringify({ email: normalizedEmail, intent, code: codeString }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => null);
@@ -69,7 +69,25 @@ export default function VerifyEmailCodeScreen() {
         Alert.alert("Couldn’t verify", detail);
         return;
       }
-      router.replace(targetRoute);
+      // If this is a signup flow, finalize by creating the user now
+      try {
+        const pending = (await import("../lib/signup-flow")).SignupFlowStore.get();
+        if (pending && pending.email === normalizedEmail && intent === "verify") {
+          const reg = await fetch(`${API_BASE}/auth/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ email: normalizedEmail, password: pending.password }),
+          });
+          if (!reg.ok && reg.status !== 409) {
+            const txt = await reg.text().catch(() => "");
+            Alert.alert("Account creation failed", txt || "Please try again.");
+            return;
+          }
+          (await import("../lib/signup-flow")).SignupFlowStore.clear();
+        }
+      } finally {
+        router.replace(targetRoute);
+      }
     } catch (e: any) {
       Alert.alert("Network error", e?.message ?? "Please try again.");
     } finally {
@@ -117,11 +135,11 @@ export default function VerifyEmailCodeScreen() {
 
       <FormButton
         title={submitting ? "Verifying…" : "Verify"}
-        onPress={handleVerify}
+        onPress={() => { void handleVerify(); }}
         disabled={!canSubmit || submitting}
       />
 
-      <Text style={styles.resend} onPress={handleResend}>
+      <Text style={styles.resend} onPress={() => { void handleResend(); }}>
         Resend code
       </Text>
     </View>

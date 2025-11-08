@@ -20,9 +20,9 @@ OTP_TTL_MINUTES_DEFAULT = 10
 OTP_MAX_ATTEMPTS = 5
 
 Purpose = Literal[
-    "login",  # existing magic-link/session tokens (kept for compatibility)
+    "login",  # existing magic-link/session tokens
     "reset",
-    "login_otp",  # OTP purposes (the new primary flow)
+    "login_otp",
     "verify_otp",
     "reset_otp",
     "delete_otp",
@@ -46,7 +46,7 @@ def _normalize_email(email: str) -> str:
     return email.strip().lower()
 
 
-# ===== Generic token helpers (unchanged for compatibility) =====
+# ===== Generic token helpers  =====
 
 
 def create_token(
@@ -185,7 +185,7 @@ def verify_otp(db, email, purpose, otp, max_attempts=5) -> bool:
         db.commit()
         return True
 
-    # increment attempts on failure (bounded)
+    # increment attempts on failure
     rec.attempts = min(rec.attempts + 1, max_attempts)
     db.add(rec)
     db.commit()

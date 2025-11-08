@@ -88,7 +88,7 @@ def send_code(to: str, subject: str, code: str) -> None:
     send_email(to, subject, html, text)
 
 
-# ---- Intent-specific wrappers (use these in your routes) ----
+# ---- Intent-specific wrappers ----
 Intent = Literal["login", "verify", "reset", "delete"]
 
 SUBJECTS: dict[Intent, str] = {
@@ -115,7 +115,7 @@ def send_delete_code(to: str, code: str) -> None:
     send_code(to, SUBJECTS["delete"], code)
 
 
-# ---- Notify after a successful change (kept) ----
+# ---- Notify after a successful change ----
 def send_password_changed_notice(to: str) -> None:
     subject = "MyCabinet: Your password was changed"
     html = """

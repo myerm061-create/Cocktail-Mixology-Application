@@ -5,6 +5,7 @@ import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import PasswordRules from "@/components/ui/PasswordRules";
+import { SignupFlowStore } from "../lib/signup-flow";
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
@@ -12,6 +13,17 @@ const API_BASE =
   "http://127.0.0.1:8000/api/v1";
 
 const MIN_LEN = 10;
+
+async function fetchExists(email: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/exists?email=${encodeURIComponent(email)}`);
+    if (!res.ok) return false;
+    const j = await res.json().catch(() => null);
+    return !!j?.exists;
+  } catch {
+    return false; // fail-closed to "doesn't exist" if API unreachable
+  }
+}
 
 export default function CreateAccountScreen() {
   const [email, setEmail] = useState("");
@@ -69,22 +81,15 @@ export default function CreateAccountScreen() {
     setSuccess(null);
 
     try {
-      // 1) Register
-      const res = await fetch(`${API_BASE}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: emailTrimmed, password }),
-      });
-
-      if (res.status === 409) {
-        // Already registered: offer to send a sign-in code or resend verification
+      // 0) If the email already exists, do NOT start verify-signup.
+      const exists = await fetchExists(emailTrimmed);
+      if (exists) {
         setError("That email is already registered.");
         Alert.alert(
           "Account exists",
-          "Would you like a sign-in code or a verification code?",
+          "Would you like a sign-in code?",
           [
-            { text: "Sign-in code", onPress: () => handleDuplicateFlow("login") },
-            { text: "Verification code", onPress: () => handleDuplicateFlow("verify") },
+            { text: "Send sign-in code", onPress: () => { void handleDuplicateFlow("login"); } },
             { text: "Cancel", style: "cancel" },
           ]
         );
@@ -92,29 +97,18 @@ export default function CreateAccountScreen() {
         return;
       }
 
-      if (!res.ok) {
-        if (res.status === 422) {
-          const j = await res.json().catch(() => null);
-          const msg = j?.detail?.[0]?.msg ?? j?.detail ?? "Please check your inputs.";
-          setError(`Validation error: ${msg}`);
-          shake();
-          return;
-        }
-        const text = await res.text().catch(() => "");
-        setError(`Registration failed (${res.status}). ${text || "Try again."}`);
-        shake();
-        return;
-      }
+      // 1) Stash creds in-memory for post-verify registration
+      SignupFlowStore.set(emailTrimmed, password);
 
-      // 2) Request a verification code (new user)
+      // 2) Request a verification code (no DB insert yet)
       await fetch(`${API_BASE}/auth/otp/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ email: emailTrimmed, intent: "verify" }),
-      }).catch(() => { /* ignore */ });
+         method: "POST",
+         headers: { "Content-Type": "application/json", Accept: "application/json" },
+         body: JSON.stringify({ email: emailTrimmed, intent: "verify" }),
+       }).catch(() => { /* ignore */ });
 
-      // 3) Go to code entry screen (verify)
-      setSuccess("Account created! Check your email for a code.");
+      // 3) Go to code entry screen (verify first)
+      setSuccess("Check your email for a verification code.");
       goToCode(emailTrimmed, "verify");
     } catch (e: any) {
       setError(`Network error: ${e?.message ?? e}`);
