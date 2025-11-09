@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, StyleSheet, Switch, Pressable,
-  LayoutAnimation, Platform, UIManager,
+  LayoutAnimation, Platform, UIManager, Alert,
 } from "react-native";
 import { router, Stack } from "expo-router";
 import FormButton from "@/components/ui/FormButton";
@@ -10,6 +10,11 @@ import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import BackButton from "@/components/ui/BackButton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
+
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE_URL ??
+  process.env.EXPO_PUBLIC_API_BASE ??
+  "http://127.0.0.1:8000/api/v1";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -31,10 +36,111 @@ export default function SettingsScreen() {
   const [confirmDeleteAcct, setConfirmDeleteAcct] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const insets = useSafeAreaInsets();
+  
+  // Add loading state for async operations
+  const [isLoading, setIsLoading] = useState(false);
+
+  // TODO: Get this from your auth context or secure storage
+  const getUserEmail = () => {
+    // Replace with actual user email from auth context
+    return "user@example.com"; 
+  };
 
   const toggle = (fn: React.Dispatch<React.SetStateAction<boolean>>) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     fn((v) => !v);
+  };
+
+  // Handler for initiating account deletion with email verification
+  const handleDeleteAccountWithVerification = async () => {
+    setConfirmDeleteAcct(false);
+    setIsLoading(true);
+    
+    try {
+      const userEmail = getUserEmail();
+      
+      // Request deletion OTP
+      const response = await fetch(`${API_BASE}/auth/otp/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: userEmail, 
+          intent: "delete" 
+        }),
+      });
+      
+      if (!response.ok && response.status !== 200) {
+        throw new Error("Failed to send verification code");
+      }
+      
+      // Navigate to verification screen
+      router.push(`/(stack)/verify-delete?email=${encodeURIComponent(userEmail)}`);
+      
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Unable to send verification code. Please try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handler for initiating password change with email verification
+  const handleChangePasswordWithVerification = async () => {
+    setIsLoading(true);
+    
+    try {
+      const userEmail = getUserEmail();
+      
+      // Request verification OTP for password change
+      const response = await fetch(`${API_BASE}/auth/otp/request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: userEmail, 
+          intent: "verify" // Using verify intent for authenticated operations
+        }),
+      });
+      
+      if (!response.ok && response.status !== 200) {
+        throw new Error("Failed to send verification code");
+      }
+      
+      // Navigate to verification screen for password change
+      router.push(`/(stack)/verify-change-password?email=${encodeURIComponent(userEmail)}`);
+      
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        "Unable to send verification code. Please try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    setConfirmSignOut(false);
+    
+    try {
+      // TODO: Call your logout endpoint
+      // await fetch(`${API_BASE}/auth/logout`, {
+      //   method: "POST",
+      //   headers: { 
+      //     "Authorization": `Bearer ${token}` 
+      //   },
+      // });
+      
+      // Clear local auth storage
+      // await SecureStore.deleteItemAsync('authToken');
+      
+      router.replace("/(auth)/login");
+    } catch (error) {
+      Alert.alert("Error", "Failed to sign out. Please try again.");
+    }
   };
 
   return (
@@ -111,6 +217,7 @@ export default function SettingsScreen() {
               title="Delete Account (Permanent)"
               onPress={() => setConfirmDeleteAcct(true)}
               variant="danger"
+              disabled={isLoading}
             />
           </View>
         )}
@@ -147,15 +254,21 @@ export default function SettingsScreen() {
         {showChangePw && (
           <View style={styles.reveal}>
             <FormButton
-              title="Go to Change Password"
-              onPress={() => router.push("/(stack)/change-password")}
+              title="Change Password"
+              onPress={handleChangePasswordWithVerification}
+              disabled={isLoading}
             />
           </View>
         )}
 
         {/* Bottom Sign Out */}
         <View style={styles.footer}>
-          <FormButton title="Sign Out" onPress={() => setConfirmSignOut(true)} variant="dangerLogo" />
+          <FormButton 
+            title="Sign Out" 
+            onPress={() => setConfirmSignOut(true)} 
+            variant="dangerLogo" 
+            disabled={isLoading}
+          />
         </View>
 
         <View style={{ height: 8 }} />
@@ -170,19 +283,17 @@ export default function SettingsScreen() {
         onCancel={() => setConfirmClearCache(false)}
         onConfirm={() => {
           setConfirmClearCache(false);
+          // TODO: Implement cache clearing logic
         }}
       />
 
       <ConfirmDialog
         visible={confirmDeleteAcct}
         title="Delete Account"
-        message="This permanently deletes your account and data."
-        confirmText="Delete Account"
+        message="This permanently deletes your account and data. You will need to verify this action via email."
+        confirmText="Send Verification Code"
         onCancel={() => setConfirmDeleteAcct(false)}
-        onConfirm={() => {
-          setConfirmDeleteAcct(false);
-          router.replace("/(auth)/login");
-        }}
+        onConfirm={handleDeleteAccountWithVerification}
       />
 
       <ConfirmDialog
@@ -191,10 +302,7 @@ export default function SettingsScreen() {
         message="Do you want to log out?"
         confirmText="Log Out"
         onCancel={() => setConfirmSignOut(false)}
-        onConfirm={() => {
-          setConfirmSignOut(false);
-          router.replace("/(auth)/login");
-        }}
+        onConfirm={handleSignOut}
       />
     </>
   );
