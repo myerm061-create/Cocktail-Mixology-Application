@@ -1,4 +1,5 @@
-# Instructions to reset the database (For production we will use alembic migrations) for development purposes.
+# This script deletes the existing SQLite database file (app.db).
+# (For production we will use alembic migrations)
 
 # To reset the database:
 # 1) close server if running
@@ -10,16 +11,16 @@
 # Remove-Item app.db -Force
 
 import os
-import sys
+
 
 def reset_database():
     db_file = "app.db"
-    
+
     if os.path.exists(db_file):
         print(f"Found database file: {db_file}")
         response = input("Delete this database and recreate it? (y/n): ")
-        
-        if response.lower() == 'y':
+
+        if response.lower() == "y":
             os.remove(db_file)
             print(f"✓ Deleted {db_file}")
             print("The database will be recreated when you restart the server")
@@ -27,6 +28,7 @@ def reset_database():
             print("Database reset cancelled")
     else:
         print(f"No database file found at {db_file}")
+
 
 if __name__ == "__main__":
     reset_database()

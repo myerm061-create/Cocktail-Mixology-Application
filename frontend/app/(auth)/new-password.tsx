@@ -87,7 +87,7 @@ export default function NewPasswordScreen() {
 
       <FormButton
         title={submitting ? "Updating…" : "Reset Password"}
-        onPress={handleSubmit}
+        onPress={() => { void handleSubmit(); }}
         disabled={!allValid || submitting}
       />
     </View>
