@@ -34,7 +34,7 @@ export default function ResetPasswordScreen() {
 
       // Go to new-password screen where user will enter code + new password
       const q = encodeURIComponent(trimmed);
-      router.push(`/(auth)/new-password?email=${q}`);
+      router.push(`/(auth)/verify-reset?email=${q}`);
     } catch {
       Alert.alert("Network error", "Check your connection and try again.");
     } finally {
