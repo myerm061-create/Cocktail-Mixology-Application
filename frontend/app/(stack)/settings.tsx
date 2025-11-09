@@ -36,14 +36,14 @@ export default function SettingsScreen() {
   const [confirmDeleteAcct, setConfirmDeleteAcct] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const insets = useSafeAreaInsets();
-  
+
   // Add loading state for async operations
   const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Get this from your auth context or secure storage
   const getUserEmail = () => {
     // Replace with actual user email from auth context
-    return "user@example.com"; 
+    return "user@example.com";
   };
 
   const toggle = (fn: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -55,28 +55,27 @@ export default function SettingsScreen() {
   const handleDeleteAccountWithVerification = async () => {
     setConfirmDeleteAcct(false);
     setIsLoading(true);
-    
+
     try {
       const userEmail = getUserEmail();
-      
+
       // Request deletion OTP
       const response = await fetch(`${API_BASE}/auth/otp/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: userEmail, 
-          intent: "delete" 
+        body: JSON.stringify({
+          email: userEmail,
+          intent: "delete",
         }),
       });
-      
+
       if (!response.ok && response.status !== 200) {
         throw new Error("Failed to send verification code");
       }
-      
+
       // Navigate to verification screen
       router.push(`/(stack)/verify-delete?email=${encodeURIComponent(userEmail)}`);
-      
-    } catch (error) {
+    } catch {
       Alert.alert(
         "Error",
         "Unable to send verification code. Please try again.",
@@ -90,28 +89,27 @@ export default function SettingsScreen() {
   // Handler for initiating password change with email verification
   const handleChangePasswordWithVerification = async () => {
     setIsLoading(true);
-    
+
     try {
       const userEmail = getUserEmail();
-      
+
       // Request verification OTP for password change
       const response = await fetch(`${API_BASE}/auth/otp/request`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email: userEmail, 
-          intent: "verify" // Using verify intent for authenticated operations
+        body: JSON.stringify({
+          email: userEmail,
+          intent: "verify", // Using verify intent for authenticated operations
         }),
       });
-      
+
       if (!response.ok && response.status !== 200) {
         throw new Error("Failed to send verification code");
       }
-      
+
       // Navigate to verification screen for password change
       router.push(`/(stack)/verify-change-password?email=${encodeURIComponent(userEmail)}`);
-      
-    } catch (error) {
+    } catch {
       Alert.alert(
         "Error",
         "Unable to send verification code. Please try again.",
@@ -124,21 +122,21 @@ export default function SettingsScreen() {
 
   const handleSignOut = async () => {
     setConfirmSignOut(false);
-    
+
     try {
       // TODO: Call your logout endpoint
       // await fetch(`${API_BASE}/auth/logout`, {
       //   method: "POST",
-      //   headers: { 
-      //     "Authorization": `Bearer ${token}` 
+      //   headers: {
+      //     "Authorization": `Bearer ${token}`
       //   },
       // });
-      
+
       // Clear local auth storage
       // await SecureStore.deleteItemAsync('authToken');
-      
+
       router.replace("/(auth)/login");
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to sign out. Please try again.");
     }
   };
@@ -255,7 +253,7 @@ export default function SettingsScreen() {
           <View style={styles.reveal}>
             <FormButton
               title="Change Password"
-              onPress={handleChangePasswordWithVerification}
+              onPress={() => void handleChangePasswordWithVerification()}
               disabled={isLoading}
             />
           </View>
@@ -263,10 +261,10 @@ export default function SettingsScreen() {
 
         {/* Bottom Sign Out */}
         <View style={styles.footer}>
-          <FormButton 
-            title="Sign Out" 
-            onPress={() => setConfirmSignOut(true)} 
-            variant="dangerLogo" 
+          <FormButton
+            title="Sign Out"
+            onPress={() => setConfirmSignOut(true)}
+            variant="dangerLogo"
             disabled={isLoading}
           />
         </View>
@@ -293,7 +291,7 @@ export default function SettingsScreen() {
         message="This permanently deletes your account and data. You will need to verify this action via email."
         confirmText="Send Verification Code"
         onCancel={() => setConfirmDeleteAcct(false)}
-        onConfirm={handleDeleteAccountWithVerification}
+        onConfirm={() => void handleDeleteAccountWithVerification()}
       />
 
       <ConfirmDialog
@@ -302,7 +300,7 @@ export default function SettingsScreen() {
         message="Do you want to log out?"
         confirmText="Log Out"
         onCancel={() => setConfirmSignOut(false)}
-        onConfirm={handleSignOut}
+        onConfirm={() => void handleSignOut()}
       />
     </>
   );
