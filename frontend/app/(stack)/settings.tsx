@@ -43,7 +43,7 @@ export default function SettingsScreen() {
   // TODO: Get this from your auth context or secure storage
   const getUserEmail = () => {
     // Replace with actual user email from auth context
-    return "user@example.com";
+    return "no-reply@mycabinet.me";
   };
 
   const toggle = (fn: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -86,7 +86,13 @@ export default function SettingsScreen() {
     }
   };
 
-  // Handler for initiating password change with email verification
+  // Handler for direct password change (requires current password)
+  const handleChangePasswordDirect = () => {
+    // Navigate directly to change password screen without OTP
+    router.push("/(stack)/change-password");
+  };
+
+  // Handler for password change with email verification (if user forgot current password)
   const handleChangePasswordWithVerification = async () => {
     setIsLoading(true);
 
@@ -134,6 +140,7 @@ export default function SettingsScreen() {
 
       // Clear local auth storage
       // await SecureStore.deleteItemAsync('authToken');
+      // await SecureStore.deleteItemAsync('refreshToken');
 
       router.replace("/(auth)/login");
     } catch {
@@ -253,9 +260,18 @@ export default function SettingsScreen() {
           <View style={styles.reveal}>
             <FormButton
               title="Change Password"
-              onPress={() => void handleChangePasswordWithVerification()}
+              onPress={handleChangePasswordDirect}
               disabled={isLoading}
             />
+            <Text style={styles.helperText}>
+              Forgot your current password?{" "}
+              <Text
+                style={styles.link}
+                onPress={() => void handleChangePasswordWithVerification()}
+              >
+                Reset via email
+              </Text>
+            </Text>
           </View>
         )}
 
@@ -346,4 +362,14 @@ const styles = StyleSheet.create({
   chipText: { color: Colors.textSecondary, fontWeight: "600" },
   chipTextActive: { color: Colors.textPrimary },
   footer: { marginTop: 16 },
+  helperText: {
+    marginTop: 8,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: "center",
+  },
+  link: {
+    color: Colors.link,
+    textDecorationLine: "underline",
+  },
 });

@@ -49,10 +49,14 @@ export default function VerifyDeleteScreen() {
     try {
       setSubmitting(true);
       
-      // Verify the deletion code
-      const res = await fetch(`${API_BASE}/auth/otp/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+      // Call the delete account endpoint with OTP verification
+      const deleteRes = await fetch(`${API_BASE}/auth/account`, {
+        method: "DELETE",
+        headers: { 
+          "Content-Type": "application/json",
+          // TODO: Add authorization header with token from auth context
+          // "Authorization": `Bearer ${token}` 
+        },
         body: JSON.stringify({ 
           email: normalizedEmail, 
           intent: "delete", 
@@ -60,8 +64,8 @@ export default function VerifyDeleteScreen() {
         }),
       });
       
-      if (!res.ok) {
-        const j = await res.json().catch(() => null);
+      if (!deleteRes.ok) {
+        const j = await deleteRes.json().catch(() => null);
         const detail = j?.detail && typeof j.detail === "string" 
           ? j.detail 
           : "Invalid or expired code";
@@ -69,19 +73,18 @@ export default function VerifyDeleteScreen() {
         return;
       }
       
-      // TODO: Call actual account deletion endpoint
-      // const deleteRes = await fetch(`${API_BASE}/auth/account`, {
-      //   method: "DELETE",
-      //   headers: { 
-      //     "Content-Type": "application/json",
-      //     "Authorization": `Bearer ${token}` // Get token from auth context
-      //   },
-      // });
+      // Clear local auth storage
+      // TODO: Clear your auth tokens from SecureStore or AsyncStorage
+      // await SecureStore.deleteItemAsync('authToken');
+      // await SecureStore.deleteItemAsync('refreshToken');
       
       Alert.alert(
         "Account Deleted", 
-        "Your account has been permanently deleted.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
+        "Your account has been permanently deleted. We're sorry to see you go.",
+        [{ 
+          text: "OK", 
+          onPress: () => router.replace("/(auth)/login") 
+        }]
       );
       
     } catch (e: any) {

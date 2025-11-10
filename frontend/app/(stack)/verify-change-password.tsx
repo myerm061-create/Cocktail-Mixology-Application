@@ -55,7 +55,7 @@ export default function VerifyChangePasswordScreen() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ 
           email: normalizedEmail, 
-          intent: "verify", // Using verify intent for authenticated password change
+          intent: "verify",
           code: codeString 
         }),
       });
@@ -69,9 +69,9 @@ export default function VerifyChangePasswordScreen() {
         return;
       }
       
-      // Navigate to change password screen with verified flag
+      // Navigate to change password screen with verified flag and code
       router.replace(
-        `/(stack)/change-password?verified=true&email=${encodeURIComponent(normalizedEmail)}`
+        `/(stack)/change-password?verified=true&email=${encodeURIComponent(normalizedEmail)}&code=${encodeURIComponent(codeString)}`
       );
       
     } catch (e: any) {

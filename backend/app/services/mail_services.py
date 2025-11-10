@@ -32,7 +32,7 @@ def _build_message(
     msg["Subject"] = subject
     if REPLY_TO:
         msg["Reply-To"] = REPLY_TO
-    # Plain text fallback (never include secrets beyond the OTP code)
+    # Plain text fallback
     msg.set_content(text or " ")
     # HTML body
     msg.add_alternative(html, subtype="html")
@@ -76,14 +76,14 @@ def send_code(to: str, subject: str, code: str) -> None:
         {safe_code_html}
       </div>
       <p style="color:#666;font-size:12px;margin:12px 0 0 0">
-        If you didn’t request this, you can safely ignore this email.
+        If you didn't request this, you can safely ignore this email.
       </p>
     </div>
     """
     text = (
         f"{subject}\n"
         f"Your code: {code}\n"
-        "If you didn’t request this, ignore this email."
+        "If you didn't request this, ignore this email."
     )
     send_email(to, subject, html, text)
 
@@ -93,7 +93,7 @@ Intent = Literal["login", "verify", "reset", "delete"]
 
 SUBJECTS: dict[Intent, str] = {
     "login": "Your MyCabinet code",
-    "verify": "Verify your email – code",
+    "verify": "Verify your email — code",
     "reset": "Reset code",
     "delete": "Confirm deletion code",
 }
@@ -122,10 +122,31 @@ def send_password_changed_notice(to: str) -> None:
     <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45">
       <h2 style="margin:0 0 12px 0">Password changed</h2>
       <p style="margin:0">Your MyCabinet password was just changed.
-      If this wasn’t you, reset it immediately.</p>
+      If this wasn't you, reset it immediately.</p>
     </div>
     """
     text = (
-        "Your MyCabinet password was changed. If this wasn’t you, reset it immediately."
+        "Your MyCabinet password was changed. If this wasn't you, reset it immediately."
+    )
+    send_email(to, subject, html, text)
+
+
+def send_account_deleted_notice(to: str) -> None:
+    """Send a confirmation email when an account is deleted."""
+    subject = "MyCabinet: Your account has been deleted"
+    html = """
+    <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45">
+      <h2 style="margin:0 0 12px 0">Account Deleted</h2>
+      <p style="margin:0 0 12px 0">Your MyCabinet account has been permanently deleted.</p>
+      <p style="margin:0 0 12px 0">All your data has been removed from our servers.</p>
+      <p style="color:#666;font-size:12px;margin:12px 0 0 0">
+        If you didn't request this, please contact support immediately.
+      </p>
+    </div>
+    """
+    text = (
+        "Your MyCabinet account has been deleted.\n"
+        "All your data has been removed.\n"
+        "If you didn't request this, please contact support."
     )
     send_email(to, subject, html, text)
