@@ -11,9 +11,12 @@ import BackButton from "@/components/ui/BackButton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-gesture-handler";
 
+// Safe env lookup for RN/Jest
+const __ENV__ =
+  (typeof process !== "undefined" && process.env) ? process.env : (global as any).__APP_ENV__ ?? {};
 const API_BASE =
-  process.env.EXPO_PUBLIC_API_BASE_URL ??
-  process.env.EXPO_PUBLIC_API_BASE ??
+  __ENV__.EXPO_PUBLIC_API_BASE_URL ??
+  __ENV__.EXPO_PUBLIC_API_BASE ??
   "http://127.0.0.1:8000/api/v1";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
