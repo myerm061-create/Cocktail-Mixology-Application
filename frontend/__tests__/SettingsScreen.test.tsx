@@ -157,7 +157,7 @@ describe("SettingsScreen", () => {
 // Expandable rows: Delete My Local Data & Delete My Account
 it("opens delete-account dialog and pushes to verify-delete on confirm", async () => {
   // mock the network call the handler makes
-  global.fetch = jest.fn().mockResolvedValue({
+  (globalThis as any).fetch = jest.fn().mockResolvedValue({
     ok: true,
     status: 200,
     json: async () => ({}),

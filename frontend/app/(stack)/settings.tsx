@@ -13,8 +13,9 @@ import { ScrollView } from "react-native-gesture-handler";
 
 // Safe env lookup for RN/Jest
 const __ENV__ =
-  (typeof process !== "undefined" && process.env) ? process.env : (global as any).__APP_ENV__ ?? {};
-const API_BASE =
+  (typeof process !== "undefined" && process.env)
+    ? process.env
+    : ((globalThis as any).__APP_ENV__ ?? {});const API_BASE =
   __ENV__.EXPO_PUBLIC_API_BASE_URL ??
   __ENV__.EXPO_PUBLIC_API_BASE ??
   "http://127.0.0.1:8000/api/v1";
