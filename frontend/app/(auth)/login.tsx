@@ -5,7 +5,6 @@ import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
 import AuthInput from "@/components/ui/AuthInput";
 import CheckBox from "@/components/ui/CheckBox";
-import GoogleAuthButton from "@/components/ui/GoogleAuthButton";
 // import * as SecureStore from "expo-secure-store"; // TODO: persist tokens
 
 const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
@@ -16,7 +15,6 @@ export default function LoginScreen() {
   const [rememberMe, setRememberMe] = useState(false);
 
   const [busy, setBusy] = useState(false);
-  const [gLoading, setGLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -90,15 +88,6 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGoogle = async () => {
-    try {
-      setGLoading(true);
-      // TODO: start Google flow here
-    } finally {
-      setGLoading(false);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <Animated.View style={{ transform: [{ translateX: shakeX }] }}>
@@ -145,14 +134,6 @@ export default function LoginScreen() {
         disabled={!allValid || busy}
       />
       {busy ? <ActivityIndicator style={{ marginTop: 12 }} /> : null}
-
-      <View style={styles.dividerRow}>
-        <View style={styles.divider} />
-        <Text style={styles.dividerText}>or</Text>
-        <View style={styles.divider} />
-      </View>
-
-      <GoogleAuthButton onPress={() => { void handleGoogle(); }} loading={gLoading} />
 
       <Text style={styles.newUserText}>
         New user?{" "}

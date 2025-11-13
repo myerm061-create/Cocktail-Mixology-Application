@@ -13,12 +13,10 @@ from app.models.user import User
 
 # ---- Password Hashing ----
 def hash_password(p: str) -> str:
-    """Hash a plaintext password."""
     return bcrypt.hashpw(p.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    """Verify a stored password against one provided by the user."""
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
 

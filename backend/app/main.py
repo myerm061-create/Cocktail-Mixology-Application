@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes_auth_email import router as auth_email_router
+from app.api.routes_redirect import router as redirect_router
 from app.api.v1.routes_auth import router as auth_router
 from app.api.v1.routes_health import router as health_router
 from app.core.db import Base, engine
@@ -30,3 +32,5 @@ app.add_middleware(
 # Versioned API
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
+app.include_router(auth_email_router)
+app.include_router(redirect_router)
