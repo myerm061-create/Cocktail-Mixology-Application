@@ -1,26 +1,47 @@
-import { Text, StyleSheet, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context"; 
+import React from "react";
+import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 import FormButton from "@/components/ui/FormButton";
-// import { ME_ID } from "@/scripts/data/mockProfiles";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.screen}>
+      {/* Top-right settings (cog) — same safe-area offset style as BackButton */}
+      <Pressable
+        onPress={() => router.push("/(stack)/settings")}
+        accessibilityRole="button"
+        accessibilityLabel="Open Settings"
+        hitSlop={12}
+        style={[styles.cogWrap, { top: Math.max(14, insets.top) }]}
+      >
+        <Ionicons name="settings-outline" size={22} color={Colors.textSecondary} />
+      </Pressable>
+
       <ScrollView
-        contentContainerStyle={styles.content}
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 56, paddingBottom: insets.bottom + 120 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Cocktail Mixology</Text>
-        <Text style={styles.subtitle}>Welcome! Choose a section:</Text>
+        <View style={styles.headerWrap}>
+          <Text style={styles.title}>Home</Text>
+        </View>
 
-        {/* navigation buttons */}
+        {/* Navigation buttons */}
         {/* <FormButton title="Scan Ingredients" onPress={() => router.push("/(stack)/ingredient-scanner")} /> */}
         <FormButton title="My Cabinet" onPress={() => router.push("/cabinet")} />
         {/* <FormButton title="Recommendations" onPress={() => router.push("/(stack)/recommendations")} /> */}
         <FormButton title="Favorites" onPress={() => router.push("/favorites")} />
-        <FormButton title="Profile" onPress={() => router.push(`/profile`)} />
+        <FormButton title="Profile" onPress={() => router.push("/profile")} />
         <FormButton title="Search" onPress={() => router.push("/search")} />
+        <FormButton title="Assistant" onPress={() => router.push("/assistant")} />
         <FormButton title="Settings" onPress={() => router.push("/(stack)/settings")} />
       </ScrollView>
     </SafeAreaView>
@@ -28,23 +49,22 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#101010" },
-  content: {
-    padding: 20,
-    gap: 12,
-    paddingBottom: 120,
-  },
+  screen: { flex: 1, backgroundColor: Colors.background },
+  container: { flex: 1 },
+  content: { paddingHorizontal: 20, gap: 12 },
+  headerWrap: { backgroundColor: Colors.background, alignItems: "center" },
   title: {
-    color: "#F5F0E1",
     fontSize: 28,
-    fontWeight: "bold",
+    fontWeight: "800",
+    color: Colors.textPrimary,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  subtitle: {
-    color: "#D9D4C5",
-    fontSize: 16,
-    textAlign: "center",
-    marginBottom: 16,
+  cogWrap: {
+    position: "absolute",
+    right: 14,
+    zIndex: 10,
+    padding: 8,
+    borderRadius: 999,
   },
 });

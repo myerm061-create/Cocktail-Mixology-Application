@@ -4,7 +4,6 @@ import { ActivityIndicator, Image as RNImage } from "react-native";
 import CocktailCard from "@/components/ui/CocktailCard";
 export { Image } from "react-native";
 
-
 jest.mock("expo-image");
 
 jest.mock("@expo/vector-icons", () => ({
