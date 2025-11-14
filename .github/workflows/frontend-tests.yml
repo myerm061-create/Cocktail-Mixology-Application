@@ -2,10 +2,13 @@ name: Frontend Tests
 
 on:
   pull_request:
+    paths:
+      - 'frontend/**'
   push:
     branches:
       - main
-      - build/integrating-eslint
+    paths:
+      - 'frontend/**'
 
 jobs:
   frontend:
@@ -33,4 +36,4 @@ jobs:
         run: npm run lint
 
       - name: Tests 
-        run: npm test
+        run: npm run test:ci
