@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, ValidationInfo, field_validator
+
+from ..services.password_policy import MIN_LEN, validate_password
 
 
 # Pydantic schema for user output
@@ -8,19 +10,23 @@ class UserOut(BaseModel):
     full_name: str | None = None
     provider: str
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=8)
+    password: str = Field(min_length=MIN_LEN)
 
     @field_validator("password")
     @classmethod
-    def strong_enough(cls, v: str):
-        if not any(ch.isdigit() for ch in v):
-            raise ValueError("Password must include at least one number")
+    def apply_policy(cls, v: str, info: ValidationInfo):
+        email_val = None
+        if info is not None and isinstance(info.data, dict):
+            email_val = info.data.get("email")
+
+        errs = validate_password(v, str(email_val) if email_val else None)
+        if errs:
+            raise ValueError("; ".join(errs))
         return v
 
 
@@ -33,8 +39,7 @@ class UserRead(BaseModel):
     id: int
     email: EmailStr
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 
 class TokenPair(BaseModel):
