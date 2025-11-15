@@ -6,6 +6,8 @@ from app.api.routes_redirect import router as redirect_router
 from app.api.v1.routes_auth import router as auth_router
 from app.api.v1.routes_assistant import router as assistant_router
 from app.api.v1.routes_health import router as health_router
+from app.api.v1.routes_ingredients import router as pantry_router
+from app.api.v1.routes_recommendations import router as recommendations_router
 from app.core.db import Base, engine
 
 # Dev-only: create tables if missing (use Alembic later)
@@ -34,5 +36,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(assistant_router, prefix="/api/v1")
 app.include_router(health_router, prefix="/api/v1")
+app.include_router(pantry_router, prefix="/api/v1")
+app.include_router(recommendations_router, prefix="/api/v1")
 app.include_router(auth_email_router)
 app.include_router(redirect_router)
