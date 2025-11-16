@@ -134,11 +134,16 @@ async def get_recommendations(
             
             cocktails_data = []
             for resp in responses:
-                if isinstance(resp, Exception) or resp.status_code != 200:
+                if isinstance(resp, Exception):
                     continue
-                data = resp.json()
-                if data.get("drinks"):
-                    cocktails_data.append(data["drinks"][0])
+                if resp.status_code != 200:
+                    continue
+                try:
+                    data = resp.json()
+                    if data and data.get("drinks") and len(data["drinks"]) > 0:
+                        cocktails_data.append(data["drinks"][0])
+                except Exception:
+                    continue
 
     except httpx.TimeoutException:
         raise HTTPException(
@@ -154,30 +159,34 @@ async def get_recommendations(
     # Process and filter cocktails
     results = []
     for drink in cocktails_data:
-        ingredients = parse_cocktail_ingredients(drink)
-        if not ingredients:
-            continue
+        try:
+            ingredients = parse_cocktail_ingredients(drink)
+            if not ingredients:
+                continue
 
-        fully_makeable, missing = is_fully_makeable(ingredients, pantry_names)
-        match_score = get_match_score(ingredients, pantry_names)
+            fully_makeable, missing = is_fully_makeable(ingredients, pantry_names)
+            match_score = get_match_score(ingredients, pantry_names)
 
-        # Filter if requested
-        if fully_makeable_only and not fully_makeable:
-            continue
+            # Filter if requested
+            if fully_makeable_only and not fully_makeable:
+                continue
 
-        results.append(
-            CocktailRecommendation(
-                id=drink.get("idDrink", ""),
-                name=drink.get("strDrink", ""),
-                thumbnail=drink.get("strDrinkThumb"),
-                category=drink.get("strCategory"),
-                instructions=drink.get("strInstructions"),
-                ingredients=ingredients,
-                fully_makeable=fully_makeable,
-                missing_ingredients=missing,
-                match_score=MatchScore(**match_score),
+            results.append(
+                CocktailRecommendation(
+                    id=str(drink.get("idDrink", "")),
+                    name=str(drink.get("strDrink", "")),
+                    thumbnail=drink.get("strDrinkThumb"),
+                    category=drink.get("strCategory"),
+                    instructions=drink.get("strInstructions"),
+                    ingredients=ingredients,
+                    fully_makeable=fully_makeable,
+                    missing_ingredients=missing,
+                    match_score=MatchScore(**match_score),
+                )
             )
-        )
+        except Exception as e:
+            # Skip cocktails that fail to process
+            continue
 
     # Sort by: fully_makeable first, then by match percentage
     results.sort(
