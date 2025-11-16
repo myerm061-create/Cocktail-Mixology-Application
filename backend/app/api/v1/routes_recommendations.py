@@ -184,7 +184,7 @@ async def get_recommendations(
                     match_score=MatchScore(**match_score),
                 )
             )
-        except Exception as e:
+        except Exception:
             # Skip cocktails that fail to process
             continue
 

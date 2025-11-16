@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import Float, ForeignKey, Integer, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -25,12 +27,17 @@ class UserIngredient(Base):
     )
 
     # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="pantry_ingredients")
-    ingredient: Mapped["Ingredient"] = relationship(
+    user: Mapped[User] = relationship("User", back_populates="pantry_ingredients")
+    ingredient: Mapped[Ingredient] = relationship(
         "Ingredient", back_populates="users"
     )
 
     __table_args__ = (
         UniqueConstraint("user_id", "ingredient_id", name="uq_user_ingredient"),
     )
+
+
+# Import after UserIngredient class to avoid circular imports
+from app.models.ingredient import Ingredient  # noqa: E402
+from app.models.user import User  # noqa: E402
 

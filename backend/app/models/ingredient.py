@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -11,6 +13,10 @@ class Ingredient(Base):
     name: Mapped[str] = mapped_column(String(128), unique=True, index=True)
 
     # Relationships
-    users: Mapped[list["UserIngredient"]] = relationship(
+    users: Mapped[list[UserIngredient]] = relationship(
         "UserIngredient", back_populates="ingredient"
     )
+
+
+# Import after Ingredient class to avoid circular import
+from app.models.link_tables import UserIngredient  # noqa: E402
