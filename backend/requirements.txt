@@ -10,3 +10,6 @@ requests
 httpx
 pydantic[email]>=2,<3
 email-validator
+pytest
+pytest-asyncio
+pytest-cov
