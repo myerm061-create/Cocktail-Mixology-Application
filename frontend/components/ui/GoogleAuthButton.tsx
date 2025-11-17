@@ -1,6 +1,13 @@
-import React from "react";
-import { Pressable, Text, View, StyleSheet, ActivityIndicator, Image } from "react-native";
-import GooglePng from "../../assets/images/Google.png";
+import React from 'react';
+import {
+  Pressable,
+  Text,
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
+import GooglePng from '../../assets/images/Google.png';
 
 type Props = {
   title?: string;
@@ -11,7 +18,7 @@ type Props = {
 
 // A button component for Google authentication
 export default function GoogleAuthButton({
-  title = "Continue with Google",
+  title = 'Continue with Google',
   onPress,
   loading = false,
   disabled = false,
@@ -28,11 +35,11 @@ export default function GoogleAuthButton({
     >
       <View style={styles.row}>
         <Image
-            source={GooglePng}
-            style={{ width: 18, height: 18, marginRight: 10 }}
-            resizeMode="contain"
+          source={GooglePng}
+          style={{ width: 18, height: 18, marginRight: 10 }}
+          resizeMode="contain"
         />
-        <Text style={styles.text}>{loading ? "Connecting…" : title}</Text>
+        <Text style={styles.text}>{loading ? 'Connecting…' : title}</Text>
         {loading && <ActivityIndicator style={{ marginLeft: 8 }} />}
       </View>
     </Pressable>
@@ -41,26 +48,26 @@ export default function GoogleAuthButton({
 
 const styles = StyleSheet.create({
   btn: {
-    width: "100%",
+    width: '100%',
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#FF5842",
+    backgroundColor: '#FF5842',
     borderWidth: 1,
-    borderColor: "#2C2A35",
-    justifyContent: "center",
-    alignItems: "center",
+    borderColor: '#2C2A35',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 10,
   },
   btnDisabled: { opacity: 0.7 },
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "center" },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   icon: {
     width: 18,
     height: 18,
     marginRight: 10,
   },
   text: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 15,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
 });

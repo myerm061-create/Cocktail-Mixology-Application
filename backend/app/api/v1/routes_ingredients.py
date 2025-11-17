@@ -38,11 +38,15 @@ def get_pantry(db: DbDep, current_user: CurrentUser):
     return [_to_pantry_read(item) for item in pantry_items]
 
 
-@router.post("", response_model=PantryIngredientRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=PantryIngredientRead, status_code=status.HTTP_201_CREATED
+)
 def add_to_pantry(payload: PantryAdd, db: DbDep, current_user: CurrentUser):
     """Add an ingredient to the user's pantry."""
     # Find or create ingredient
-    ingredient = db.query(Ingredient).filter(Ingredient.name == payload.ingredient_name).first()
+    ingredient = (
+        db.query(Ingredient).filter(Ingredient.name == payload.ingredient_name).first()
+    )
 
     if not ingredient:
         ingredient = Ingredient(name=payload.ingredient_name)
@@ -69,7 +73,7 @@ def add_to_pantry(payload: PantryAdd, db: DbDep, current_user: CurrentUser):
             quantity=payload.quantity,
         )
         db.add(existing)
-    
+
     db.commit()
     db.refresh(existing)
     return _to_pantry_read(existing)
@@ -122,4 +126,3 @@ def update_pantry_quantity(
     db.commit()
     db.refresh(pantry_item)
     return _to_pantry_read(pantry_item)
-

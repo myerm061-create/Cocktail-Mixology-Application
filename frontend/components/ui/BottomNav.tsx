@@ -1,8 +1,15 @@
-import React, { useMemo, useRef, useEffect, useState } from "react";
-import { View, StyleSheet, Pressable, Animated, Platform, SafeAreaView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { usePathname, Link, type Href } from "expo-router";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import React, { useMemo, useRef, useEffect, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Animated,
+  Platform,
+  SafeAreaView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { usePathname, Link, type Href } from 'expo-router';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 // Define the type for each navigation item
 type Item = {
@@ -33,8 +40,10 @@ export default function BottomNav({
   const matchedIndex = Math.max(
     0,
     items.findIndex((it) =>
-      it.match ? it.match(pathname ?? "") : (pathname ?? "").startsWith(String(it.route))
-    )
+      it.match
+        ? it.match(pathname ?? '')
+        : (pathname ?? '').startsWith(String(it.route)),
+    ),
   );
 
   const [barW, setBarW] = useState(0);
@@ -57,15 +66,15 @@ export default function BottomNav({
 
   const tabWidthPct = useMemo(
     () => (items.length > 0 ? 100 / items.length : 100),
-    [items]
+    [items],
   );
   const tabW = useMemo(
     () => (barW && items.length ? barW / items.length : 0),
-    [barW, items]
+    [barW, items],
   );
   const centers = useMemo(
     () => (tabW ? items.map((_, i) => i * tabW + tabW / 2) : []),
-    [tabW, items]
+    [tabW, items],
   );
   const canAnimate = centers.length >= 2;
 
@@ -78,7 +87,7 @@ export default function BottomNav({
     : (centers[index] ?? 0) - DOT / 2;
 
   const ripple =
-    Platform.OS === "android"
+    Platform.OS === 'android'
       ? { color: `${Colors.accentPrimary}33`, borderless: true }
       : undefined;
 
@@ -86,7 +95,10 @@ export default function BottomNav({
   const Bar = (
     <View
       onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
-      style={StyleSheet.flatten([styles.bar, { height, backgroundColor: Colors.buttonBackground }])}
+      style={StyleSheet.flatten([
+        styles.bar,
+        { height, backgroundColor: Colors.buttonBackground },
+      ])}
     >
       {/* red dot */}
       {barW > 0 && (
@@ -101,8 +113,8 @@ export default function BottomNav({
       {items.map((it, i) => {
         const active = i === index;
         const iconName =
-          active && String(it.icon).endsWith("-outline")
-            ? (String(it.icon).replace("-outline", "") as any)
+          active && String(it.icon).endsWith('-outline')
+            ? (String(it.icon).replace('-outline', '') as any)
             : it.icon;
         const href: Href = it.href ?? it.route;
 
@@ -137,26 +149,26 @@ export default function BottomNav({
 const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: 0,
-    paddingBottom: Platform.OS === "android" ? 10 : 0,
+    paddingBottom: Platform.OS === 'android' ? 10 : 0,
   },
   bar: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderRadius: 22,
-    overflow: "hidden",
+    overflow: 'hidden',
     marginHorizontal: 0,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.25,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
   tab: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dot: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 6,
     width: DOT,
     height: DOT,

@@ -1,21 +1,24 @@
-import {
-  DarkTheme,
-  ThemeProvider,
-} from '@react-navigation/native';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 export default function RootLayout() {
-  const [loaded] = useFonts({ SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf') });
+  const [loaded] = useFonts({
+    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  });
   if (!loaded) return null;
 
   const navTheme = {
     ...(DarkTheme as any),
-    colors: { ...(DarkTheme as any).colors, background: Colors.background, card: Colors.background },
+    colors: {
+      ...(DarkTheme as any).colors,
+      background: Colors.background,
+      card: Colors.background,
+    },
   };
 
   return (
@@ -33,7 +36,7 @@ export default function RootLayout() {
             name="+not-found"
             options={{
               headerStyle: { backgroundColor: Colors.background },
-              headerTintColor: "#F5F0E1",
+              headerTintColor: '#F5F0E1',
             }}
           />
         </Stack>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,53 +8,56 @@ import {
   Animated,
   ActivityIndicator,
   Image as RNImage,
-} from "react-native";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+} from 'react-native';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 // import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router, Link } from "expo-router";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import FormButton from "@/components/ui/FormButton";
+import { router, Link } from 'expo-router';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
+import FormButton from '@/components/ui/FormButton';
 
-const { width, height } = Dimensions.get("window");
+const { width, height } = Dimensions.get('window');
 
 // Use any stock/royalty-free URLs you want.
 // Tip: keep 3–5 per slide so you can rotate if one breaks.
 const REMOTE = {
   discover: [
     // Unsplash cocktail heros (examples)
-    "https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=1600",
-    "https://images.unsplash.com/photo-1514362545857-3bc16bca6a09?q=80&w=1600",
+    'https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=1600',
+    'https://images.unsplash.com/photo-1514362545857-3bc16bca6a09?q=80&w=1600',
   ],
   cabinet: [
-    "https://images.unsplash.com/photo-1544978400-1b334d6c1d4b?q=80&w=1600",
-    "https://images.unsplash.com/photo-1542834369-f10ebf06d3cb?q=80&w=1600",
+    'https://images.unsplash.com/photo-1544978400-1b334d6c1d4b?q=80&w=1600',
+    'https://images.unsplash.com/photo-1542834369-f10ebf06d3cb?q=80&w=1600',
   ],
   favorites: [
-    "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?q=80&w=1600",
-    "https://images.unsplash.com/photo-1560516824-eba9d6b43a3e?q=80&w=1600",
+    'https://images.unsplash.com/photo-1551537482-f2075a1d41f2?q=80&w=1600',
+    'https://images.unsplash.com/photo-1560516824-eba9d6b43a3e?q=80&w=1600',
   ],
 };
 
 const SLIDES = [
   {
-    key: "discover",
-    title: "Discover Cocktails",
-    subtitle: "Search by name or ingredient",
-    image: require("../../assets/images/discover.jpg"),
+    key: 'discover',
+    title: 'Discover Cocktails',
+    subtitle: 'Search by name or ingredient',
+    image: require('../../assets/images/discover.jpg'),
   },
   {
-    key: "cabinet",
-    title: "Build Your Cabinet",
-    subtitle: "Save what you own & get matches",
-    image: require("../../assets/images/cabinet.jpg"),
+    key: 'cabinet',
+    title: 'Build Your Cabinet',
+    subtitle: 'Save what you own & get matches',
+    image: require('../../assets/images/cabinet.jpg'),
   },
   {
-    key: "favorites",
-    title: "Pin Favorites",
-    subtitle: "Quick access to go-to drinks",
-    image: require("../../assets/images/favorites.jpg"),
+    key: 'favorites',
+    title: 'Pin Favorites',
+    subtitle: 'Quick access to go-to drinks',
+    image: require('../../assets/images/favorites.jpg'),
   },
 ];
 
@@ -67,7 +70,7 @@ export default function OnboardingScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
 
   const chosen = useMemo(() => {
-    return SLIDES.map(s => {
+    return SLIDES.map((s) => {
       const pool = REMOTE[s.key as keyof typeof REMOTE] ?? [];
       const pick = pool[Math.floor(Math.random() * pool.length)];
       return pick;
@@ -80,13 +83,15 @@ export default function OnboardingScreen() {
     void (async () => {
       try {
         await Promise.all(
-          chosen.filter(Boolean).map((u) => RNImage.prefetch(u))
+          chosen.filter(Boolean).map((u) => RNImage.prefetch(u)),
         );
       } catch {}
       if (!cancelled) setReady(true);
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [chosen]);
   // Honor the “hasOnboarded” flag
   // useEffect(() => {
@@ -102,7 +107,10 @@ export default function OnboardingScreen() {
       setIndex(i);
     }
   }).current;
-  const viewabilityConfig = useMemo(() => ({ itemVisiblePercentThreshold: 60 }), []);
+  const viewabilityConfig = useMemo(
+    () => ({ itemVisiblePercentThreshold: 60 }),
+    [],
+  );
 
   const next = () => {
     if (index < SLIDES.length - 1) {
@@ -116,14 +124,17 @@ export default function OnboardingScreen() {
   //   router.replace("/(auth)/create-account");
   // };
   const done = () => {
-    router.replace("/(auth)/create-account");
+    router.replace('/(auth)/create-account');
   };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Skip */}
       <View style={[styles.topBar, { top: Math.max(8, insets.top + 20) }]}>
-        <TouchableOpacity onPress={done} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <TouchableOpacity
+          onPress={done}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text style={styles.skip}>Skip</Text>
         </TouchableOpacity>
       </View>
@@ -137,17 +148,22 @@ export default function OnboardingScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
-        getItemLayout={(_, i) => ({ length: width, offset: width * i, index: i })}
+        getItemLayout={(_, i) => ({
+          length: width,
+          offset: width * i,
+          index: i,
+        })}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
+          { useNativeDriver: false },
         )}
         scrollEventThrottle={16}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         renderItem={({ item, index: i }) => {
           const remoteUri = chosen[i];
-          const src = item.image ?? (remoteUri ? { uri: remoteUri } : undefined);
+          const src =
+            item.image ?? (remoteUri ? { uri: remoteUri } : undefined);
           return (
             <View style={{ width, height }}>
               {src ? (
@@ -160,7 +176,7 @@ export default function OnboardingScreen() {
                 />
               ) : null}
               <LinearGradient
-                colors={["rgba(0,0,0,0.25)", "rgba(0,0,0,0.85)"]}
+                colors={['rgba(0,0,0,0.25)', 'rgba(0,0,0,0.85)']}
                 style={StyleSheet.absoluteFillObject}
               />
               {!ready && (
@@ -187,22 +203,19 @@ export default function OnboardingScreen() {
 
       {/* Animated dots */}
       <View
-        style={[
-          styles.dots,
-          { bottom: (insets.bottom || 0) + ctaH + -12 },
-        ]}
+        style={[styles.dots, { bottom: (insets.bottom || 0) + ctaH + -12 }]}
       >
         {SLIDES.map((_, i) => {
           const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
           const widthAnim = scrollX.interpolate({
             inputRange,
             outputRange: [8, 22, 8],
-            extrapolate: "clamp",
+            extrapolate: 'clamp',
           });
           const opacityAnim = scrollX.interpolate({
             inputRange,
             outputRange: [0.35, 1, 0.35],
-            extrapolate: "clamp",
+            extrapolate: 'clamp',
           });
           return (
             <Animated.View
@@ -221,11 +234,19 @@ export default function OnboardingScreen() {
 
       {/* CTAs */}
       <View
-        style={[styles.ctaWrap, { paddingBottom: Math.max(insets.bottom + 16, 24) }]}
+        style={[
+          styles.ctaWrap,
+          { paddingBottom: Math.max(insets.bottom + 16, 24) },
+        ]}
         onLayout={(e) => setCtaH(e.nativeEvent.layout.height)}
-      >        <FormButton title={index === SLIDES.length - 1 ? "Get Started" : "Next"} onPress={next} />
+      >
+        {' '}
+        <FormButton
+          title={index === SLIDES.length - 1 ? 'Get Started' : 'Next'}
+          onPress={next}
+        />
         <Text style={styles.haveAcct}>
-          Already have an account?{" "}
+          Already have an account?{' '}
           <Link href="/(auth)/login" asChild>
             <Text style={styles.link}>Sign in</Text>
           </Link>
@@ -237,15 +258,19 @@ export default function OnboardingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  bg: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  loader: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center" },
-  topBar: { position: "absolute", right: 16, zIndex: 10 },
+  bg: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  loader: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topBar: { position: 'absolute', right: 16, zIndex: 10 },
   skip: { color: Colors.textSecondary, fontSize: 14 },
-  content: { position: "absolute", left: 0, right: 0 },
+  content: { position: 'absolute', left: 0, right: 0 },
   title: {
     color: Colors.textPrimary,
     fontSize: height < 700 ? 26 : 30,
-    fontWeight: "800",
+    fontWeight: '800',
     marginBottom: 6,
   },
   subtitle: {
@@ -254,22 +279,22 @@ const styles = StyleSheet.create({
     lineHeight: height < 700 ? 18 : 20,
   },
   dots: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     height: 24,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 8,
   },
-  dot: { height: 8, borderRadius: 6, backgroundColor: "#fff", opacity: 0.35 },
+  dot: { height: 8, borderRadius: 6, backgroundColor: '#fff', opacity: 0.35 },
   ctaWrap: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 24,
     left: 24,
     right: 24,
-    alignItems: "center",
+    alignItems: 'center',
     gap: 12,
   },
   haveAcct: { color: Colors.textSecondary, fontSize: 14 },
