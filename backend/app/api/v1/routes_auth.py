@@ -1,7 +1,8 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 from app.core import security
@@ -97,3 +98,11 @@ def logout(_: DbDep, response: Response):
 @router.get("/me", response_model=UserRead)
 def me(current_user: Annotated[User, Depends(security.get_current_user)]):
     return UserRead(id=current_user.id, email=current_user.email)
+
+
+# User existsence check endpoint
+@router.get("/exists")
+def email_exists(email: EmailStr = Query(...), db: Session = Depends(get_db)):
+    e = email.strip().lower()
+    exists = db.query(User.id).filter(User.email == e).first() is not None
+    return {"exists": bool(exists)}

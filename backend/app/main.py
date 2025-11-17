@@ -1,19 +1,15 @@
+# app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes_auth_email import router as auth_email_router
-from app.api.routes_redirect import router as redirect_router
-from app.api.v1.routes_auth import router as auth_router
-from app.api.v1.routes_assistant import router as assistant_router
-from app.api.v1.routes_health import router as health_router
-from app.api.v1.routes_ingredients import router as pantry_router
-from app.api.v1.routes_recommendations import router as recommendations_router
+# Import routers at top (fixes E402)
+from app.api.v1 import api_v1
 from app.core.db import Base, engine
 
-# Dev-only: create tables if missing (use Alembic later)
-Base.metadata.create_all(bind=engine)
+# Import models BEFORE create_all so tables are registered
+from app.models import auth_token as _m_auth_token  # noqa: F401
+from app.models import user as _m_user  # noqa: F401
 
-# Application instance
 app = FastAPI(title="Cocktail API")
 
 # CORS configuration
@@ -32,11 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Dev-only: create tables if missing
+Base.metadata.create_all(bind=engine)
+
 # Versioned API
-app.include_router(auth_router, prefix="/api/v1")
-app.include_router(assistant_router, prefix="/api/v1")
-app.include_router(health_router, prefix="/api/v1")
-app.include_router(pantry_router, prefix="/api/v1")
-app.include_router(recommendations_router, prefix="/api/v1")
-app.include_router(auth_email_router)
-app.include_router(redirect_router)
+app.include_router(api_v1, prefix="/api/v1")

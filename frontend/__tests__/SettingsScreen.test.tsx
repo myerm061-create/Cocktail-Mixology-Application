@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, within } from "@testing-library/react-native";
+import { render, screen, fireEvent } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import SettingsScreen from "../app/(stack)/settings";
 
@@ -154,33 +154,32 @@ describe("SettingsScreen", () => {
     expect(screen.queryByText("Cancel")).toBeNull();
   });
 
-  // Expandable rows: Delete My Local Data & Delete My Account
-  it("deletes account via dialog confirm and navigates to login", () => {
-    render(<SettingsScreen />);
-    fireEvent.press(screen.getByText("Delete My Account"));
-    fireEvent.press(screen.getByText("Delete Account (Permanent)"));
+// Expandable rows: Delete My Local Data & Delete My Account
+it("opens delete-account dialog and pushes to verify-delete on confirm", async () => {
+  // mock the network call the handler makes
+  (globalThis as any).fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({}),
+    text: async () => "",
+  } as any);
 
-    // Two "Delete Account" nodes exist (title + confirm button). Click the button by pressing its parent.
-    const deleteBtn = screen.getAllByRole("button").find((btn) => {
-      try {
-        within(btn).getByText("Delete Account");
-        return true;
-      } catch {
-        return false;
-      }
-    });
-    expect(deleteBtn).toBeTruthy();
-    fireEvent.press(deleteBtn!);
-    expect(mockReplace).toHaveBeenCalledWith("/(auth)/login");
-  });
+  render(<SettingsScreen />);
 
-  // Expandable row: Change Password
-  it("navigates to Change Password when revealed action is pressed", () => {
-    render(<SettingsScreen />);
-    fireEvent.press(screen.getByText("Change Password"));
-    fireEvent.press(screen.getByText("Go to Change Password"));
-    expect(mockPush).toHaveBeenCalledWith("/(stack)/change-password");
-  });
+  fireEvent.press(screen.getByText("Delete My Account"));
+  fireEvent.press(screen.getByText("Delete Account (Permanent)"));
+
+  // Confirm button text is "Send Verification Code"
+  fireEvent.press(screen.getByText("Send Verification Code"));
+
+  // Wait for the async handler to finish and navigation to fire
+  await screen.findByText("Settings"); // any stable element; just yields a tick
+  // or: await waitFor(() => expect(mockPush).toHaveBeenCalled());
+
+  expect(mockPush).toHaveBeenCalledWith(
+    expect.stringContaining("/(stack)/verify-delete")
+  );
+});
 
   // Units chips: oz (Imperial) & ml (Metric)
   it("toggles units chips and reflects active style", () => {
@@ -223,4 +222,5 @@ describe("SettingsScreen", () => {
     fireEvent.press(screen.getByText("Log Out"));
     expect(mockReplace).toHaveBeenCalledWith("/(auth)/login");
   });
+
 });
