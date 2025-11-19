@@ -15,6 +15,7 @@ router = APIRouter(prefix="/auth", tags=["auth:otp"])
 
 # Map external "intent" -> internal token_service purpose
 PURPOSE_MAP = {
+    "login": "login_otp",
     "verify": "verify_otp",
     "reset": "reset_otp",
     "delete": "delete_otp",

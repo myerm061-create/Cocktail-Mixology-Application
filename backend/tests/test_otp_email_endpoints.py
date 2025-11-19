@@ -416,6 +416,7 @@ async def test_different_email_subjects_per_intent(mock_send_email, async_client
     subjects = []
     
     for intent in intents:
+        mock_send_email.reset_mock()
         await async_client.post(
             "/api/v1/auth/otp/request",
             json={"email": f"{intent}@example.com", "intent": intent},
