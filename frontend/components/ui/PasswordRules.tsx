@@ -1,17 +1,17 @@
-import React, { useMemo } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 type PasswordRulesProps = {
   password: string;
   confirmPassword: string;
   email?: string;
-  compactWhenSatisfied?: boolean; 
+  compactWhenSatisfied?: boolean;
 };
 
 const MIN_LEN = 10;
 
-const COMMON_HINTS = ["password", "123456", "qwerty", "letmein", "welcome"];
+const COMMON_HINTS = ['password', '123456', 'qwerty', 'letmein', 'welcome'];
 
 export default function PasswordRules({
   password,
@@ -21,8 +21,9 @@ export default function PasswordRules({
 }: PasswordRulesProps) {
   const checks = useMemo(() => {
     const lenOK = password.length >= MIN_LEN;
-    const emailPart = (email ?? "").split("@", 1)[0].toLowerCase().trim();
-    const containsEmail = !!emailPart && password.toLowerCase().includes(emailPart);
+    const emailPart = (email ?? '').split('@', 1)[0].toLowerCase().trim();
+    const containsEmail =
+      !!emailPart && password.toLowerCase().includes(emailPart);
 
     const uniqueChars = new Set(password.toLowerCase());
     const notTooRepetitive = uniqueChars.size >= 3;
@@ -31,7 +32,14 @@ export default function PasswordRules({
 
     const allOK = lenOK && !containsEmail && notTooRepetitive && match;
 
-    return { lenOK, containsEmail, notTooRepetitive, notHintCommon, match, allOK };
+    return {
+      lenOK,
+      containsEmail,
+      notTooRepetitive,
+      notHintCommon,
+      match,
+      allOK,
+    };
   }, [password, confirmPassword, email]);
 
   const Rule = ({
@@ -69,10 +77,17 @@ export default function PasswordRules({
     <View style={styles.wrap} accessibilityLabel="Password requirements">
       <Text style={styles.header}>Password must:</Text>
       <Rule ok={checks.lenOK} label={`Be at least ${MIN_LEN} characters`} />
-      {typeof email === "string" && email.length > 0 && (
-        <Rule ok={!checks.containsEmail} label="Not contain your email name" warn />
+      {typeof email === 'string' && email.length > 0 && (
+        <Rule
+          ok={!checks.containsEmail}
+          label="Not contain your email name"
+          warn
+        />
       )}
-      <Rule ok={checks.notTooRepetitive} label="Avoid repeating a single character" />
+      <Rule
+        ok={checks.notTooRepetitive}
+        label="Avoid repeating a single character"
+      />
       <Rule
         ok={checks.notHintCommon}
         label="Avoid super-common passwords"
@@ -87,20 +102,26 @@ const styles = StyleSheet.create({
   wrap: {
     marginTop: -2,
     paddingVertical: 4,
-    alignSelf: "stretch",
+    alignSelf: 'stretch',
   },
   header: { color: Colors.textSecondary, fontSize: 13, marginBottom: 4 },
   ruleRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
-    flexWrap: "wrap", 
+    flexWrap: 'wrap',
   },
-  bullet: { width: 12, height: 12, borderRadius: 999, marginRight: 8, borderWidth: 2 },
+  bullet: {
+    width: 12,
+    height: 12,
+    borderRadius: 999,
+    marginRight: 8,
+    borderWidth: 2,
+  },
   bulletOk: { backgroundColor: Colors.accentPrimary, borderColor: Colors.link },
-  bulletNot: { backgroundColor: "transparent", borderColor: "#5A585F" },
-  ruleText: { fontSize: 12, flexShrink: 1 }, 
+  bulletNot: { backgroundColor: 'transparent', borderColor: '#5A585F' },
+  ruleText: { fontSize: 12, flexShrink: 1 },
   textOk: { color: Colors.link },
-  textNot: { color: "#C5C5C5" },
-  textWarn: { color: "#E4C566" },
+  textNot: { color: '#C5C5C5' },
+  textWarn: { color: '#E4C566' },
 });

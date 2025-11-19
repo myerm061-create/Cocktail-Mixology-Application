@@ -22,15 +22,11 @@ class UserIngredient(Base):
         index=True,
     )
     # Quantity as fraction 0-1 (1.0 = full bottle, 0.5 = half, etc.)
-    quantity: Mapped[float] = mapped_column(
-        Float, default=1.0, nullable=False
-    )
+    quantity: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
 
     # Relationships
     user: Mapped[User] = relationship("User", back_populates="pantry_ingredients")
-    ingredient: Mapped[Ingredient] = relationship(
-        "Ingredient", back_populates="users"
-    )
+    ingredient: Mapped[Ingredient] = relationship("Ingredient", back_populates="users")
 
     __table_args__ = (
         UniqueConstraint("user_id", "ingredient_id", name="uq_user_ingredient"),
@@ -40,4 +36,3 @@ class UserIngredient(Base):
 # Import after UserIngredient class to avoid circular imports
 from app.models.ingredient import Ingredient  # noqa: E402
 from app.models.user import User  # noqa: E402
-

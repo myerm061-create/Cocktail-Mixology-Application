@@ -24,11 +24,13 @@ def db_session() -> Session:
 def test_user(db_session: Session) -> User:
     """Create a test user in the database."""
     # Clean up any existing test user first
-    existing = db_session.query(User).filter(User.email == "test_e2e@example.com").first()
+    existing = (
+        db_session.query(User).filter(User.email == "test_e2e@example.com").first()
+    )
     if existing:
         db_session.delete(existing)
         db_session.commit()
-    
+
     user = User(
         email="test_e2e@example.com",
         hashed_password=hash_password("testpass123"),
@@ -37,7 +39,7 @@ def test_user(db_session: Session) -> User:
     db_session.commit()
     db_session.refresh(user)
     yield user
-    
+
     # Cleanup after test
     db_session.delete(user)
     db_session.commit()
@@ -63,10 +65,12 @@ async def authenticated_client(test_user: User) -> AsyncClient:
 
 
 @pytest.mark.asyncio
-async def test_pantry_to_recommendations_flow(authenticated_client: AsyncClient, db_session: Session, test_user: User):
+async def test_pantry_to_recommendations_flow(
+    authenticated_client: AsyncClient, db_session: Session, test_user: User
+):
     """
     E2E test: Add pantry ingredients → Get recommendations → Assert fully makeable drinks.
-    
+
     This test simulates the complete user flow:
     1. User has pantry ingredients
     2. User requests recommendations
@@ -89,7 +93,9 @@ async def test_pantry_to_recommendations_flow(authenticated_client: AsyncClient,
             "/api/v1/users/me/pantry",
             json=ingredient,
         )
-        assert resp.status_code == 201, f"Failed to add {ingredient['ingredient_name']}: {resp.text}"
+        assert (
+            resp.status_code == 201
+        ), f"Failed to add {ingredient['ingredient_name']}: {resp.text}"
 
     # Step 2: Verify pantry was updated
     pantry_resp = await authenticated_client.get("/api/v1/users/me/pantry")
@@ -101,23 +107,23 @@ async def test_pantry_to_recommendations_flow(authenticated_client: AsyncClient,
     # Try multiple times to increase likelihood of finding fully makeable cocktails
     rec_resp = await authenticated_client.get("/api/v1/recommendations?limit=50")
     assert rec_resp.status_code == 200, f"Recommendations failed: {rec_resp.text}"
-    
+
     recommendations = rec_resp.json()
     assert "cocktails" in recommendations
     assert "fully_makeable_count" in recommendations
     assert "total_found" in recommendations
-    
+
     cocktails = recommendations["cocktails"]
     fully_makeable_count = recommendations["fully_makeable_count"]
-    
+
     # Step 4: Verify response structure
     assert isinstance(cocktails, list)
     assert isinstance(fully_makeable_count, int)
     assert fully_makeable_count >= 0
-    
+
     # Step 5: Assert at least one drink is "fully makeable"
     # With common ingredients like Gin, Vodka, Lime Juice, we should find matches
-    
+
     # First verify the endpoint returned cocktails
     # Note: TheCocktailDB API may be unavailable or slow, so we make this informative
     if len(cocktails) == 0:
@@ -128,7 +134,7 @@ async def test_pantry_to_recommendations_flow(authenticated_client: AsyncClient,
             "This may indicate network issues or API unavailability. "
             "Skipping assertion for fully makeable cocktails."
         )
-    
+
     # Verify cocktail structure
     for cocktail in cocktails:
         assert "id" in cocktail
@@ -139,14 +145,14 @@ async def test_pantry_to_recommendations_flow(authenticated_client: AsyncClient,
         assert isinstance(cocktail["fully_makeable"], bool)
         assert isinstance(cocktail["match_score"], dict)
         assert "percentage" in cocktail["match_score"]
-    
+
     # Verify that fully_makeable_count matches actual fully makeable cocktails
     actual_fully_makeable = sum(1 for c in cocktails if c["fully_makeable"])
     assert actual_fully_makeable == fully_makeable_count, (
         f"fully_makeable_count ({fully_makeable_count}) doesn't match "
         f"actual count ({actual_fully_makeable})"
     )
-    
+
     # Assert at least one fully makeable cocktail
     # With common ingredients (Gin, Vodka, Lime, Lemon, Simple Syrup, Triple Sec, Orange Juice)
     # we should find at least one match from random cocktails
@@ -158,7 +164,6 @@ async def test_pantry_to_recommendations_flow(authenticated_client: AsyncClient,
         f"Expected at least one fully makeable cocktail, but found {fully_makeable_count}. "
         f"Total cocktails: {len(cocktails)}. "
         f"Pantry ingredients: {[ing['ingredient_name'] for ing in ingredients_to_add]}. "
-        f"This may indicate an issue with ingredient matching logic or TheCocktailDB API responses. "
+        f"This may indicate an issue with ingredient matching logic or TheCocktailDB API response. "
         f"Sample cocktail ingredients: {cocktails[0]['ingredients'] if cocktails else 'N/A'}"
     )
-

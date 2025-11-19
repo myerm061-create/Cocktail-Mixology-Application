@@ -48,7 +48,7 @@
       "typedRoutes": true
     },
 
-    "extra": { 
+    "extra": {
       "google": {
         "iosClientId": "IOS_CLIENT_ID.apps.googleusercontent.com",
         "androidClientId": "ANDROID_CLIENT_ID.apps.googleusercontent.com",

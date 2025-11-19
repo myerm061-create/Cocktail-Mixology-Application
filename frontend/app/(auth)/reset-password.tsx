@@ -1,25 +1,26 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
-import { Link, router } from "expo-router";
-import FormButton from "@/components/ui/FormButton";
-import AuthInput from "@/components/ui/AuthInput";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import { Link, router } from 'expo-router';
+import FormButton from '@/components/ui/FormButton';
+import AuthInput from '@/components/ui/AuthInput';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 const API_BASE =
   process.env.EXPO_PUBLIC_API_BASE_URL ??
   process.env.EXPO_PUBLIC_API_BASE ??
-  "http://127.0.0.1:8000/api/v1";
+  'http://127.0.0.1:8000/api/v1';
 
 export default function ResetPasswordScreen() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+  const isValidEmail = (e: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
   const handleReset = async () => {
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !isValidEmail(trimmed)) {
-      Alert.alert("Invalid email", "Please enter a valid email address.");
+      Alert.alert('Invalid email', 'Please enter a valid email address.');
       return;
     }
     try {
@@ -27,16 +28,16 @@ export default function ResetPasswordScreen() {
 
       // Request a reset OTP (always 200 to avoid enumeration)
       await fetch(`${API_BASE}/auth/otp/request`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: trimmed, intent: "reset" }),
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: trimmed, intent: 'reset' }),
       });
 
       // Go to new-password screen where user will enter code + new password
       const q = encodeURIComponent(trimmed);
       router.push(`/(auth)/verify-reset?email=${q}`);
     } catch {
-      Alert.alert("Network error", "Check your connection and try again.");
+      Alert.alert('Network error', 'Check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -46,7 +47,8 @@ export default function ResetPasswordScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Reset your password</Text>
       <Text style={styles.subtitle}>
-        Enter the email associated with your account and we’ll send you a reset code.
+        Enter the email associated with your account and we’ll send you a reset
+        code.
       </Text>
 
       <AuthInput
@@ -59,13 +61,15 @@ export default function ResetPasswordScreen() {
       />
 
       <FormButton
-        title={submitting ? "Sending..." : "Send code"}
-        onPress={() => { void handleReset(); }}
+        title={submitting ? 'Sending...' : 'Send code'}
+        onPress={() => {
+          void handleReset();
+        }}
         disabled={submitting || !email.trim()}
       />
 
       <Text style={styles.backText}>
-        Remembered it?{" "}
+        Remembered it?{' '}
         <Link href="/(auth)/login" asChild>
           <Text style={styles.link}>Back to login</Text>
         </Link>
@@ -75,9 +79,25 @@ export default function ResetPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: Colors.background },
-  title: { fontWeight: "bold", fontSize: 24, marginBottom: 8, color: Colors.textPrimary },
-  subtitle: { fontSize: 14, color: Colors.textSecondary, textAlign: "center", marginBottom: 20 },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: Colors.background,
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 24,
+    marginBottom: 8,
+    color: Colors.textPrimary,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   backText: { marginTop: 14, color: Colors.textSecondary, fontSize: 14 },
   link: { color: Colors.link },
 });

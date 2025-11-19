@@ -26,4 +26,3 @@ class PantryUpdate(BaseModel):
     """Schema for updating pantry ingredient quantity."""
 
     quantity: float = Field(..., ge=0.0, le=1.0, description="Quantity as fraction 0-1")
-

@@ -5,6 +5,7 @@ Revises: 572111b4e4ac
 Create Date: 2025-01-27 12:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -25,9 +26,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("ingredient_id", sa.Integer(), nullable=False),
         sa.Column("quantity", sa.Float(), nullable=False, server_default="1.0"),
-        sa.ForeignKeyConstraint(
-            ["user_id"], ["users.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(
             ["ingredient_id"], ["ingredients.id"], ondelete="CASCADE"
         ),
@@ -38,7 +37,10 @@ def upgrade() -> None:
         op.f("ix_user_ingredients_id"), "user_ingredients", ["id"], unique=False
     )
     op.create_index(
-        op.f("ix_user_ingredients_user_id"), "user_ingredients", ["user_id"], unique=False
+        op.f("ix_user_ingredients_user_id"),
+        "user_ingredients",
+        ["user_id"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_user_ingredients_ingredient_id"),
@@ -53,8 +55,6 @@ def downgrade() -> None:
     op.drop_index(
         op.f("ix_user_ingredients_ingredient_id"), table_name="user_ingredients"
     )
-    op.drop_index(
-        op.f("ix_user_ingredients_user_id"), table_name="user_ingredients"
-    )
+    op.drop_index(op.f("ix_user_ingredients_user_id"), table_name="user_ingredients")
     op.drop_index(op.f("ix_user_ingredients_id"), table_name="user_ingredients")
     op.drop_table("user_ingredients")

@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, StyleSheet, Animated } from "react-native";
+import React from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 
 interface SwipeActionProps {
   progress: Animated.AnimatedInterpolation<number>;
@@ -9,12 +9,12 @@ interface SwipeActionProps {
   alignLeft?: boolean;
 }
 
-export default function SwipeAction({ 
-  progress, 
-  icon, 
-  label, 
-  backgroundColor, 
-  alignLeft = false 
+export default function SwipeAction({
+  progress,
+  icon,
+  label,
+  backgroundColor,
+  alignLeft = false,
 }: SwipeActionProps) {
   const scale = progress.interpolate({
     inputRange: [0, 1],
@@ -41,30 +41,30 @@ export default function SwipeAction({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     borderRadius: 14,
     marginVertical: 4,
   },
   leftAlign: {
-    alignItems: "flex-start",
+    alignItems: 'flex-start',
     paddingLeft: 20,
   },
   rightAlign: {
-    alignItems: "flex-end",
+    alignItems: 'flex-end',
     paddingRight: 20,
   },
   action: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     fontSize: 24,
     marginBottom: 4,
   },
   label: {
-    color: "#FFFFFF",
+    color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

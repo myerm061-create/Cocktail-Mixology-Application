@@ -23,11 +23,13 @@ def db_session() -> Session:
 @pytest.fixture
 def test_user(db_session: Session) -> User:
     """Create a test user in the database."""
-    existing = db_session.query(User).filter(User.email == "test_pantry@example.com").first()
+    existing = (
+        db_session.query(User).filter(User.email == "test_pantry@example.com").first()
+    )
     if existing:
         db_session.delete(existing)
         db_session.commit()
-    
+
     user = User(
         email="test_pantry@example.com",
         hashed_password=hash_password("testpass123"),
@@ -36,7 +38,7 @@ def test_user(db_session: Session) -> User:
     db_session.commit()
     db_session.refresh(user)
     yield user
-    
+
     db_session.delete(user)
     db_session.commit()
 
@@ -90,7 +92,7 @@ async def test_add_multiple_ingredients(authenticated_client: AsyncClient):
             json={"ingredient_name": ingredient, "quantity": 1.0},
         )
         assert resp.status_code == 201
-    
+
     # Verify all were added
     resp = await authenticated_client.get("/api/v1/users/me/pantry")
     assert resp.status_code == 200
@@ -111,7 +113,7 @@ async def test_update_ingredient_quantity(authenticated_client: AsyncClient):
     assert resp.status_code == 201
     data = resp.json()
     ingredient_id = data["id"]
-    
+
     # Update quantity
     resp = await authenticated_client.put(
         f"/api/v1/users/me/pantry/{ingredient_id}",
@@ -133,11 +135,11 @@ async def test_remove_ingredient_from_pantry(authenticated_client: AsyncClient):
     assert resp.status_code == 201
     data = resp.json()
     ingredient_id = data["id"]
-    
+
     # Remove ingredient
     resp = await authenticated_client.delete(f"/api/v1/users/me/pantry/{ingredient_id}")
     assert resp.status_code == 204
-    
+
     # Verify it's gone
     resp = await authenticated_client.get("/api/v1/users/me/pantry")
     assert resp.status_code == 200
@@ -146,7 +148,9 @@ async def test_remove_ingredient_from_pantry(authenticated_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_add_duplicate_ingredient_updates_quantity(authenticated_client: AsyncClient):
+async def test_add_duplicate_ingredient_updates_quantity(
+    authenticated_client: AsyncClient,
+):
     """Test that adding duplicate ingredient updates quantity instead of creating new entry."""
     # Add ingredient
     resp = await authenticated_client.post(
@@ -154,7 +158,7 @@ async def test_add_duplicate_ingredient_updates_quantity(authenticated_client: A
         json={"ingredient_name": "Gin", "quantity": 1.0},
     )
     assert resp.status_code == 201
-    
+
     # Add same ingredient with different quantity
     resp = await authenticated_client.post(
         "/api/v1/users/me/pantry",
@@ -163,10 +167,9 @@ async def test_add_duplicate_ingredient_updates_quantity(authenticated_client: A
     assert resp.status_code == 201
     data = resp.json()
     assert data["quantity"] == 0.5
-    
+
     # Verify only one entry exists
     resp = await authenticated_client.get("/api/v1/users/me/pantry")
     assert resp.status_code == 200
     pantry = resp.json()
     assert len(pantry) == 1
-
