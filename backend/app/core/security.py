@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta, UTC
-
 import uuid
+from datetime import UTC, datetime, timedelta
+
 import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -27,6 +27,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 class TokenError(Exception):
     """Custom error for invalid tokens."""
+
     pass
 
 
@@ -54,6 +55,7 @@ def create_access_token(data: dict, expires_delta: timedelta) -> str:
 def create_refresh_token(data: dict, expires_delta: timedelta) -> str:
     """Generate a refresh JWT."""
     return _encode_token(data, expires_delta)
+
 
 def decode_refresh_token(token: str) -> dict:
     """Decode and validate a refresh token."""

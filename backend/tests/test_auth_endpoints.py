@@ -24,11 +24,13 @@ def db_session() -> Session:
 def test_user(db_session: Session) -> User:
     """Create a test user in the database."""
     # Clean up any existing test user first
-    existing = db_session.query(User).filter(User.email == "test_auth@example.com").first()
+    existing = (
+        db_session.query(User).filter(User.email == "test_auth@example.com").first()
+    )
     if existing:
         db_session.delete(existing)
         db_session.commit()
-    
+
     user = User(
         email="test_auth@example.com",
         hashed_password=hash_password("StrongPass123!"),
@@ -37,7 +39,7 @@ def test_user(db_session: Session) -> User:
     db_session.commit()
     db_session.refresh(user)
     yield user
-    
+
     # Cleanup after test
     db_session.delete(user)
     db_session.commit()
@@ -53,15 +55,18 @@ async def async_client() -> AsyncClient:
 
 # ===== Registration Tests =====
 
+
 @pytest.mark.asyncio
 async def test_register_success(async_client: AsyncClient, db_session: Session):
     """Test successful user registration."""
     # Clean up any existing user
-    existing = db_session.query(User).filter(User.email == "newuser@example.com").first()
+    existing = (
+        db_session.query(User).filter(User.email == "newuser@example.com").first()
+    )
     if existing:
         db_session.delete(existing)
         db_session.commit()
-    
+
     resp = await async_client.post(
         "/api/v1/auth/register",
         json={"email": "newuser@example.com", "password": "ValidPass123!"},
@@ -72,9 +77,11 @@ async def test_register_success(async_client: AsyncClient, db_session: Session):
     assert "refresh_token" in data
     assert data["token_type"] == "bearer"
     assert "expires_in" in data
-    
+
     # Clean up
-    created_user = db_session.query(User).filter(User.email == "newuser@example.com").first()
+    created_user = (
+        db_session.query(User).filter(User.email == "newuser@example.com").first()
+    )
     if created_user:
         db_session.delete(created_user)
         db_session.commit()
@@ -112,6 +119,7 @@ async def test_register_invalid_email(async_client: AsyncClient):
 
 
 # ===== Login Tests =====
+
 
 @pytest.mark.asyncio
 async def test_login_success(async_client: AsyncClient, test_user: User):
@@ -162,6 +170,7 @@ async def test_login_case_insensitive_email(async_client: AsyncClient, test_user
 
 # ===== Token Refresh Tests =====
 
+
 @pytest.mark.asyncio
 async def test_refresh_token_success(async_client: AsyncClient, test_user: User):
     """Test refreshing access token with valid refresh token."""
@@ -172,7 +181,7 @@ async def test_refresh_token_success(async_client: AsyncClient, test_user: User)
     )
     assert login_resp.status_code == 200
     initial_tokens = login_resp.json()
-    
+
     # Refresh the token
     refresh_resp = await async_client.post(
         "/api/v1/auth/refresh",
@@ -208,6 +217,7 @@ async def test_refresh_token_invalid(async_client: AsyncClient):
 
 # ===== Current User Tests =====
 
+
 @pytest.mark.asyncio
 async def test_get_current_user_success(async_client: AsyncClient, test_user: User):
     """Test getting current user info with valid token."""
@@ -218,7 +228,7 @@ async def test_get_current_user_success(async_client: AsyncClient, test_user: Us
     )
     assert login_resp.status_code == 200
     tokens = login_resp.json()
-    
+
     # Get current user info
     resp = await async_client.get(
         "/api/v1/auth/me",
@@ -249,6 +259,7 @@ async def test_get_current_user_invalid_token(async_client: AsyncClient):
 
 # ===== Logout Tests =====
 
+
 @pytest.mark.asyncio
 async def test_logout_success(async_client: AsyncClient, test_user: User):
     """Test logout endpoint."""
@@ -259,7 +270,7 @@ async def test_logout_success(async_client: AsyncClient, test_user: User):
     )
     assert login_resp.status_code == 200
     tokens = login_resp.json()
-    
+
     # Logout
     resp = await async_client.post(
         "/api/v1/auth/logout",
@@ -269,6 +280,7 @@ async def test_logout_success(async_client: AsyncClient, test_user: User):
 
 
 # ===== Email Exists Tests =====
+
 
 @pytest.mark.asyncio
 async def test_email_exists_true(async_client: AsyncClient, test_user: User):
@@ -293,7 +305,9 @@ async def test_email_exists_false(async_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_email_exists_case_insensitive(async_client: AsyncClient, test_user: User):
+async def test_email_exists_case_insensitive(
+    async_client: AsyncClient, test_user: User
+):
     """Test that email exists check is case insensitive."""
     resp = await async_client.get(
         f"/api/v1/auth/exists?email={test_user.email.upper()}",

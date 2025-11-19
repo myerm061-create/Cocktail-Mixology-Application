@@ -1,5 +1,4 @@
-import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
@@ -32,11 +31,13 @@ def db_session() -> Session:
 def test_user(db_session: Session) -> User:
     """Create a test user in the database."""
     # Clean up any existing test user first
-    existing = db_session.query(User).filter(User.email == "test_otp@example.com").first()
+    existing = (
+        db_session.query(User).filter(User.email == "test_otp@example.com").first()
+    )
     if existing:
         db_session.delete(existing)
         db_session.commit()
-    
+
     user = User(
         email="test_otp@example.com",
         hashed_password=hash_password("TestPass123!"),
@@ -45,7 +46,7 @@ def test_user(db_session: Session) -> User:
     db_session.commit()
     db_session.refresh(user)
     yield user
-    
+
     # Cleanup after test
     db_session.delete(user)
     db_session.commit()
@@ -61,12 +62,15 @@ async def async_client() -> AsyncClient:
 
 # ===== OTP Request Tests =====
 
+
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_request_otp_login(mock_send_email, async_client: AsyncClient, db_session: Session):
+async def test_request_otp_login(
+    mock_send_email, async_client: AsyncClient, db_session: Session
+):
     """Test requesting OTP for login intent."""
     mock_send_email.return_value = None
-    
+
     resp = await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "test@example.com", "intent": "login"},
@@ -74,21 +78,27 @@ async def test_request_otp_login(mock_send_email, async_client: AsyncClient, db_
     assert resp.status_code == 200
     data = resp.json()
     assert data["ok"] is True
-    
+
     # Verify OTP was created in database
-    otp_record = db_session.query(AuthToken).filter(
-        AuthToken.email == "test@example.com",
-        AuthToken.purpose == "login_otp",
-    ).first()
+    otp_record = (
+        db_session.query(AuthToken)
+        .filter(
+            AuthToken.email == "test@example.com",
+            AuthToken.purpose == "login_otp",
+        )
+        .first()
+    )
     assert otp_record is not None
 
 
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_request_otp_verify(mock_send_email, async_client: AsyncClient, db_session: Session):
+async def test_request_otp_verify(
+    mock_send_email, async_client: AsyncClient, db_session: Session
+):
     """Test requesting OTP for verify intent."""
     mock_send_email.return_value = None
-    
+
     resp = await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "test@example.com", "intent": "verify"},
@@ -100,10 +110,12 @@ async def test_request_otp_verify(mock_send_email, async_client: AsyncClient, db
 
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_request_otp_reset(mock_send_email, async_client: AsyncClient, db_session: Session):
+async def test_request_otp_reset(
+    mock_send_email, async_client: AsyncClient, db_session: Session
+):
     """Test requesting OTP for password reset intent."""
     mock_send_email.return_value = None
-    
+
     resp = await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "test@example.com", "intent": "reset"},
@@ -115,10 +127,12 @@ async def test_request_otp_reset(mock_send_email, async_client: AsyncClient, db_
 
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_request_otp_delete(mock_send_email, async_client: AsyncClient, db_session: Session):
+async def test_request_otp_delete(
+    mock_send_email, async_client: AsyncClient, db_session: Session
+):
     """Test requesting OTP for account deletion intent."""
     mock_send_email.return_value = None
-    
+
     resp = await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "test@example.com", "intent": "delete"},
@@ -140,10 +154,12 @@ async def test_request_otp_invalid_intent(async_client: AsyncClient):
 
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_request_otp_rate_limiting(mock_send_email, async_client: AsyncClient, db_session: Session):
+async def test_request_otp_rate_limiting(
+    mock_send_email, async_client: AsyncClient, db_session: Session
+):
     """Test OTP request rate limiting (3 per 24h)."""
     mock_send_email.return_value = None
-    
+
     # Request OTP 3 times (should succeed)
     for i in range(3):
         resp = await async_client.post(
@@ -151,44 +167,48 @@ async def test_request_otp_rate_limiting(mock_send_email, async_client: AsyncCli
             json={"email": "ratelimit@example.com", "intent": "verify"},
         )
         assert resp.status_code == 200
-    
+
     # 4th request should still return 200 but not send email (soft-fail)
     resp = await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "ratelimit@example.com", "intent": "verify"},
     )
     assert resp.status_code == 200
-    
+
     # Verify only 3 OTPs were created
-    otp_count = db_session.query(AuthToken).filter(
-        AuthToken.email == "ratelimit@example.com",
-    ).count()
+    otp_count = (
+        db_session.query(AuthToken)
+        .filter(
+            AuthToken.email == "ratelimit@example.com",
+        )
+        .count()
+    )
     assert otp_count == 3
 
 
 # ===== OTP Verify Tests =====
 
+
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_verify_otp_success(mock_send_email, async_client: AsyncClient, db_session: Session):
+async def test_verify_otp_success(
+    mock_send_email, async_client: AsyncClient, db_session: Session
+):
     """Test successful OTP verification."""
     mock_send_email.return_value = None
-    
+
     # First request OTP
     resp = await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "verify@example.com", "intent": "verify"},
     )
     assert resp.status_code == 200
-    
+
     # Get the OTP from database (for testing only)
     otp_code, _ = token_service.create_otp(
-        db_session, 
-        email="verify@example.com", 
-        purpose="verify_otp",
-        ttl_minutes=10
+        db_session, email="verify@example.com", purpose="verify_otp", ttl_minutes=10
     )
-    
+
     # Verify the OTP
     resp = await async_client.post(
         "/api/v1/auth/otp/verify",
@@ -209,12 +229,9 @@ async def test_verify_otp_invalid_code(async_client: AsyncClient, db_session: Se
     """Test OTP verification with invalid code."""
     # Create an OTP
     token_service.create_otp(
-        db_session,
-        email="invalid@example.com",
-        purpose="verify_otp",
-        ttl_minutes=10
+        db_session, email="invalid@example.com", purpose="verify_otp", ttl_minutes=10
     )
-    
+
     # Try to verify with wrong code
     resp = await async_client.post(
         "/api/v1/auth/otp/verify",
@@ -233,12 +250,9 @@ async def test_verify_otp_expired(async_client: AsyncClient, db_session: Session
     """Test OTP verification with expired code."""
     # Create an OTP with 0 minute TTL (instantly expired)
     otp_code, _ = token_service.create_otp(
-        db_session,
-        email="expired@example.com",
-        purpose="verify_otp",
-        ttl_minutes=0
+        db_session, email="expired@example.com", purpose="verify_otp", ttl_minutes=0
     )
-    
+
     # Try to verify expired OTP
     resp = await async_client.post(
         "/api/v1/auth/otp/verify",
@@ -253,20 +267,20 @@ async def test_verify_otp_expired(async_client: AsyncClient, db_session: Session
 
 # ===== Password Reset Tests =====
 
+
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_reset_complete_success(mock_send_email, async_client: AsyncClient, db_session: Session, test_user: User):
+async def test_reset_complete_success(
+    mock_send_email, async_client: AsyncClient, db_session: Session, test_user: User
+):
     """Test successful password reset completion."""
     mock_send_email.return_value = None
-    
+
     # Create reset OTP
     otp_code, _ = token_service.create_otp(
-        db_session,
-        email=test_user.email,
-        purpose="reset_otp",
-        ttl_minutes=10
+        db_session, email=test_user.email, purpose="reset_otp", ttl_minutes=10
     )
-    
+
     # Complete password reset
     resp = await async_client.post(
         "/api/v1/auth/reset/complete",
@@ -279,7 +293,7 @@ async def test_reset_complete_success(mock_send_email, async_client: AsyncClient
     assert resp.status_code == 200
     data = resp.json()
     assert data["ok"] is True
-    
+
     # Verify password was changed by trying to login
     login_resp = await async_client.post(
         "/api/v1/auth/login",
@@ -304,16 +318,15 @@ async def test_reset_complete_invalid_code(async_client: AsyncClient, test_user:
 
 
 @pytest.mark.asyncio
-async def test_reset_complete_nonexistent_user(async_client: AsyncClient, db_session: Session):
+async def test_reset_complete_nonexistent_user(
+    async_client: AsyncClient, db_session: Session
+):
     """Test password reset for non-existent user."""
     # Create OTP for non-existent user
     otp_code, _ = token_service.create_otp(
-        db_session,
-        email="nonexistent@example.com",
-        purpose="reset_otp",
-        ttl_minutes=10
+        db_session, email="nonexistent@example.com", purpose="reset_otp", ttl_minutes=10
     )
-    
+
     resp = await async_client.post(
         "/api/v1/auth/reset/complete",
         json={
@@ -327,16 +340,15 @@ async def test_reset_complete_nonexistent_user(async_client: AsyncClient, db_ses
 
 
 @pytest.mark.asyncio
-async def test_reset_complete_weak_password(async_client: AsyncClient, db_session: Session, test_user: User):
+async def test_reset_complete_weak_password(
+    async_client: AsyncClient, db_session: Session, test_user: User
+):
     """Test password reset with weak new password."""
     # Create reset OTP
     otp_code, _ = token_service.create_otp(
-        db_session,
-        email=test_user.email,
-        purpose="reset_otp",
-        ttl_minutes=10
+        db_session, email=test_user.email, purpose="reset_otp", ttl_minutes=10
     )
-    
+
     resp = await async_client.post(
         "/api/v1/auth/reset/complete",
         json={
@@ -349,6 +361,7 @@ async def test_reset_complete_weak_password(async_client: AsyncClient, db_sessio
 
 
 # ===== Debug Endpoint Tests =====
+
 
 @pytest.mark.asyncio
 async def test_debug_otp_with_header(async_client: AsyncClient):
@@ -388,17 +401,18 @@ async def test_debug_otp_wrong_header(async_client: AsyncClient):
 
 # ===== Email Service Tests =====
 
+
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
 async def test_email_sent_on_otp_request(mock_send_email, async_client: AsyncClient):
     """Test that email is actually sent when OTP is requested."""
     mock_send_email.return_value = None
-    
+
     await async_client.post(
         "/api/v1/auth/otp/request",
         json={"email": "emailtest@example.com", "intent": "verify"},
     )
-    
+
     # Verify send_email was called
     mock_send_email.assert_called_once()
     call_args = mock_send_email.call_args[0]
@@ -408,13 +422,15 @@ async def test_email_sent_on_otp_request(mock_send_email, async_client: AsyncCli
 
 @pytest.mark.asyncio
 @patch("app.services.mail_services.send_email")
-async def test_different_email_subjects_per_intent(mock_send_email, async_client: AsyncClient):
+async def test_different_email_subjects_per_intent(
+    mock_send_email, async_client: AsyncClient
+):
     """Test that different intents generate different email subjects."""
     mock_send_email.return_value = None
-    
+
     intents = ["login", "verify", "reset", "delete"]
     subjects = []
-    
+
     for intent in intents:
         mock_send_email.reset_mock()
         await async_client.post(
@@ -423,6 +439,6 @@ async def test_different_email_subjects_per_intent(mock_send_email, async_client
         )
         if mock_send_email.called:
             subjects.append(mock_send_email.call_args[0][1])
-    
+
     # Verify we got different subjects for different intents
     assert len(set(subjects)) > 1  # At least some subjects should be different
