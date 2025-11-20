@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Favorite = {
   id: string;
@@ -7,18 +7,24 @@ export type Favorite = {
   addedAt: number;
 };
 
-const KEY = "favorites:v1";
+const KEY = 'favorites:v1';
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
 function emit() {
   listeners.forEach((fn) => {
-    try { fn(); } catch { /* noop */ }
+    try {
+      fn();
+    } catch {
+      /* noop */
+    }
   });
 }
 export function subscribe(listener: Listener) {
   listeners.add(listener);
-  return () => { listeners.delete(listener); }; 
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 async function read(): Promise<Record<string, Favorite>> {
@@ -26,7 +32,7 @@ async function read(): Promise<Record<string, Favorite>> {
     const raw = await AsyncStorage.getItem(KEY);
     if (!raw) return {};
     const obj = JSON.parse(raw);
-    return obj && typeof obj === "object" ? obj : {};
+    return obj && typeof obj === 'object' ? obj : {};
   } catch {
     return {};
   }
@@ -34,7 +40,7 @@ async function read(): Promise<Record<string, Favorite>> {
 
 async function write(map: Record<string, Favorite>) {
   await AsyncStorage.setItem(KEY, JSON.stringify(map));
-  emit(); 
+  emit();
 }
 
 export async function listFavorites(): Promise<Favorite[]> {
@@ -47,7 +53,7 @@ export async function isFavorite(id: string): Promise<boolean> {
   return !!map[id];
 }
 
-export async function addFavorite(item: Omit<Favorite, "addedAt">) {
+export async function addFavorite(item: Omit<Favorite, 'addedAt'>) {
   const map = await read();
   map[item.id] = { ...item, addedAt: Date.now() };
   await write(map);
@@ -62,7 +68,9 @@ export async function removeFavorite(id: string) {
 }
 
 /** Toggle and return the *new* state (true if now favorited) */
-export async function toggleFavorite(item: Omit<Favorite, "addedAt">): Promise<boolean> {
+export async function toggleFavorite(
+  item: Omit<Favorite, 'addedAt'>,
+): Promise<boolean> {
   const map = await read();
   const exists = !!map[item.id];
   if (exists) {

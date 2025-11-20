@@ -107,7 +107,7 @@ async def get_recommendations(
 ):
     """
     Get cocktail recommendations based on user's pantry ingredients.
-    
+
     - Fetches cocktails from TheCocktailDB API
     - Filters by user's pantry ingredients
     - Returns cocktails with metadata about makeability
@@ -131,7 +131,7 @@ async def get_recommendations(
                 for _ in range(min(limit * 2, 50))
             ]
             responses = await asyncio.gather(*tasks, return_exceptions=True)
-            
+
             cocktails_data = []
             for resp in responses:
                 if isinstance(resp, Exception):
@@ -189,9 +189,7 @@ async def get_recommendations(
             continue
 
     # Sort by: fully_makeable first, then by match percentage
-    results.sort(
-        key=lambda x: (not x.fully_makeable, -x.match_score.percentage)
-    )
+    results.sort(key=lambda x: (not x.fully_makeable, -x.match_score.percentage))
 
     # Limit results
     results = results[:limit]
@@ -201,4 +199,3 @@ async def get_recommendations(
         total_found=len(results),
         fully_makeable_count=sum(1 for r in results if r.fully_makeable),
     )
-

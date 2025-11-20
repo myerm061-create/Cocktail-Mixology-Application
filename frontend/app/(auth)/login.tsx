@@ -1,17 +1,25 @@
-import React, { useMemo, useRef, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, Animated, Easing } from "react-native";
-import { Link, router } from "expo-router";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import FormButton from "@/components/ui/FormButton";
-import AuthInput from "@/components/ui/AuthInput";
-import CheckBox from "@/components/ui/CheckBox";
+import React, { useMemo, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Animated,
+  Easing,
+} from 'react-native';
+import { Link, router } from 'expo-router';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
+import FormButton from '@/components/ui/FormButton';
+import AuthInput from '@/components/ui/AuthInput';
+import CheckBox from '@/components/ui/CheckBox';
 // import * as SecureStore from "expo-secure-store"; // TODO: persist tokens
 
-const API_BASE = process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000/api/v1";
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api/v1';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   const [busy, setBusy] = useState(false);
@@ -23,11 +31,33 @@ export default function LoginScreen() {
   const shake = () => {
     shakeX.setValue(0);
     Animated.sequence([
-      Animated.timing(shakeX, { toValue: 8, duration: 60, useNativeDriver: true, easing: Easing.linear }),
-      Animated.timing(shakeX, { toValue: -8, duration: 60, useNativeDriver: true, easing: Easing.linear }),
-      Animated.timing(shakeX, { toValue: 6, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeX, { toValue: -6, duration: 50, useNativeDriver: true }),
-      Animated.timing(shakeX, { toValue: 0, duration: 40, useNativeDriver: true }),
+      Animated.timing(shakeX, {
+        toValue: 8,
+        duration: 60,
+        useNativeDriver: true,
+        easing: Easing.linear,
+      }),
+      Animated.timing(shakeX, {
+        toValue: -8,
+        duration: 60,
+        useNativeDriver: true,
+        easing: Easing.linear,
+      }),
+      Animated.timing(shakeX, {
+        toValue: 6,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeX, {
+        toValue: -6,
+        duration: 50,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shakeX, {
+        toValue: 0,
+        duration: 40,
+        useNativeDriver: true,
+      }),
     ]).start();
   };
 
@@ -37,7 +67,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!allValid || busy) {
-      setError("Please enter a valid email and password.");
+      setError('Please enter a valid email and password.');
       shake();
       return;
     }
@@ -47,8 +77,11 @@ export default function LoginScreen() {
 
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
@@ -58,27 +91,27 @@ export default function LoginScreen() {
         //   await SecureStore.setItemAsync("access_token", data.access_token);
         //   await SecureStore.setItemAsync("refresh_token", data.refresh_token);
         // }
-        setSuccess("Signed in! Redirecting…");
-        setTimeout(() => router.replace("/home"), 500);
+        setSuccess('Signed in! Redirecting…');
+        setTimeout(() => router.replace('/home'), 500);
         return;
       }
 
       if (res.status === 401) {
-        setError("Invalid email or password.");
+        setError('Invalid email or password.');
         shake();
         return;
       }
 
       if (res.status === 422) {
         const j = await res.json().catch(() => null);
-        const msg = j?.detail?.[0]?.msg ?? "Please check your inputs.";
+        const msg = j?.detail?.[0]?.msg ?? 'Please check your inputs.';
         setError(`Validation error: ${msg}`);
         shake();
         return;
       }
 
-      const text = await res.text().catch(() => "");
-      setError(`Login failed (${res.status}). ${text || "Try again."}`);
+      const text = await res.text().catch(() => '');
+      setError(`Login failed (${res.status}). ${text || 'Try again.'}`);
       shake();
     } catch (e: any) {
       setError(`Network error: ${e?.message ?? e}`);
@@ -115,11 +148,17 @@ export default function LoginScreen() {
         autoComplete="password"
         textContentType="password"
         returnKeyType="go"
-        onSubmitEditing={() => { void handleLogin(); }}
+        onSubmitEditing={() => {
+          void handleLogin();
+        }}
       />
 
       <View style={styles.row}>
-        <CheckBox checked={rememberMe} onChange={setRememberMe} label="Keep me signed in" />
+        <CheckBox
+          checked={rememberMe}
+          onChange={setRememberMe}
+          label="Keep me signed in"
+        />
         <Link href="/reset-password" asChild>
           <Text style={styles.forgotLink}>Forgot password?</Text>
         </Link>
@@ -129,14 +168,16 @@ export default function LoginScreen() {
       {success ? <Text style={styles.success}>{success}</Text> : null}
 
       <FormButton
-        title={busy ? "Signing in…" : "Login"}
-        onPress={() => { void handleLogin(); }}
+        title={busy ? 'Signing in…' : 'Login'}
+        onPress={() => {
+          void handleLogin();
+        }}
         disabled={!allValid || busy}
       />
       {busy ? <ActivityIndicator style={{ marginTop: 12 }} /> : null}
 
       <Text style={styles.newUserText}>
-        New user?{" "}
+        New user?{' '}
         <Link href="/create-account" asChild>
           <Text style={styles.link}>Sign up here</Text>
         </Link>
@@ -146,16 +187,45 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20, backgroundColor: Colors.background },
-  title: { fontWeight: "bold", fontSize: 28, marginBottom: 10, color: Colors.textPrimary, textAlign: "center" },
-  subtitle: { fontSize: 16, marginBottom: 20, color: Colors.textSecondary, textAlign: "center" },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: Colors.background,
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 28,
+    marginBottom: 10,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 20,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
   link: { color: Colors.link },
   newUserText: { marginTop: 15, color: Colors.textSecondary, fontSize: 14 },
   forgotLink: { color: Colors.link, fontSize: 14 },
-  row: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  dividerRow: { width: "100%", flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 12 },
-  divider: { flex: 1, height: 1, backgroundColor: "#2C2A35" },
+  row: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  dividerRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 12,
+  },
+  divider: { flex: 1, height: 1, backgroundColor: '#2C2A35' },
   dividerText: { color: Colors.textSecondary, fontSize: 12 },
-  error: { marginTop: 8, color: "#ff6b6b", fontSize: 13 },
-  success: { marginTop: 8, color: "#22c55e", fontSize: 13 },
+  error: { marginTop: 8, color: '#ff6b6b', fontSize: 13 },
+  success: { marginTop: 8, color: '#22c55e', fontSize: 13 },
 });

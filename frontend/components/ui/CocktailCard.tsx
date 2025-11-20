@@ -1,15 +1,21 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from "react-native";
-import { Image } from "expo-image";
-import { Ionicons } from "@expo/vector-icons";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 type Props = {
   id: string | number;
   name: string;
-  thumbUrl?: string | null;                 
-  onPress?: (id: string | number) => void;  // open details
-  isFavorite?: boolean;                     // default true for Favorites screen
+  thumbUrl?: string | null;
+  onPress?: (id: string | number) => void; // open details
+  isFavorite?: boolean; // default true for Favorites screen
   onToggleFavorite?: (id: string | number, next: boolean) => void; // toggle/remove handler
 };
 
@@ -24,12 +30,14 @@ export default function CocktailCard({
   const [loading, setLoading] = useState(!!thumbUrl);
   const [error, setError] = useState(false);
   const [fav, setFav] = useState(!!isFavorite);
-  React.useEffect(() => { setFav(!!isFavorite); }, [isFavorite]);
+  React.useEffect(() => {
+    setFav(!!isFavorite);
+  }, [isFavorite]);
 
   const toggleFav = () => {
     const next = !fav;
-    setFav(next);                     
-    onToggleFavorite?.(id, next);     
+    setFav(next);
+    onToggleFavorite?.(id, next);
   };
 
   return (
@@ -63,11 +71,13 @@ export default function CocktailCard({
           onPress={toggleFav}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel={fav ? "Remove from favorites" : "Add to favorites"}
+          accessibilityLabel={
+            fav ? 'Remove from favorites' : 'Add to favorites'
+          }
           style={styles.heartBtn}
         >
           <Ionicons
-            name={fav ? "heart" : "heart-outline"}
+            name={fav ? 'heart' : 'heart-outline'}
             size={18}
             color={fav ? Colors.textRed : Colors.textPrimary}
           />
@@ -85,45 +95,45 @@ const R = 14;
 
 const styles = StyleSheet.create({
   card: {
-    width: "100%",
+    width: '100%',
   },
   thumbWrap: {
     borderRadius: R,
-    overflow: "hidden",
-    backgroundColor: "#1d1d1d",
-    position: "relative",
+    overflow: 'hidden',
+    backgroundColor: '#1d1d1d',
+    position: 'relative',
   },
   thumb: {
-    width: "100%",
+    width: '100%',
     aspectRatio: 1,
   },
   fallback: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#232323",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#232323',
   },
   loader: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
     marginLeft: -10,
     marginTop: -10,
   },
   heartBtn: {
-    position: "absolute",
+    position: 'absolute',
     top: 8,
     right: 8,
     width: 32,
     height: 32,
     borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.35)",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
   },
   name: {
     marginTop: 8,
     color: Colors.textPrimary,
-    fontWeight: "700",
+    fontWeight: '700',
     fontSize: 14,
   },
 });

@@ -23,11 +23,13 @@ def db_session() -> Session:
 @pytest.fixture
 def test_user(db_session: Session) -> User:
     """Create a test user in the database."""
-    existing = db_session.query(User).filter(User.email == "test_rec@example.com").first()
+    existing = (
+        db_session.query(User).filter(User.email == "test_rec@example.com").first()
+    )
     if existing:
         db_session.delete(existing)
         db_session.commit()
-    
+
     user = User(
         email="test_rec@example.com",
         hashed_password=hash_password("testpass123"),
@@ -36,7 +38,7 @@ def test_user(db_session: Session) -> User:
     db_session.commit()
     db_session.refresh(user)
     yield user
-    
+
     db_session.delete(user)
     db_session.commit()
 
@@ -82,12 +84,12 @@ async def test_recommendations_with_pantry(authenticated_client: AsyncClient):
             json={"ingredient_name": ingredient, "quantity": 1.0},
         )
         assert resp.status_code == 201
-    
+
     # Get recommendations
     resp = await authenticated_client.get("/api/v1/recommendations?limit=10")
     assert resp.status_code == 200
     data = resp.json()
-    
+
     # Verify response structure
     assert "cocktails" in data
     assert "fully_makeable_count" in data
@@ -95,7 +97,7 @@ async def test_recommendations_with_pantry(authenticated_client: AsyncClient):
     assert isinstance(data["cocktails"], list)
     assert isinstance(data["fully_makeable_count"], int)
     assert isinstance(data["total_found"], int)
-    
+
     # If cocktails are returned, verify structure
     if len(data["cocktails"]) > 0:
         cocktail = data["cocktails"][0]
@@ -120,13 +122,13 @@ async def test_recommendations_limit_parameter(authenticated_client: AsyncClient
         "/api/v1/users/me/pantry",
         json={"ingredient_name": "Gin", "quantity": 1.0},
     )
-    
+
     # Test with limit=5
     resp = await authenticated_client.get("/api/v1/recommendations?limit=5")
     assert resp.status_code == 200
     data = resp.json()
     assert len(data["cocktails"]) <= 5
-    
+
     # Test with limit=1
     resp = await authenticated_client.get("/api/v1/recommendations?limit=1")
     assert resp.status_code == 200
@@ -142,12 +144,14 @@ async def test_recommendations_fully_makeable_only(authenticated_client: AsyncCl
         "/api/v1/users/me/pantry",
         json={"ingredient_name": "Gin", "quantity": 1.0},
     )
-    
+
     # Test with fully_makeable_only=True
-    resp = await authenticated_client.get("/api/v1/recommendations?fully_makeable_only=true&limit=10")
+    resp = await authenticated_client.get(
+        "/api/v1/recommendations?fully_makeable_only=true&limit=10"
+    )
     assert resp.status_code == 200
     data = resp.json()
-    
+
     # If cocktails are returned, all should be fully makeable
     for cocktail in data["cocktails"]:
         assert cocktail["fully_makeable"] is True
@@ -161,4 +165,3 @@ async def test_recommendations_requires_authentication():
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.get("/api/v1/recommendations")
         assert resp.status_code == 401  # Unauthorized
-
