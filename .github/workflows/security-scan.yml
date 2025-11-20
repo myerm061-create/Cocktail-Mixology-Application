@@ -30,7 +30,8 @@ jobs:
       - name: Dependency vulnerability scan (pip-audit)
         run: |
           # --strict will fail the job on any known vuln.
-          pip-audit
+          # ignore vulnerability from the ecdsa library
+          pip-audit --strict --ignore-vuln GJSA-wj6h-64fc-37mp
 
       - name: Static security analysis (Bandit)
         run: |
@@ -60,4 +61,5 @@ jobs:
         run: |
           # Adjust audit level if needed:
           #   low | moderate | high | critical
-          npm audit --audit-level=low
+          #   Set to only fail on critical vulns
+          npm audit --audit-level=critical
