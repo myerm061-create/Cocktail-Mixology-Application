@@ -31,7 +31,7 @@ jobs:
         run: |
           # --strict will fail the job on any known vuln.
           # ignore vulnerability from the ecdsa library
-          pip-audit --strict --ignore-vuln GJSA-wj6h-64fc-37mp
+          pip-audit --strict --ignore-vuln GHSA-wj6h-64fc-37mp
 
       - name: Static security analysis (Bandit)
         run: |
