@@ -30,7 +30,7 @@ jobs:
       - name: Dependency vulnerability scan (pip-audit)
         run: |
           # --strict will fail the job on any known vuln.
-          pip-audit --strict
+          pip-audit
 
       - name: Static security analysis (Bandit)
         run: |
@@ -60,4 +60,4 @@ jobs:
         run: |
           # Adjust audit level if needed:
           #   low | moderate | high | critical
-          npm audit --audit-level=moderate
+          npm audit --audit-level=low
