@@ -5,11 +5,13 @@ import { render, screen, fireEvent } from "@testing-library/react-native";
 jest.mock("expo-image", () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactMock = require("react");
+  const ImageComponent = ({ testID, onLoadEnd, onError, ...props }: any) =>
+    ReactMock.createElement("Image", { testID, onLoadEnd, onError, ...props });
   return {
     __esModule: true,
-    // Export a simple Image component that preserves testID and event handlers.
-    Image: ({ testID, onLoadEnd, onError, ...props }: any) =>
-      ReactMock.createElement("Image", { testID, onLoadEnd, onError, ...props }),
+    // Export both named and default to support different import styles
+    Image: ImageComponent,
+    default: ImageComponent,
   };
 });
 
