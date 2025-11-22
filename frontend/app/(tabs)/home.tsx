@@ -148,7 +148,7 @@ export default function HomeScreen() {
           onToggleFavorite={handleToggleFavorite}
           bottomPad={140}
           refreshing={refreshing}
-          onRefresh={handleRefresh}
+          onRefresh={() => { void handleRefresh(); }}
         />
       )}
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, Animated } from "react-native";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
 export default function SkeletonCard() {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
