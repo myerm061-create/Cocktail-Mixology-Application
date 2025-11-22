@@ -19,6 +19,18 @@ jest.mock("@expo/vector-icons", () => ({
   Ionicons: (_props: any) => null,
 }));
 
+jest.mock("expo-linear-gradient", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMock = require("react");
+  return {
+    __esModule: true,
+    LinearGradient: ({ children, ...props }: any) =>
+      ReactMock.createElement("View", props, children),
+    default: ({ children, ...props }: any) =>
+      ReactMock.createElement("View", props, children),
+  };
+});
+
 // eslint-disable-next-line import/first
 import CocktailCard from "@/components/ui/CocktailCard";
 
