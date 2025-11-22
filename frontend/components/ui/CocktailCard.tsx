@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
 
@@ -41,24 +42,32 @@ export default function CocktailCard({
     >
       <View style={styles.thumbWrap}>
         {thumbUrl && !error ? (
-          <Image
-            source={{ uri: thumbUrl }}
-            style={styles.thumb}
-            contentFit="cover"
-            cachePolicy="memory-disk"
-            transition={100}
-            onLoadEnd={() => setLoading(false)}
-            onError={() => {
-              setError(true);
-              setLoading(false);
-            }}
-          />
+          <>
+            <Image
+              source={{ uri: thumbUrl }}
+              style={styles.thumb}
+              contentFit="cover"
+              cachePolicy="memory-disk"
+              transition={100}
+              onLoadEnd={() => setLoading(false)}
+              onError={() => {
+                setError(true);
+                setLoading(false);
+              }}
+            />
+            {/* Gradient overlay at bottom for better text contrast */}
+            <LinearGradient
+              colors={["transparent", "rgba(0,0,0,0.4)"]}
+              locations={[0.6, 1]}
+              style={styles.gradientOverlay}
+            />
+          </>
         ) : (
           <View style={[styles.thumb, styles.fallback]} />
         )}
         {loading && <ActivityIndicator style={styles.loader} />}
 
-        {/* Heart button overlay */}
+        {/* Heart button overlay - larger and more visible */}
         <Pressable
           onPress={toggleFav}
           hitSlop={10}
@@ -68,8 +77,8 @@ export default function CocktailCard({
         >
           <Ionicons
             name={fav ? "heart" : "heart-outline"}
-            size={18}
-            color={fav ? Colors.textRed : Colors.textPrimary}
+            size={20}
+            color={fav ? Colors.textRed : "#FFFFFF"}
           />
         </Pressable>
       </View>
@@ -86,12 +95,25 @@ const R = 14;
 const styles = StyleSheet.create({
   card: {
     width: "100%",
+    // Subtle shadow for depth
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   thumbWrap: {
     borderRadius: R,
     overflow: "hidden",
     backgroundColor: "#1d1d1d",
     position: "relative",
+  },
+  gradientOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: "40%",
   },
   thumb: {
     width: "100%",
@@ -113,17 +135,20 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   name: {
-    marginTop: 8,
+    marginTop: 10,
     color: Colors.textPrimary,
     fontWeight: "700",
-    fontSize: 14,
+    fontSize: 15,
+    textAlign: "center",
+    lineHeight: 20,
+    letterSpacing: 0.3,
   },
 });
