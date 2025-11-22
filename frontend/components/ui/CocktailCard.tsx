@@ -44,6 +44,7 @@ export default function CocktailCard({
         {thumbUrl && !error ? (
           <>
             <Image
+              testID="cocktail-image"
               source={{ uri: thumbUrl }}
               style={styles.thumb}
               contentFit="cover"
@@ -65,7 +66,7 @@ export default function CocktailCard({
         ) : (
           <View style={[styles.thumb, styles.fallback]} />
         )}
-        {loading && <ActivityIndicator style={styles.loader} />}
+        {loading && <ActivityIndicator testID="cocktail-loader" style={styles.loader} />}
 
         {/* Heart button overlay - larger and more visible */}
         <Pressable

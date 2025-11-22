@@ -1,8 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
-import { ActivityIndicator, Image as RNImage } from "react-native";
 import CocktailCard from "@/components/ui/CocktailCard";
-export { Image } from "react-native";
 
 jest.mock("expo-image");
 
@@ -10,9 +8,7 @@ jest.mock("@expo/vector-icons", () => ({
   Ionicons: (_props: any) => <></>,
 }));
 
-const getLoader = () =>
-  screen.queryByRole("progressbar") ??
-  screen.UNSAFE_queryByType(ActivityIndicator);
+const getLoader = () => screen.queryByTestId("cocktail-loader");
 
 describe("CocktailCard", () => {
   // Smoke test is in smoke.test.tsx
@@ -34,7 +30,7 @@ describe("CocktailCard", () => {
     render(<CocktailCard id="2" name="Old Fashioned" thumbUrl="https://example.com/img.jpg" />);
     expect(getLoader()).toBeTruthy();
 
-    const img = screen.UNSAFE_getByType(RNImage);
+    const img = screen.getByTestId("cocktail-image");
     fireEvent(img, "onLoadEnd");
 
     expect(getLoader()).toBeNull();
@@ -44,14 +40,14 @@ describe("CocktailCard", () => {
   it("on image error, hides loader and shows fallback (no image role)", () => {
     render(<CocktailCard id="3" name="Mojito" thumbUrl="https://example.com/bad.jpg" />);
 
-    const img = screen.UNSAFE_getByType(RNImage);
+    const img = screen.getByTestId("cocktail-image");
     expect(img).toBeTruthy();
     expect(getLoader()).toBeTruthy();
 
     fireEvent(img, "onError");
 
     expect(getLoader()).toBeNull();
-    expect(screen.UNSAFE_queryByType(RNImage)).toBeNull();
+    expect(screen.queryByTestId("cocktail-image")).toBeNull();
   });
 
   // Test favorite toggle button and callback
