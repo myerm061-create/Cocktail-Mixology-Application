@@ -1,13 +1,15 @@
 import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react-native";
 
 // Mock native/Expo modules before importing the component under test.
 jest.mock("expo-image", () => {
-  const React = require("react");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMock = require("react");
   return {
     __esModule: true,
     // Export a simple Image component that preserves testID and event handlers.
     Image: ({ testID, onLoadEnd, onError, ...props }: any) =>
-      React.createElement("Image", { testID, onLoadEnd, onError, ...props }),
+      ReactMock.createElement("Image", { testID, onLoadEnd, onError, ...props }),
   };
 });
 
@@ -15,7 +17,7 @@ jest.mock("@expo/vector-icons", () => ({
   Ionicons: (_props: any) => null,
 }));
 
-import { render, screen, fireEvent } from "@testing-library/react-native";
+// eslint-disable-next-line import/first
 import CocktailCard from "@/components/ui/CocktailCard";
 
 const getLoader = () => screen.queryByTestId("cocktail-loader");
