@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, StyleSheet, View, RefreshControl } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import CocktailCard from "./CocktailCard";
 
 export type CocktailItem = {
@@ -14,9 +14,7 @@ type Props = {
   onPressItem?: (id: string | number) => void;
   onToggleFavorite?: (id: string | number, next: boolean) => void;
   columns?: number;
-  bottomPad?: number;
-  refreshing?: boolean;
-  onRefresh?: () => void;
+  bottomPad?: number; 
 };
 
 export default function CocktailGrid({
@@ -25,8 +23,6 @@ export default function CocktailGrid({
   onToggleFavorite,
   columns = 2,
   bottomPad = 120,
-  refreshing = false,
-  onRefresh,
 }: Props) {
   const GAP = 12;
 
@@ -51,7 +47,6 @@ export default function CocktailGrid({
         </View>
       )}
       showsVerticalScrollIndicator={false}
-      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FFFFFF" /> : undefined}
     />
   );
 }

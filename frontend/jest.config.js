@@ -29,7 +29,6 @@ module.exports = {
       + '|expo-.*'
       + '|@expo-.*'
       + '|react-native-.*'
-      + '|@testing-library/react-native'
       + ')/)',
   ],
   testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
