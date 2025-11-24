@@ -12,7 +12,8 @@ const router = {
 
 const usePathname = () => '/';
 const useLocalSearchParams = () => ({});
-const Link = ({ children }) => React.createElement(React.Fragment, null, children);
+const Link = ({ children }) =>
+  React.createElement(React.Fragment, null, children);
 const Stack = { Screen: () => null };
 
 module.exports = { router, usePathname, useLocalSearchParams, Link, Stack };

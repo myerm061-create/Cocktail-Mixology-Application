@@ -1,4 +1,4 @@
-import { normalizeIngredient, normalizeSet } from "../utils/normalize";
+import { normalizeIngredient, normalizeSet } from '../utils/normalize';
 
 // --- cocktail API client ---
 export type Cocktail = {
@@ -8,14 +8,14 @@ export type Cocktail = {
 };
 
 // Full details for a single drink screen
- // Full details for a single drink screen
- export type CocktailDetails = Cocktail & {
-   strInstructions?: string | null;
-   strCategory?: string | null;
-   ingredients?: { ingredient: string; measure?: string }[];
-   // Derived (not from API):
-   ingredientsNormalized?: string[];
- };
+// Full details for a single drink screen
+export type CocktailDetails = Cocktail & {
+  strInstructions?: string | null;
+  strCategory?: string | null;
+  ingredients?: { ingredient: string; measure?: string }[];
+  // Derived (not from API):
+  ingredientsNormalized?: string[];
+};
 
 // normalize { drinks: null } -> []
 function safeDrinks(data: any): any[] {
@@ -24,11 +24,13 @@ function safeDrinks(data: any): any[] {
 }
 
 // helper: build ingredients/measures array from TheCocktailDB shape
-function parseIngredients(drink: any): { ingredient: string; measure?: string }[] {
+function parseIngredients(
+  drink: any,
+): { ingredient: string; measure?: string }[] {
   const out: { ingredient: string; measure?: string }[] = [];
   for (let i = 1; i <= 15; i++) {
-    const ing = (drink?.[`strIngredient${i}`] ?? "").trim?.() ?? "";
-    const mea = (drink?.[`strMeasure${i}`] ?? "").trim?.() ?? "";
+    const ing = (drink?.[`strIngredient${i}`] ?? '').trim?.() ?? '';
+    const mea = (drink?.[`strMeasure${i}`] ?? '').trim?.() ?? '';
     if (!ing) continue;
     out.push({ ingredient: ing, measure: mea || undefined });
   }
@@ -44,35 +46,45 @@ function toSummary(drink: any): Cocktail {
   };
 }
 
- // map raw drink to detailed CocktailDetails
-  function toDetails(drink: any): CocktailDetails {
-    const details: CocktailDetails = {
-      ...toSummary(drink),
-      strInstructions: drink.strInstructions ?? null,
-      strCategory: drink.strCategory ?? null,
-      ingredients: parseIngredients(drink),
-    };
+// map raw drink to detailed CocktailDetails
+function toDetails(drink: any): CocktailDetails {
+  const details: CocktailDetails = {
+    ...toSummary(drink),
+    strInstructions: drink.strInstructions ?? null,
+    strCategory: drink.strCategory ?? null,
+    ingredients: parseIngredients(drink),
+  };
 
-    const ingrs = details.ingredients ?? [];
-    details.ingredientsNormalized = ingrs.map(({ ingredient }) =>
-      normalizeIngredient(ingredient).canonicalName
-    );
+  const ingrs = details.ingredients ?? [];
+  details.ingredientsNormalized = ingrs.map(
+    ({ ingredient }) => normalizeIngredient(ingredient).canonicalName,
+  );
 
-    return details;
-  }
+  return details;
+}
 
 // --- robust fetch helpers ---
 
 async function fetchJsonSafe(url: string): Promise<any> {
   const res = await fetch(url);
   if (!res.ok) {
-    let body = "";
-    try { body = await res.text(); } catch { /* ignore */ }
-    throw new Error(`HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`);
+    let body = '';
+    try {
+      body = await res.text();
+    } catch {
+      /* ignore */
+    }
+    throw new Error(
+      `HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ''}`,
+    );
   }
 
-  let text = "";
-  try { text = await res.text(); } catch { /* ignore */ }
+  let text = '';
+  try {
+    text = await res.text();
+  } catch {
+    /* ignore */
+  }
 
   if (!text) return { drinks: [] };
 
@@ -90,14 +102,18 @@ export async function searchByName(q: string): Promise<Cocktail[]> {
   return drinks.map(toSummary);
 }
 
-export async function filterByIngredient(ingredient: string): Promise<Cocktail[]> {
+export async function filterByIngredient(
+  ingredient: string,
+): Promise<Cocktail[]> {
   const url = `https://www.thecocktaildb.com/api/json/v1/1/filter.php?i=${encodeURIComponent(ingredient)}`;
   const data = await fetchJsonSafe(url);
   const drinks = safeDrinks(data);
   return drinks.map(toSummary);
 }
 
-export async function getDetailsById(id: string): Promise<CocktailDetails | null> {
+export async function getDetailsById(
+  id: string,
+): Promise<CocktailDetails | null> {
   const url = `https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${encodeURIComponent(id)}`;
   const data = await fetchJsonSafe(url);
   const drinks = safeDrinks(data);
@@ -105,12 +121,15 @@ export async function getDetailsById(id: string): Promise<CocktailDetails | null
 }
 
 // Fill in missing thumbs for a list
-export async function hydrateThumbs(drinks: Cocktail[], limit = 12): Promise<Cocktail[]> {
+export async function hydrateThumbs(
+  drinks: Cocktail[],
+  limit = 12,
+): Promise<Cocktail[]> {
   const needs = drinks.filter((d) => !d?.strDrinkThumb).slice(0, limit);
   if (!needs.length) return drinks;
 
   const lookups = await Promise.all(
-    needs.map((d) => getDetailsById(d.idDrink).catch(() => null))
+    needs.map((d) => getDetailsById(d.idDrink).catch(() => null)),
   );
 
   const byId = new Map(lookups.filter(Boolean).map((d) => [d!.idDrink, d!]));
@@ -129,7 +148,7 @@ export async function hydrateThumbs(drinks: Cocktail[], limit = 12): Promise<Coc
 // -------- Pantry matching helpers (local use in app) --------
 export function canMakeFromPantry(
   cocktail: CocktailDetails,
-  pantryNames: string[]
+  pantryNames: string[],
 ): boolean {
   const have = normalizeSet(pantryNames);
   const need = cocktail.ingredientsNormalized ?? [];
@@ -138,16 +157,18 @@ export function canMakeFromPantry(
 
 export function missingFromPantry(
   cocktail: CocktailDetails,
-  pantryNames: string[]
+  pantryNames: string[],
 ): string[] {
   const have = normalizeSet(pantryNames);
   const need = (cocktail.ingredients ?? []).map((i) => i.ingredient);
-  return need.filter((ing) => !have.has(normalizeIngredient(ing).canonicalName));
+  return need.filter(
+    (ing) => !have.has(normalizeIngredient(ing).canonicalName),
+  );
 }
 
 export function matchScoreFromPantry(
   cocktail: CocktailDetails,
-  pantryNames: string[]
+  pantryNames: string[],
 ): { matched: number; total: number } {
   const have = normalizeSet(pantryNames);
   const need = cocktail.ingredientsNormalized ?? [];
@@ -158,13 +179,13 @@ export function matchScoreFromPantry(
 // -------- Hydration helpers for search results --------
 export async function hydrateDetails(
   drinks: Cocktail[],
-  limit = 40
+  limit = 40,
 ): Promise<(Cocktail & { ingredientsNormalized?: string[] })[]> {
   const head = drinks.slice(0, limit);
   const tail = drinks.slice(limit);
 
   const lookups = await Promise.all(
-    head.map(d => getDetailsById(d.idDrink).catch(() => null))
+    head.map((d) => getDetailsById(d.idDrink).catch(() => null)),
   );
 
   const mergedHead = head.map((d, i) => {
@@ -180,5 +201,7 @@ export async function hydrateDetails(
     };
   });
 
-  return [...mergedHead, ...tail] as (Cocktail & { ingredientsNormalized?: string[] })[];
+  return [...mergedHead, ...tail] as (Cocktail & {
+    ingredientsNormalized?: string[];
+  })[];
 }

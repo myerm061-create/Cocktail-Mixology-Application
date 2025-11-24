@@ -1,8 +1,8 @@
-import React from "react";
-import { TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter, useSegments } from "expo-router";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+import React from 'react';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter, useSegments } from 'expo-router';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 // A back button component to navigate to the previous screen
 export default function BackButton() {
@@ -15,7 +15,7 @@ export default function BackButton() {
       router.back();
     } else {
       // No previous page
-      router.replace("/home");
+      router.replace('/home');
     }
   };
 
@@ -28,7 +28,7 @@ export default function BackButton() {
 
 const styles = StyleSheet.create({
   container: {
-    position: "absolute",
+    position: 'absolute',
     top: 50,
     left: 20,
     zIndex: 10,

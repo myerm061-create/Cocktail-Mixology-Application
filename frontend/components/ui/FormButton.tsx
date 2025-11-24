@@ -1,16 +1,13 @@
-import React from "react";
-import type {
-  GestureResponderEvent,
-  ViewStyle,
-  TextStyle} from "react-native";
+import React from 'react';
+import type { GestureResponderEvent, ViewStyle, TextStyle } from 'react-native';
 import {
   TouchableOpacity,
   Text,
   StyleSheet,
   ActivityIndicator,
   Image,
-} from "react-native";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
+} from 'react-native';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 
 type Props = {
   title: string;
@@ -19,7 +16,7 @@ type Props = {
   loading?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
-  variant?: "default" | "danger" | "dangerLogo";
+  variant?: 'default' | 'danger' | 'dangerLogo';
   logoSource?: any; // optional custom logo, falls back to signout.png
 };
 
@@ -31,7 +28,7 @@ export default function FormButton({
   loading,
   style,
   textStyle,
-  variant = "default",
+  variant = 'default',
   logoSource,
 }: Props) {
   const isDisabled = disabled || loading;
@@ -47,16 +44,16 @@ export default function FormButton({
         <ActivityIndicator />
       ) : (
         <>
-          {variant === "dangerLogo" && (
+          {variant === 'dangerLogo' && (
             <Image
-              source={logoSource || require("@/assets/images/signout.png")}
+              source={logoSource || require('@/assets/images/signout.png')}
               style={[styles.logo, { tintColor: Colors.textRed }]}
             />
           )}
           <Text
             style={[
               styles.text,
-              (variant === "danger" || variant === "dangerLogo") && {
+              (variant === 'danger' || variant === 'dangerLogo') && {
                 color: Colors.textRed,
               },
               textStyle,
@@ -72,13 +69,13 @@ export default function FormButton({
 
 const styles = StyleSheet.create({
   btn: {
-    width: "100%",
+    width: '100%',
     height: 50,
     borderRadius: 25,
     backgroundColor: Colors.buttonBackground,
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "row", // allow logo + text
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row', // allow logo + text
     marginTop: 10,
   },
   btnDisabled: {
@@ -87,12 +84,12 @@ const styles = StyleSheet.create({
   text: {
     color: Colors.textPrimary,
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   logo: {
     width: 20,
     height: 20,
-    resizeMode: "contain",
+    resizeMode: 'contain',
     marginRight: 8,
   },
 });

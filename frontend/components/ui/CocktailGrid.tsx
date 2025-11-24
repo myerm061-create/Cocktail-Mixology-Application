@@ -1,6 +1,6 @@
-import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
-import CocktailCard from "./CocktailCard";
+import React from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
+import CocktailCard from './CocktailCard';
 
 export type CocktailItem = {
   id: string | number;
@@ -14,7 +14,7 @@ type Props = {
   onPressItem?: (id: string | number) => void;
   onToggleFavorite?: (id: string | number, next: boolean) => void;
   columns?: number;
-  bottomPad?: number; 
+  bottomPad?: number;
 };
 
 export default function CocktailGrid({

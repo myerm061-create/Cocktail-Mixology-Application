@@ -1,31 +1,42 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, Switch, Pressable,
-  LayoutAnimation, Platform, UIManager, Alert,
-} from "react-native";
-import { router, Stack } from "expo-router";
-import FormButton from "@/components/ui/FormButton";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
-import BackButton from "@/components/ui/BackButton";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ScrollView } from "react-native-gesture-handler";
+  View,
+  Text,
+  StyleSheet,
+  Switch,
+  Pressable,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  Alert,
+} from 'react-native';
+import { router, Stack } from 'expo-router';
+import FormButton from '@/components/ui/FormButton';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import BackButton from '@/components/ui/BackButton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView } from 'react-native-gesture-handler';
 
 // Safe env lookup for RN/Jest
 const __ENV__ =
-  (typeof process !== "undefined" && process.env)
+  typeof process !== 'undefined' && process.env
     ? process.env
-    : ((globalThis as any).__APP_ENV__ ?? {});const API_BASE =
+    : ((globalThis as any).__APP_ENV__ ?? {});
+const API_BASE =
   __ENV__.EXPO_PUBLIC_API_BASE_URL ??
   __ENV__.EXPO_PUBLIC_API_BASE ??
-  "http://127.0.0.1:8000/api/v1";
+  'http://127.0.0.1:8000/api/v1';
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 function Chevron({ open }: { open: boolean }) {
-  return <Text style={styles.chevron}>{open ? "˅" : "›"}</Text>;
+  return <Text style={styles.chevron}>{open ? '˅' : '›'}</Text>;
 }
 
 export default function SettingsScreen() {
@@ -47,7 +58,7 @@ export default function SettingsScreen() {
   // TODO: Get this from your auth context or secure storage
   const getUserEmail = () => {
     // Replace with actual user email from auth context
-    return "no-reply@mycabinet.me";
+    return 'no-reply@mycabinet.me';
   };
 
   const toggle = (fn: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -65,25 +76,27 @@ export default function SettingsScreen() {
 
       // Request deletion OTP
       const response = await fetch(`${API_BASE}/auth/otp/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: userEmail,
-          intent: "delete",
+          intent: 'delete',
         }),
       });
 
       if (!response.ok && response.status !== 200) {
-        throw new Error("Failed to send verification code");
+        throw new Error('Failed to send verification code');
       }
 
       // Navigate to verification screen
-      router.push(`/(stack)/verify-delete?email=${encodeURIComponent(userEmail)}`);
+      router.push(
+        `/(stack)/verify-delete?email=${encodeURIComponent(userEmail)}`,
+      );
     } catch {
       Alert.alert(
-        "Error",
-        "Unable to send verification code. Please try again.",
-        [{ text: "OK" }]
+        'Error',
+        'Unable to send verification code. Please try again.',
+        [{ text: 'OK' }],
       );
     } finally {
       setIsLoading(false);
@@ -93,7 +106,7 @@ export default function SettingsScreen() {
   // Handler for direct password change (requires current password)
   const handleChangePasswordDirect = () => {
     // Navigate directly to change password screen without OTP
-    router.push("/(stack)/change-password");
+    router.push('/(stack)/change-password');
   };
 
   // Handler for password change with email verification (if user forgot current password)
@@ -105,25 +118,27 @@ export default function SettingsScreen() {
 
       // Request verification OTP for password change
       const response = await fetch(`${API_BASE}/auth/otp/request`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: userEmail,
-          intent: "verify", // Using verify intent for authenticated operations
+          intent: 'verify', // Using verify intent for authenticated operations
         }),
       });
 
       if (!response.ok && response.status !== 200) {
-        throw new Error("Failed to send verification code");
+        throw new Error('Failed to send verification code');
       }
 
       // Navigate to verification screen for password change
-      router.push(`/(stack)/verify-change-password?email=${encodeURIComponent(userEmail)}`);
+      router.push(
+        `/(stack)/verify-change-password?email=${encodeURIComponent(userEmail)}`,
+      );
     } catch {
       Alert.alert(
-        "Error",
-        "Unable to send verification code. Please try again.",
-        [{ text: "OK" }]
+        'Error',
+        'Unable to send verification code. Please try again.',
+        [{ text: 'OK' }],
       );
     } finally {
       setIsLoading(false);
@@ -146,9 +161,9 @@ export default function SettingsScreen() {
       // await SecureStore.deleteItemAsync('authToken');
       // await SecureStore.deleteItemAsync('refreshToken');
 
-      router.replace("/(auth)/login");
+      router.replace('/(auth)/login');
     } catch {
-      Alert.alert("Error", "Failed to sign out. Please try again.");
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
     }
   };
 
@@ -180,7 +195,10 @@ export default function SettingsScreen() {
             <Switch
               value={push}
               onValueChange={setPush}
-              trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
+              trackColor={{
+                false: Colors.textSecondary,
+                true: Colors.textSecondary,
+              }}
               thumbColor={Colors.textPrimary}
               ios_backgroundColor={Colors.textSecondary}
             />
@@ -195,7 +213,10 @@ export default function SettingsScreen() {
             <Switch
               value={publicProfile}
               onValueChange={setPublicProfile}
-              trackColor={{ false: Colors.textSecondary, true: Colors.textSecondary }}
+              trackColor={{
+                false: Colors.textSecondary,
+                true: Colors.textSecondary,
+              }}
               thumbColor={Colors.textPrimary}
               ios_backgroundColor={Colors.textSecondary}
             />
@@ -211,7 +232,10 @@ export default function SettingsScreen() {
         />
         {showDeleteLocal && (
           <View style={styles.reveal}>
-            <FormButton title="Clear Local Cache" onPress={() => setConfirmClearCache(true)} />
+            <FormButton
+              title="Clear Local Cache"
+              onPress={() => setConfirmClearCache(true)}
+            />
           </View>
         )}
 
@@ -239,18 +263,26 @@ export default function SettingsScreen() {
           onPress={() => toggle(setShowUnits)}
         />
         {showUnits && (
-          <View style={[styles.reveal, { flexDirection: "row", gap: 10 }]}>
+          <View style={[styles.reveal, { flexDirection: 'row', gap: 10 }]}>
             <Pressable
               style={[styles.chip, !useMetric && styles.chipActive]}
               onPress={() => setUseMetric(false)}
             >
-              <Text style={[styles.chipText, !useMetric && styles.chipTextActive]}>oz (Imperial)</Text>
+              <Text
+                style={[styles.chipText, !useMetric && styles.chipTextActive]}
+              >
+                oz (Imperial)
+              </Text>
             </Pressable>
             <Pressable
               style={[styles.chip, useMetric && styles.chipActive]}
               onPress={() => setUseMetric(true)}
             >
-              <Text style={[styles.chipText, useMetric && styles.chipTextActive]}>ml (Metric)</Text>
+              <Text
+                style={[styles.chipText, useMetric && styles.chipTextActive]}
+              >
+                ml (Metric)
+              </Text>
             </Pressable>
           </View>
         )}
@@ -268,7 +300,7 @@ export default function SettingsScreen() {
               disabled={isLoading}
             />
             <Text style={styles.helperText}>
-              Forgot your current password?{" "}
+              Forgot your current password?{' '}
               <Text
                 style={styles.link}
                 onPress={() => void handleChangePasswordWithVerification()}
@@ -348,32 +380,52 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { paddingHorizontal: 20 },
   headerWrap: { backgroundColor: Colors.background },
-  backWrap: { position: "absolute", left: 14, zIndex: 10 },
+  backWrap: { position: 'absolute', left: 14, zIndex: 10 },
   title: {
     fontSize: 28,
-    fontWeight: "800",
+    fontWeight: '800',
     color: Colors.textPrimary,
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 12,
   },
-  section: { marginTop: 18, marginBottom: 6, fontSize: 18, fontWeight: "700", color: Colors.textPrimary },
-  row: { height: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  section: {
+    marginTop: 18,
+    marginBottom: 6,
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  row: {
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   rowLabel: { fontSize: 16, color: Colors.textSecondary },
-  chevron: { fontSize: 22, color: Colors.textSecondary, includeFontPadding: false },
+  chevron: {
+    fontSize: 22,
+    color: Colors.textSecondary,
+    includeFontPadding: false,
+  },
   reveal: { paddingVertical: 8 },
-  chip: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 20, backgroundColor: Colors.buttonBackground },
-  chipActive: { backgroundColor: "#2a2a2a" },
-  chipText: { color: Colors.textSecondary, fontWeight: "600" },
+  chip: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: Colors.buttonBackground,
+  },
+  chipActive: { backgroundColor: '#2a2a2a' },
+  chipText: { color: Colors.textSecondary, fontWeight: '600' },
   chipTextActive: { color: Colors.textPrimary },
   footer: { marginTop: 16 },
   helperText: {
     marginTop: 8,
     fontSize: 13,
     color: Colors.textSecondary,
-    textAlign: "center",
+    textAlign: 'center',
   },
   link: {
     color: Colors.link,
-    textDecorationLine: "underline",
+    textDecorationLine: 'underline',
   },
 });

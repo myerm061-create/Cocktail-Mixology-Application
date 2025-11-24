@@ -1,11 +1,20 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, TextInput, Image, TouchableOpacity, Alert } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import BackButton from "@/components/ui/BackButton";import { router } from "expo-router";
-import FormButton from "@/components/ui/FormButton";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import { profiles, ME_ID, type Profile } from "@/scripts/data/mockProfiles";
+import React, { useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BackButton from '@/components/ui/BackButton';
+import { router } from 'expo-router';
+import FormButton from '@/components/ui/FormButton';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
+import { profiles, ME_ID, type Profile } from '@/scripts/data/mockProfiles';
 
 const USERNAME_RE = /^(?!_)([a-z0-9_]{3,20})(?<!_)$/; // 3–20, lowercase, numbers, _, no leading/trailing _
 
@@ -17,19 +26,23 @@ export default function ProfileEditScreen() {
   const meProfile: Profile = useMemo(() => profiles[me], [me]);
 
   // local form state
-  const [displayName, setDisplayName] = useState(meProfile.name || "");
+  const [displayName, setDisplayName] = useState(meProfile.name || '');
   const [username, setUsername] = useState(
     // if you store it on Profile later, pull from there; for now demo value:
-    meProfile.id === "bob" ? "bobdrinksalot424" : meProfile.id
+    meProfile.id === 'bob' ? 'bobdrinksalot424' : meProfile.id,
   );
-  const [bio, setBio] = useState(meProfile.bio || "");
-  const [favDrinks, setFavDrinks] = useState<string[]>(meProfile.favorites || []);
+  const [bio, setBio] = useState(meProfile.bio || '');
+  const [favDrinks, setFavDrinks] = useState<string[]>(
+    meProfile.favorites || [],
+  );
 
-  const addFav = () => setFavDrinks((prev) => [...prev, "Negroni"]);
-  const removeFav = (name: string) => setFavDrinks((prev) => prev.filter((x) => x !== name));
+  const addFav = () => setFavDrinks((prev) => [...prev, 'Negroni']);
+  const removeFav = (name: string) =>
+    setFavDrinks((prev) => prev.filter((x) => x !== name));
 
   const usernameValid = USERNAME_RE.test(username);
-  const displayNameValid = displayName.trim().length >= 1 && displayName.trim().length <= 50;
+  const displayNameValid =
+    displayName.trim().length >= 1 && displayName.trim().length <= 50;
   const bioValid = bio.length <= 160;
 
   const formValid = usernameValid && displayNameValid && bioValid;
@@ -45,7 +58,7 @@ export default function ProfileEditScreen() {
       favorites: favDrinks,
     };
 
-    Alert.alert("Saved", "Your profile changes were saved (demo).");
+    Alert.alert('Saved', 'Your profile changes were saved (demo).');
     router.back();
   };
 
@@ -57,96 +70,132 @@ export default function ProfileEditScreen() {
       </View>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={[styles.content, { paddingTop: insets.top + 56, flexGrow: 1 }]}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 56, flexGrow: 1 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
-      <View style={styles.header}>
-        <View>
-          <Image source={{ uri: meProfile.avatarUrl || "https://i.pravatar.cc/150?img=12" }} style={styles.avatar} />
-          <TouchableOpacity style={styles.cameraBadge} onPress={() => {/* TODO: image picker */}}>
-            <Text style={styles.cameraBadgeText}>📷</Text>
-          </TouchableOpacity>
+        <View style={styles.header}>
+          <View>
+            <Image
+              source={{
+                uri: meProfile.avatarUrl || 'https://i.pravatar.cc/150?img=12',
+              }}
+              style={styles.avatar}
+            />
+            <TouchableOpacity
+              style={styles.cameraBadge}
+              onPress={() => {
+                /* TODO: image picker */
+              }}
+            >
+              <Text style={styles.cameraBadgeText}>📷</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.headerTextWrap}>
+            <Text style={styles.title}>Edit Profile</Text>
+            <Text style={styles.subtitle}>Update your public info</Text>
+          </View>
         </View>
-        <View style={styles.headerTextWrap}>
-          <Text style={styles.title}>Edit Profile</Text>
-          <Text style={styles.subtitle}>Update your public info</Text>
-        </View>
-      </View>
 
-      {/* Profile form */}
-      <View style={styles.card}>
-        <LabeledField label="Display Name">
-          <TextInput
-            value={displayName}
-            onChangeText={setDisplayName}
-            placeholder="Your name"
-            placeholderTextColor={Colors.textSecondary}
-            style={styles.input}
-            maxLength={50}
+        {/* Profile form */}
+        <View style={styles.card}>
+          <LabeledField label="Display Name">
+            <TextInput
+              value={displayName}
+              onChangeText={setDisplayName}
+              placeholder="Your name"
+              placeholderTextColor={Colors.textSecondary}
+              style={styles.input}
+              maxLength={50}
+            />
+            {!displayNameValid && (
+              <FieldHint>Display name is required (max 50 chars).</FieldHint>
+            )}
+          </LabeledField>
+
+          <LabeledField label="Username (public handle, optional)">
+            <TextInput
+              value={username}
+              onChangeText={(v) => setUsername(v.toLowerCase())}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholder="username"
+              placeholderTextColor={Colors.textSecondary}
+              style={styles.input}
+              maxLength={20}
+            />
+            {!usernameValid && (
+              <FieldHint>
+                3–20 chars, lowercase letters, numbers, or “_”; no
+                leading/trailing “_”.
+              </FieldHint>
+            )}
+          </LabeledField>
+
+          <LabeledField label="Bio">
+            <TextInput
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Tell people your taste…"
+              placeholderTextColor={Colors.textSecondary}
+              style={[styles.input, styles.inputMultiline]}
+              multiline
+              maxLength={160}
+            />
+            <Text style={styles.counter}>{bio.length}/160</Text>
+          </LabeledField>
+        </View>
+
+        {/* Favorites */}
+        <View style={styles.card}>
+          <View style={styles.rowSpace}>
+            <Text style={styles.cardTitle}>Favorite Drinks</Text>
+            <TouchableOpacity onPress={addFav}>
+              <Text style={styles.link}>+ Add</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.chipsWrap}>
+            {favDrinks.length === 0 && (
+              <Text style={styles.emptyText}>
+                Nothing yet—add a few favorites.
+              </Text>
+            )}
+            {favDrinks.map((d) => (
+              <Chip key={d} text={d} onRemove={() => removeFav(d)} />
+            ))}
+          </View>
+        </View>
+
+        {/* Actions */}
+        <View style={{ marginTop: 16, gap: 10 }}>
+          <FormButton
+            title="Save Changes"
+            onPress={onSave}
+            disabled={!formValid}
           />
-          {!displayNameValid && <FieldHint>Display name is required (max 50 chars).</FieldHint>}
-        </LabeledField>
-
-        <LabeledField label="Username (public handle, optional)">
-          <TextInput
-            value={username}
-            onChangeText={(v) => setUsername(v.toLowerCase())}
-            autoCapitalize="none"
-            autoCorrect={false}
-            placeholder="username"
-            placeholderTextColor={Colors.textSecondary}
-            style={styles.input}
-            maxLength={20}
+          <FormButton
+            title="Cancel"
+            variant="danger"
+            onPress={() => router.back()}
           />
-          {!usernameValid && (
-            <FieldHint>3–20 chars, lowercase letters, numbers, or “_”; no leading/trailing “_”.</FieldHint>
-          )}
-        </LabeledField>
-
-        <LabeledField label="Bio">
-          <TextInput
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Tell people your taste…"
-            placeholderTextColor={Colors.textSecondary}
-            style={[styles.input, styles.inputMultiline]}
-            multiline
-            maxLength={160}
-          />
-          <Text style={styles.counter}>{bio.length}/160</Text>
-        </LabeledField>
-      </View>
-
-      {/* Favorites */}
-      <View style={styles.card}>
-        <View style={styles.rowSpace}>
-          <Text style={styles.cardTitle}>Favorite Drinks</Text>
-          <TouchableOpacity onPress={addFav}>
-            <Text style={styles.link}>+ Add</Text>
-          </TouchableOpacity>
         </View>
-        <View style={styles.chipsWrap}>
-          {favDrinks.length === 0 && <Text style={styles.emptyText}>Nothing yet—add a few favorites.</Text>}
-          {favDrinks.map((d) => (
-            <Chip key={d} text={d} onRemove={() => removeFav(d)} />
-          ))}
-        </View>
-      </View>
 
-      {/* Actions */}
-      <View style={{ marginTop: 16, gap: 10 }}>
-        <FormButton title="Save Changes" onPress={onSave} disabled={!formValid} />
-        <FormButton title="Cancel" variant="danger" onPress={() => router.back()} />
-      </View>
-
-      <View style={{ height: 32 }} />
-    </ScrollView>
+        <View style={{ height: 32 }} />
+      </ScrollView>
     </>
   );
 }
 
 /* small internals */
-function LabeledField({ label, children }: { label: string; children: React.ReactNode }) {
+function LabeledField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <View style={{ marginBottom: 14 }}>
       <Text style={styles.label}>{label}</Text>
@@ -162,7 +211,10 @@ function Chip({ text, onRemove }: { text: string; onRemove?: () => void }) {
     <View style={styles.chip}>
       <Text style={styles.chipText}>{text}</Text>
       {onRemove && (
-        <TouchableOpacity onPress={onRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity
+          onPress={onRemove}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Text style={styles.chipClose}>✕</Text>
         </TouchableOpacity>
       )}
@@ -173,41 +225,79 @@ function Chip({ text, onRemove }: { text: string; onRemove?: () => void }) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { paddingHorizontal: 16, paddingBottom: 24 },
-  backWrap: { position: "absolute", top: 14, left: 14, zIndex: 10 },
-  header: { alignItems: "center", marginBottom: 16 },
-  headerTextWrap: { marginTop: 10, alignItems: "center" },
-  title: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700", textAlign: "center" },
-  subtitle: { color: Colors.textSecondary, marginTop: 4, textAlign: "center" },
-  avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: Colors.surface },
-  cameraBadge: {
-    position: "absolute",
-    right: -4, bottom: -4,
-    backgroundColor: Colors.deepAsh,
-    width: 24, height: 24, borderRadius: 12,
-    alignItems: "center", justifyContent: "center",
+  backWrap: { position: 'absolute', top: 14, left: 14, zIndex: 10 },
+  header: { alignItems: 'center', marginBottom: 16 },
+  headerTextWrap: { marginTop: 10, alignItems: 'center' },
+  title: {
+    color: Colors.textPrimary,
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
   },
-  cameraBadgeText: { color: "#fff", fontSize: 13 },
+  subtitle: { color: Colors.textSecondary, marginTop: 4, textAlign: 'center' },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: Colors.surface,
+  },
+  cameraBadge: {
+    position: 'absolute',
+    right: -4,
+    bottom: -4,
+    backgroundColor: Colors.deepAsh,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cameraBadgeText: { color: '#fff', fontSize: 13 },
 
-  card: { backgroundColor: Colors.buttonBackground, borderRadius: 16, padding: 14, marginTop: 12 },
-  cardTitle: { color: Colors.textPrimary, fontSize: 16, fontWeight: "700" },
+  card: {
+    backgroundColor: Colors.buttonBackground,
+    borderRadius: 16,
+    padding: 14,
+    marginTop: 12,
+  },
+  cardTitle: { color: Colors.textPrimary, fontSize: 16, fontWeight: '700' },
 
   label: { color: Colors.textSecondary, fontSize: 12, marginBottom: 6 },
   input: {
-    backgroundColor: "#fff", borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12,
-    color: Colors.nightBlack, fontSize: 15,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    color: Colors.nightBlack,
+    fontSize: 15,
   },
-  inputMultiline: { minHeight: 80, textAlignVertical: "top" },
-  counter: { color: Colors.textSecondary, marginTop: 6, alignSelf: "flex-end", fontSize: 12 },
+  inputMultiline: { minHeight: 80, textAlignVertical: 'top' },
+  counter: {
+    color: Colors.textSecondary,
+    marginTop: 6,
+    alignSelf: 'flex-end',
+    fontSize: 12,
+  },
 
-  rowSpace: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  link: { color: Colors.textSecondary, fontWeight: "700" },
+  rowSpace: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  link: { color: Colors.textSecondary, fontWeight: '700' },
 
-  chipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
-  chip: { flexDirection: "row", alignItems: "center", backgroundColor: Colors.richCharcoal, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 12 },
+  chipsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.richCharcoal,
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
   chipText: { color: Colors.textPrimary, fontSize: 13, marginRight: 6 },
   chipClose: { color: Colors.textSecondary, fontSize: 12 },
 
   hint: { color: Colors.textSecondary, marginTop: 6, fontSize: 12 },
   emptyText: { color: Colors.textSecondary },
-
 });

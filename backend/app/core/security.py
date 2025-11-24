@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+import uuid
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from fastapi import Depends, HTTPException, status
@@ -30,20 +31,30 @@ class TokenError(Exception):
     pass
 
 
+def _encode_token(data: dict, expires_delta: timedelta) -> str:
+    """
+    Internal helper to encode a JWT with an expiration and a unique ID (jti).
+    Ensures each call produces a different token even for the same user.
+    """
+    to_encode = data.copy()
+    expire = datetime.now(UTC) + expires_delta
+    to_encode.update(
+        {
+            "exp": expire,
+            "jti": uuid.uuid4().hex,  # per-token uniqueness
+        }
+    )
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
 def create_access_token(data: dict, expires_delta: timedelta) -> str:
     """Generate an access JWT."""
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return _encode_token(data, expires_delta)
 
 
 def create_refresh_token(data: dict, expires_delta: timedelta) -> str:
     """Generate a refresh JWT."""
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return _encode_token(data, expires_delta)
 
 
 def decode_refresh_token(token: str) -> dict:

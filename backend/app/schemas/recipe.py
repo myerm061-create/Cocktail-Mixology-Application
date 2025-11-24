@@ -18,7 +18,9 @@ class CocktailRecommendation(BaseModel):
     category: str | None = Field(None, description="Cocktail category")
     instructions: str | None = Field(None, description="Preparation instructions")
     ingredients: list[str] = Field(..., description="List of ingredient names")
-    fully_makeable: bool = Field(..., description="Whether all ingredients are in pantry")
+    fully_makeable: bool = Field(
+        ..., description="Whether all ingredients are in pantry"
+    )
     missing_ingredients: list[str] = Field(
         default_factory=list, description="Ingredients missing from pantry"
     )
@@ -35,4 +37,3 @@ class RecommendationsResponse(BaseModel):
     fully_makeable_count: int = Field(
         ..., description="Number of fully makeable cocktails"
     )
-
