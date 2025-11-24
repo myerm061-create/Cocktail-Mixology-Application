@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
+import { AuthProvider } from '@/app/lib/auth';
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -23,25 +24,27 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={navTheme}>
-        <Stack
-          screenOptions={{
-            contentStyle: { backgroundColor: Colors.background },
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(stack)" options={{ headerShown: false }} />
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="+not-found"
-            options={{
-              headerStyle: { backgroundColor: Colors.background },
-              headerTintColor: '#F5F0E1',
+      <AuthProvider>
+        <ThemeProvider value={navTheme}>
+          <Stack
+            screenOptions={{
+              contentStyle: { backgroundColor: Colors.background },
             }}
-          />
-        </Stack>
-        <StatusBar style="light" backgroundColor="#101010" />
-      </ThemeProvider>
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(stack)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="+not-found"
+              options={{
+                headerStyle: { backgroundColor: Colors.background },
+                headerTintColor: '#F5F0E1',
+              }}
+            />
+          </Stack>
+          <StatusBar style="light" backgroundColor="#101010" />
+        </ThemeProvider>
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 }
