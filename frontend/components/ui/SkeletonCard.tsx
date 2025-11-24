@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import { View, StyleSheet, Animated } from "react-native";
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated } from 'react-native';
 
 export default function SkeletonCard() {
   const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -17,7 +17,7 @@ export default function SkeletonCard() {
           duration: 1000,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     );
     shimmer.start();
     return () => shimmer.stop();
@@ -47,37 +47,36 @@ const R = 14;
 
 const styles = StyleSheet.create({
   card: {
-    width: "100%",
+    width: '100%',
   },
   thumbWrap: {
     borderRadius: R,
-    overflow: "hidden",
-    backgroundColor: "#1d1d1d",
-    position: "relative",
+    overflow: 'hidden',
+    backgroundColor: '#1d1d1d',
+    position: 'relative',
   },
   thumb: {
-    width: "100%",
+    width: '100%',
     aspectRatio: 1,
-    backgroundColor: "#2a2a2a",
+    backgroundColor: '#2a2a2a',
   },
   heartBtn: {
-    position: "absolute",
+    position: 'absolute',
     top: 8,
     right: 8,
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#2a2a2a",
+    backgroundColor: '#2a2a2a',
   },
   nameContainer: {
     marginTop: 10,
-    alignItems: "center",
+    alignItems: 'center',
   },
   nameLine: {
     height: 16,
     borderRadius: 4,
-    backgroundColor: "#2a2a2a",
-    width: "80%",
+    backgroundColor: '#2a2a2a',
+    width: '80%',
   },
 });
-

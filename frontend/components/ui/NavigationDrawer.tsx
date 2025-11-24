@@ -1,10 +1,18 @@
-import React, { useState } from "react";
-import { Modal, View, Text, StyleSheet, Pressable, ScrollView, Alert } from "react-native";
-import { BlurView } from "expo-blur";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { DarkTheme as Colors } from "@/components/ui/ColorPalette";
-import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import React, { useState } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import { BlurView } from 'expo-blur';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 type MenuItem = {
   label: string;
@@ -20,12 +28,12 @@ type Props = {
 };
 
 const MENU_ITEMS: MenuItem[] = [
-  { label: "Search", icon: "search-outline", route: "/search" },
-  { label: "My Cabinet", icon: "cube-outline", route: "/cabinet" },
-  { label: "Favorites", icon: "heart-outline", route: "/favorites" },
-  { label: "Recommendations", icon: "sparkles-outline", route: "/assistant" },
-  { label: "Settings", icon: "settings-outline", route: "/(stack)/settings" },
-  { label: "Sign Out", icon: "log-out-outline", danger: true },
+  { label: 'Search', icon: 'search-outline', route: '/search' },
+  { label: 'My Cabinet', icon: 'cube-outline', route: '/cabinet' },
+  { label: 'Favorites', icon: 'heart-outline', route: '/favorites' },
+  { label: 'Recommendations', icon: 'sparkles-outline', route: '/assistant' },
+  { label: 'Settings', icon: 'settings-outline', route: '/(stack)/settings' },
+  { label: 'Sign Out', icon: 'log-out-outline', danger: true },
 ];
 
 export default function NavigationDrawer({ visible, onClose }: Props) {
@@ -49,18 +57,18 @@ export default function NavigationDrawer({ visible, onClose }: Props) {
       // await SecureStore.deleteItemAsync('authToken');
       // await SecureStore.deleteItemAsync('refreshToken');
 
-      router.replace("/(auth)/login");
+      router.replace('/(auth)/login');
     } catch {
-      Alert.alert("Error", "Failed to sign out. Please try again.");
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
     }
   };
 
   const handleItemPress = (item: MenuItem) => {
-    if (item.label === "Sign Out") {
+    if (item.label === 'Sign Out') {
       setConfirmSignOut(true);
       return;
     }
-    
+
     onClose();
     if (item.route) {
       router.push(item.route as any);
@@ -80,7 +88,11 @@ export default function NavigationDrawer({ visible, onClose }: Props) {
       <View style={styles.container}>
         {/* Blurred backdrop */}
         <Pressable style={styles.backdrop} onPress={onClose}>
-          <BlurView intensity={20} style={StyleSheet.absoluteFill} tint="dark" />
+          <BlurView
+            intensity={20}
+            style={StyleSheet.absoluteFill}
+            tint="dark"
+          />
         </Pressable>
 
         {/* Drawer content */}
@@ -96,7 +108,10 @@ export default function NavigationDrawer({ visible, onClose }: Props) {
           </Pressable>
 
           {/* Menu items */}
-          <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            style={styles.menuList}
+            showsVerticalScrollIndicator={false}
+          >
             {MENU_ITEMS.map((item, index) => (
               <Pressable
                 key={index}
@@ -147,7 +162,7 @@ const DRAWER_WIDTH = 280;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: 'row',
   },
   backdrop: {
     flex: 1,
@@ -165,8 +180,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.buttonBackground,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 24,
     marginLeft: 4,
   },
@@ -174,8 +189,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -190,11 +205,10 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: '500',
     color: Colors.textPrimary,
   },
   menuTextDanger: {
     color: Colors.textRed,
   },
 });
-
