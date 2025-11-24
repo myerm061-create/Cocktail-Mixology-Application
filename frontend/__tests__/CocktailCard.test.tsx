@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import { ActivityIndicator, Image as RNImage } from 'react-native';
@@ -13,6 +14,45 @@ jest.mock('@expo/vector-icons', () => ({
 const getLoader = () =>
   screen.queryByRole('progressbar') ??
   screen.UNSAFE_queryByType(ActivityIndicator);
+=======
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react-native";
+
+// Mock native/Expo modules before importing the component under test.
+jest.mock("expo-image", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMock = require("react");
+  const ImageComponent = ({ testID, onLoadEnd, onError, ...props }: any) =>
+    ReactMock.createElement("Image", { testID, onLoadEnd, onError, ...props });
+  return {
+    __esModule: true,
+    // Export both named and default to support different import styles
+    Image: ImageComponent,
+    default: ImageComponent,
+  };
+});
+
+jest.mock("@expo/vector-icons", () => ({
+  Ionicons: (_props: any) => null,
+}));
+
+jest.mock("expo-linear-gradient", () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactMock = require("react");
+  return {
+    __esModule: true,
+    LinearGradient: ({ children, ...props }: any) =>
+      ReactMock.createElement("View", props, children),
+    default: ({ children, ...props }: any) =>
+      ReactMock.createElement("View", props, children),
+  };
+});
+
+// eslint-disable-next-line import/first
+import CocktailCard from "@/components/ui/CocktailCard";
+
+const getLoader = () => screen.queryByTestId("cocktail-loader");
+>>>>>>> parent of ba5a057 (Revert "Revamp home page, similar to prototype design")
 
 describe('CocktailCard', () => {
   // Smoke test is in smoke.test.tsx
@@ -40,8 +80,13 @@ describe('CocktailCard', () => {
     );
     expect(getLoader()).toBeTruthy();
 
+<<<<<<< HEAD
     const img = screen.UNSAFE_getByType(RNImage);
     fireEvent(img, 'onLoadEnd');
+=======
+    const img = screen.getByTestId("cocktail-image");
+    fireEvent(img, "onLoadEnd");
+>>>>>>> parent of ba5a057 (Revert "Revamp home page, similar to prototype design")
 
     expect(getLoader()).toBeNull();
   });
@@ -56,14 +101,14 @@ describe('CocktailCard', () => {
       />,
     );
 
-    const img = screen.UNSAFE_getByType(RNImage);
+    const img = screen.getByTestId("cocktail-image");
     expect(img).toBeTruthy();
     expect(getLoader()).toBeTruthy();
 
     fireEvent(img, 'onError');
 
     expect(getLoader()).toBeNull();
-    expect(screen.UNSAFE_queryByType(RNImage)).toBeNull();
+    expect(screen.queryByTestId("cocktail-image")).toBeNull();
   });
 
   // Test favorite toggle button and callback

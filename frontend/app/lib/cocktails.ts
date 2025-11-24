@@ -111,9 +111,51 @@ export async function filterByIngredient(
   return drinks.map(toSummary);
 }
 
+<<<<<<< HEAD
 export async function getDetailsById(
   id: string,
 ): Promise<CocktailDetails | null> {
+=======
+export async function getRandomDrinks(count: number = 12): Promise<Cocktail[]> {
+  // Fetch slightly more than needed to account for duplicates, but limit retries
+  const fetchCount = Math.ceil(count * 1.2); // Fetch 20% more to account for duplicates
+  const maxRetries = 1; // Only retry once if needed
+  
+  const urls = Array.from({ length: fetchCount }, () => 
+    "https://www.thecocktaildb.com/api/json/v1/1/random.php"
+  );
+  
+  const responses = await Promise.all(
+    urls.map(url => fetchJsonSafe(url).catch(() => ({ drinks: [] })))
+  );
+  
+  const allDrinks = responses.flatMap(data => safeDrinks(data));
+  // Remove duplicates by idDrink
+  const unique = Array.from(
+    new Map(allDrinks.map(d => [d.idDrink, d])).values()
+  );
+  
+  // Only retry once if we're significantly short (less than 80% of requested)
+  if (unique.length < count * 0.8 && maxRetries > 0) {
+    const additional = Math.ceil((count - unique.length) * 1.2);
+    const additionalUrls = Array.from({ length: additional }, () =>
+      "https://www.thecocktaildb.com/api/json/v1/1/random.php"
+    );
+    const additionalResponses = await Promise.all(
+      additionalUrls.map(url => fetchJsonSafe(url).catch(() => ({ drinks: [] })))
+    );
+    const additionalDrinks = additionalResponses.flatMap(data => safeDrinks(data));
+    const existingIds = new Set(unique.map(d => d.idDrink));
+    const newDrinks = additionalDrinks.filter(d => !existingIds.has(d.idDrink));
+    unique.push(...newDrinks);
+  }
+  
+  // Return what we have, even if slightly less than requested (better UX than waiting)
+  return unique.slice(0, count).map(toSummary);
+}
+
+export async function getDetailsById(id: string): Promise<CocktailDetails | null> {
+>>>>>>> parent of ba5a057 (Revert "Revamp home page, similar to prototype design")
   const url = `https://www.thecocktaildb.com/api/json/v1/1/lookup.php?i=${encodeURIComponent(id)}`;
   const data = await fetchJsonSafe(url);
   const drinks = safeDrinks(data);

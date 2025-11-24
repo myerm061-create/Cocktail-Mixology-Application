@@ -17,6 +17,7 @@ module.exports = {
     '\\.(png|jpg|jpeg|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
   },
   transformIgnorePatterns: [
+<<<<<<< HEAD
     'node_modules/(?!(react-native' +
       '|@react-native' +
       '|react-clone-referenced-element' +
@@ -28,6 +29,20 @@ module.exports = {
       '|@expo-.*' +
       '|react-native-.*' +
       ')/)',
+=======
+    'node_modules/(?!(react-native'
+      + '|@react-native'
+      + '|react-clone-referenced-element'
+      + '|@react-navigation'
+      + '|@expo'
+      + '|expo(nent)?'
+      + '|@expo(nent)?/.*'
+      + '|expo-.*'
+      + '|@expo-.*'
+      + '|react-native-.*'
+      + '|@testing-library/react-native'
+      + ')/)',
+>>>>>>> parent of ba5a057 (Revert "Revamp home page, similar to prototype design")
   ],
   testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
 };

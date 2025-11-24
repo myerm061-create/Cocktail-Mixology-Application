@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import CocktailCard from './CocktailCard';
+=======
+import React from "react";
+import { FlatList, StyleSheet, View, RefreshControl } from "react-native";
+import CocktailCard from "./CocktailCard";
+>>>>>>> parent of ba5a057 (Revert "Revamp home page, similar to prototype design")
 
 export type CocktailItem = {
   id: string | number;
@@ -15,6 +21,11 @@ type Props = {
   onToggleFavorite?: (id: string | number, next: boolean) => void;
   columns?: number;
   bottomPad?: number;
+<<<<<<< HEAD
+=======
+  refreshing?: boolean;
+  onRefresh?: () => void;
+>>>>>>> parent of ba5a057 (Revert "Revamp home page, similar to prototype design")
 };
 
 export default function CocktailGrid({
@@ -23,6 +34,8 @@ export default function CocktailGrid({
   onToggleFavorite,
   columns = 2,
   bottomPad = 120,
+  refreshing = false,
+  onRefresh,
 }: Props) {
   const GAP = 12;
 
@@ -47,6 +60,7 @@ export default function CocktailGrid({
         </View>
       )}
       showsVerticalScrollIndicator={false}
+      refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FFFFFF" /> : undefined}
     />
   );
 }
