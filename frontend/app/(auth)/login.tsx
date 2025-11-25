@@ -12,7 +12,10 @@ import { DarkTheme as Colors } from '@/components/ui/ColorPalette';
 import FormButton from '@/components/ui/FormButton';
 import AuthInput from '@/components/ui/AuthInput';
 import CheckBox from '@/components/ui/CheckBox';
-import { useAuth } from '@/app/lib/auth';
+// import * as SecureStore from "expo-secure-store"; // TODO: persist tokens
+
+const API_BASE =
+  process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://127.0.0.1:8000/api/v1';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -21,8 +24,7 @@ export default function LoginScreen() {
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const { signIn } = useAuth();
+  const [success, setSuccess] = useState<string | null>(null);
 
   // shake animation
   const shakeX = useRef(new Animated.Value(0)).current;
@@ -71,21 +73,48 @@ export default function LoginScreen() {
     }
     setBusy(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      await signIn(email.trim(), password, rememberMe);
-      // Auth context will handle navigation to home
-      setTimeout(() => router.replace('/home'), 100);
-    } catch (e: any) {
-      const message = e?.message || String(e);
-      
-      if (message.includes('401') || message.includes('Invalid')) {
-        setError('Invalid email or password.');
-      } else if (message.includes('422')) {
-        setError('Please check your inputs.');
-      } else {
-        setError(`Login failed. ${message}`);
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      if (res.ok) {
+        // const data = await res.json();
+        // if (rememberMe) {
+        //   await SecureStore.setItemAsync("access_token", data.access_token);
+        //   await SecureStore.setItemAsync("refresh_token", data.refresh_token);
+        // }
+        setSuccess('Signed in! Redirecting…');
+        setTimeout(() => router.replace('/home'), 500);
+        return;
       }
+
+      if (res.status === 401) {
+        setError('Invalid email or password.');
+        shake();
+        return;
+      }
+
+      if (res.status === 422) {
+        const j = await res.json().catch(() => null);
+        const msg = j?.detail?.[0]?.msg ?? 'Please check your inputs.';
+        setError(`Validation error: ${msg}`);
+        shake();
+        return;
+      }
+
+      const text = await res.text().catch(() => '');
+      setError(`Login failed (${res.status}). ${text || 'Try again.'}`);
+      shake();
+    } catch (e: any) {
+      setError(`Network error: ${e?.message ?? e}`);
       shake();
     } finally {
       setBusy(false);
@@ -136,6 +165,7 @@ export default function LoginScreen() {
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
+      {success ? <Text style={styles.success}>{success}</Text> : null}
 
       <FormButton
         title={busy ? 'Signing in…' : 'Login'}
@@ -187,5 +217,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 12,
   },
+  dividerRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 12,
+  },
+  divider: { flex: 1, height: 1, backgroundColor: '#2C2A35' },
+  dividerText: { color: Colors.textSecondary, fontSize: 12 },
   error: { marginTop: 8, color: '#ff6b6b', fontSize: 13 },
+  success: { marginTop: 8, color: '#22c55e', fontSize: 13 },
 });
