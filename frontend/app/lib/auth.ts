@@ -61,7 +61,7 @@ async function deleteItem(key: string): Promise<void> {
 export async function storeTokens(
   tokens: TokenPair,
   email: string,
-  rememberMe: boolean = true
+  rememberMe: boolean = true,
 ): Promise<void> {
   // Calculate expiry timestamp (subtract 60s buffer for safety)
   const expiryTime = Date.now() + (tokens.expires_in - 60) * 1000;
@@ -120,7 +120,7 @@ export async function hasValidSession(): Promise<boolean> {
 // API calls
 export async function login(
   email: string,
-  password: string
+  password: string,
 ): Promise<TokenPair> {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
@@ -141,7 +141,7 @@ export async function login(
 
 export async function register(
   email: string,
-  password: string
+  password: string,
 ): Promise<TokenPair> {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: 'POST',
@@ -230,7 +230,7 @@ export async function logout(): Promise<void> {
 // Authenticated fetch helper
 export async function authFetch(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<Response> {
   let accessToken = await getAccessToken();
   const expired = await isTokenExpired();

@@ -6,11 +6,10 @@ import React, {
   useCallback,
   useRef,
 } from 'react';
-import { AppState, AppStateStatus } from 'react-native';
+import type { AppStateStatus } from 'react-native';
+import { AppState } from 'react-native';
+import type { AuthState } from './auth';
 import {
-  AuthState,
-  TokenPair,
-  User,
   login as apiLogin,
   register as apiRegister,
   logout as apiLogout,
@@ -26,8 +25,16 @@ import {
 } from './auth';
 
 type AuthContextType = AuthState & {
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
-  register: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (
+    email: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
 };
@@ -139,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    []
+    [],
   );
 
   // Register handler
@@ -164,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
     },
-    []
+    [],
   );
 
   // Logout handler
@@ -241,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           void checkAndRefreshToken();
         }
         appStateRef.current = nextAppState;
-      }
+      },
     );
 
     return () => {

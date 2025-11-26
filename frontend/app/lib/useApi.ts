@@ -33,7 +33,7 @@ export function useApi(options: UseApiOptions = {}) {
     async <T = any>(
       endpoint: string,
       method: HttpMethod = 'GET',
-      body?: any
+      body?: any,
     ): Promise<T> => {
       setLoading(true);
       setError(null);
@@ -58,7 +58,9 @@ export function useApi(options: UseApiOptions = {}) {
           const errorData = await response.json().catch(() => ({}));
           const apiError: ApiError = {
             status: response.status,
-            message: errorData.detail || `Request failed with status ${response.status}`,
+            message:
+              errorData.detail ||
+              `Request failed with status ${response.status}`,
             detail: errorData,
           };
           setError(apiError);
@@ -74,7 +76,10 @@ export function useApi(options: UseApiOptions = {}) {
         return data as T;
       } catch (err: any) {
         // Handle session expired
-        if (err?.message === 'Session expired' || err?.message === 'Not authenticated') {
+        if (
+          err?.message === 'Session expired' ||
+          err?.message === 'Not authenticated'
+        ) {
           if (options.throwOnExpired) {
             throw err;
           }
@@ -99,33 +104,37 @@ export function useApi(options: UseApiOptions = {}) {
         setLoading(false);
       }
     },
-    [logout, options.throwOnExpired]
+    [logout, options.throwOnExpired],
   );
 
   // Convenience methods
   const get = useCallback(
     <T = any>(endpoint: string) => request<T>(endpoint, 'GET'),
-    [request]
+    [request],
   );
 
   const post = useCallback(
-    <T = any>(endpoint: string, body?: any) => request<T>(endpoint, 'POST', body),
-    [request]
+    <T = any>(endpoint: string, body?: any) =>
+      request<T>(endpoint, 'POST', body),
+    [request],
   );
 
   const put = useCallback(
-    <T = any>(endpoint: string, body?: any) => request<T>(endpoint, 'PUT', body),
-    [request]
+    <T = any>(endpoint: string, body?: any) =>
+      request<T>(endpoint, 'PUT', body),
+    [request],
   );
 
   const patch = useCallback(
-    <T = any>(endpoint: string, body?: any) => request<T>(endpoint, 'PATCH', body),
-    [request]
+    <T = any>(endpoint: string, body?: any) =>
+      request<T>(endpoint, 'PATCH', body),
+    [request],
   );
 
   const del = useCallback(
-    <T = any>(endpoint: string, body?: any) => request<T>(endpoint, 'DELETE', body),
-    [request]
+    <T = any>(endpoint: string, body?: any) =>
+      request<T>(endpoint, 'DELETE', body),
+    [request],
   );
 
   return {
@@ -147,7 +156,7 @@ export function useApi(options: UseApiOptions = {}) {
  */
 export async function apiFetch<T = any>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const url = endpoint.startsWith('http')
     ? endpoint
