@@ -19,7 +19,7 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true); // Default to true for better UX
+  const [rememberMe, setRememberMe] = useState(true);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
